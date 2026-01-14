@@ -1,0 +1,10 @@
+django==6.0
+djangorestframework==3.16.1
+dependency-injector==4.48.3
+python-dotenv==1.0.1
+
+# Linting & Formatting
+black==24.10.0
+isort==5.13.2
+ruff==0.8.4
+pre-commit==4.0.1

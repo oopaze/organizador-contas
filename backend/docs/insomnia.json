@@ -1,0 +1,568 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-01-07T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_bills_manager",
+      "_type": "workspace",
+      "name": "Bills Manager API",
+      "description": "API para gerenciamento de contas e faturas",
+      "scope": "collection"
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "name": "auth",
+      "description": "Endpoints de autenticacao",
+      "parentId": "wrk_bills_manager"
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "name": "Login",
+      "description": "Autentica usuario com email e senha",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parentId": "fld_auth"
+    },
+    {
+      "_id": "req_refresh",
+      "_type": "request",
+      "name": "Refresh Token",
+      "description": "Gera novos tokens a partir do refresh token",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/refresh/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refresh_token\": \"your_refresh_token_here\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parentId": "fld_auth"
+    },
+    {
+      "_id": "fld_user",
+      "_type": "request_group",
+      "name": "user",
+      "description": "Endpoints de usuario",
+      "parentId": "wrk_bills_manager"
+    },
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "name": "Register",
+      "description": "Registra um novo usuario",
+      "method": "POST",
+      "url": "{{ _.base_url }}/user/register/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parentId": "fld_user"
+    },
+    {
+      "_id": "req_me",
+      "_type": "request",
+      "name": "Me",
+      "description": "Retorna dados do usuario autenticado",
+      "method": "GET",
+      "url": "{{ _.base_url }}/user/me/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_user"
+    },
+    {
+      "_id": "req_update_profile",
+      "_type": "request",
+      "name": "Update Profile",
+      "description": "Atualiza o perfil do usuario autenticado",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/user/me/profile/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+5511999999999\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_user"
+    },
+    {
+      "_id": "fld_pdf_reader",
+      "_type": "request_group",
+      "name": "pdf-reader",
+      "description": "Endpoints para leitura e processamento de PDFs",
+      "parentId": "wrk_bills_manager"
+    },
+    {
+      "_id": "req_upload_file",
+      "_type": "request",
+      "name": "Upload File",
+      "description": "Faz upload de um arquivo PDF para processamento",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pdf_reader/upload/",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "file",
+            "type": "file",
+            "fileName": "",
+            "description": "Arquivo PDF da fatura"
+          }
+        ]
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "multipart/form-data"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_pdf_reader"
+    },
+    {
+      "_id": "req_list_bills",
+      "_type": "request",
+      "name": "List Bills",
+      "description": "Lista todas as faturas sem transacoes",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pdf_reader/bills/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_pdf_reader"
+    },
+    {
+      "_id": "req_get_bill",
+      "_type": "request",
+      "name": "Get Bill with Transactions",
+      "description": "Retorna uma fatura com suas transacoes",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pdf_reader/bills/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_pdf_reader"
+    },
+    {
+      "_id": "fld_transactions",
+      "_type": "request_group",
+      "name": "transactions",
+      "description": "Modulo de transacoes",
+      "parentId": "wrk_bills_manager"
+    },
+    {
+      "_id": "fld_actors",
+      "_type": "request_group",
+      "name": "actor",
+      "description": "Endpoints para gerenciamento de atores",
+      "parentId": "fld_transactions"
+    },
+    {
+      "_id": "req_list_actors",
+      "_type": "request",
+      "name": "List Actors",
+      "description": "Lista todos os atores",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/actors/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_actors"
+    },
+    {
+      "_id": "req_get_actor",
+      "_type": "request",
+      "name": "Get Actor",
+      "description": "Retorna um ator pelo ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/actors/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_actors"
+    },
+    {
+      "_id": "req_create_actor",
+      "_type": "request",
+      "name": "Create Actor",
+      "description": "Cria um novo ator",
+      "method": "POST",
+      "url": "{{ _.base_url }}/transactions/actors/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Nome do Ator\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_actors"
+    },
+    {
+      "_id": "req_update_actor",
+      "_type": "request",
+      "name": "Update Actor",
+      "description": "Atualiza um ator existente",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/transactions/actors/1/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Nome Atualizado\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_actors"
+    },
+    {
+      "_id": "req_delete_actor",
+      "_type": "request",
+      "name": "Delete Actor",
+      "description": "Remove um ator",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/transactions/actors/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_actors"
+    },
+    {
+      "_id": "fld_transaction",
+      "_type": "request_group",
+      "name": "transaction",
+      "description": "Endpoints para gerenciamento de transacoes",
+      "parentId": "fld_transactions"
+    },
+    {
+      "_id": "req_list_transactions",
+      "_type": "request",
+      "name": "List Transactions",
+      "description": "Lista todas as transacoes",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/transactions/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_transaction"
+    },
+    {
+      "_id": "req_get_transaction",
+      "_type": "request",
+      "name": "Get Transaction",
+      "description": "Retorna uma transacao pelo ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/transactions/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_transaction"
+    },
+    {
+      "_id": "req_create_transaction",
+      "_type": "request",
+      "name": "Create Transaction",
+      "description": "Cria uma nova transacao",
+      "method": "POST",
+      "url": "{{ _.base_url }}/transactions/transactions/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"due_date\": \"2026-01-15\",\n  \"total_amount\": \"100.00\",\n  \"transaction_identifier\": \"TRX-001\",\n  \"transaction_type\": \"credit_card\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_transaction"
+    },
+    {
+      "_id": "req_update_transaction",
+      "_type": "request",
+      "name": "Update Transaction",
+      "description": "Atualiza uma transacao existente",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/transactions/transactions/1/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"due_date\": \"2026-01-20\",\n  \"total_amount\": \"150.00\",\n  \"transaction_identifier\": \"TRX-001-UPDATED\",\n  \"transaction_type\": \"credit_card\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_transaction"
+    },
+    {
+      "_id": "req_delete_transaction",
+      "_type": "request",
+      "name": "Delete Transaction",
+      "description": "Remove uma transacao",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/transactions/transactions/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_transaction"
+    },
+    {
+      "_id": "fld_sub_transaction",
+      "_type": "request_group",
+      "name": "sub_transaction",
+      "description": "Endpoints para gerenciamento de sub-transacoes",
+      "parentId": "fld_transactions"
+    },
+    {
+      "_id": "req_list_sub_transactions",
+      "_type": "request",
+      "name": "List Sub Transactions",
+      "description": "Lista todas as sub-transacoes",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/sub_transactions/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_sub_transaction"
+    },
+    {
+      "_id": "req_get_sub_transaction",
+      "_type": "request",
+      "name": "Get Sub Transaction",
+      "description": "Retorna uma sub-transacao pelo ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_sub_transaction"
+    },
+    {
+      "_id": "req_create_sub_transaction",
+      "_type": "request",
+      "name": "Create Sub Transaction",
+      "description": "Cria uma nova sub-transacao",
+      "method": "POST",
+      "url": "{{ _.base_url }}/transactions/sub_transactions/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"date\": \"2026-01-10\",\n  \"description\": \"Compra exemplo\",\n  \"amount\": \"50.00\",\n  \"installment_info\": \"1/1\",\n  \"transaction_id\": 1,\n  \"actor_id\": 1\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_sub_transaction"
+    },
+    {
+      "_id": "req_update_sub_transaction",
+      "_type": "request",
+      "name": "Update Sub Transaction",
+      "description": "Atualiza uma sub-transacao existente",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"date\": \"2026-01-12\",\n  \"description\": \"Compra atualizada\",\n  \"amount\": \"75.00\",\n  \"installment_info\": \"1/2\",\n  \"transaction_id\": 1,\n  \"actor_id\": 1\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_sub_transaction"
+    },
+    {
+      "_id": "req_delete_sub_transaction",
+      "_type": "request",
+      "name": "Delete Sub Transaction",
+      "description": "Remove uma sub-transacao",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
+        }
+      ],
+      "parentId": "fld_sub_transaction"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000"
+      },
+      "parentId": "wrk_bills_manager"
+    },
+    {
+      "_id": "env_development",
+      "_type": "environment",
+      "name": "Development",
+      "data": {
+        "base_url": "http://localhost:8000"
+      },
+      "parentId": "env_base"
+    },
+    {
+      "_id": "env_production",
+      "_type": "environment",
+      "name": "Production",
+      "data": {
+        "base_url": "https://api.billsmanager.com"
+      },
+      "parentId": "env_base"
+    }
+  ]
+}
+
