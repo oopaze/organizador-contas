@@ -8,4 +8,5 @@ class ActorSerializer:
             "name": actor.name,
             "created_at": actor.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": actor.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_spent": actor.total_spent,
         }

@@ -9,6 +9,6 @@ class CreateActorUseCase:
         self.actor_serializer = actor_serializer
         self.actor_factory = actor_factory
 
-    def execute(self, name: str) -> dict:
-        actor = self.actor_repository.create(self.actor_factory.build(name))
+    def execute(self, name: str, user_id: int) -> dict:
+        actor = self.actor_repository.create(self.actor_factory.build(name, user_id))
         return self.actor_serializer.serialize(actor)

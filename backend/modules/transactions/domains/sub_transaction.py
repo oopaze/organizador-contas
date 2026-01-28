@@ -13,6 +13,7 @@ class SubTransactionDomain:
         updated_at: str = None,
         transaction: "TransactionDomain" = None,
         actor: "ActorDomain" = None,
+        user_provided_description: str = None,
     ):
         self.date = date
         self.description = description
@@ -23,6 +24,7 @@ class SubTransactionDomain:
         self.updated_at = updated_at
         self.transaction = transaction
         self.actor = actor
+        self.user_provided_description = user_provided_description
     
     def update(self, data: dict):
         self.date = data.get("date", self.date)
@@ -31,3 +33,4 @@ class SubTransactionDomain:
         self.installment_info = data.get("installment_info", self.installment_info)
         self.transaction = data.get("transaction", self.transaction)
         self.actor = data.get("actor", self.actor)
+        self.user_provided_description = data.get("user_provided_description", self.user_provided_description)

@@ -35,6 +35,8 @@ export interface RegisterRequest {
 export interface Actor {
   id: number;
   name: string;
+  sub_transactions?: SubTransaction[];
+  total_spent?: number;
 }
 
 export type TransactionType = 'incoming' | 'outgoing';
@@ -58,9 +60,17 @@ export interface SubTransaction {
   description: string;
   amount: string;
   installment_info?: string;
+  transaction_identifier: string;
   transaction_id: number;
   actor_id?: number;
-  actor?: Actor;
+  actor?: Actor | number;
+  user_provided_description?: string;
+}
+
+export interface TransactionDetail extends Transaction {
+  sub_transactions: SubTransaction[];
+  installment_number?: number;
+  main_transaction?: number | null;
 }
 
 export interface Bill {
@@ -74,4 +84,11 @@ export interface Bill {
 export interface TransactionFilters {
   transaction_type?: 'incoming' | 'outgoing';
   due_date?: string;
+}
+
+export interface TransactionStats {
+  incoming_total: number;
+  outgoing_total: number;
+  balance: number;
+  outgoing_from_actors: number;
 }

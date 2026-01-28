@@ -24,6 +24,7 @@ class SubTransactionFactory:
             updated_at=model.updated_at,
             transaction=self.transaction_factory.build_from_model(model.transaction),
             actor=actor,
+            user_provided_description=model.user_provided_description,
         )
     
     def build(self, data: dict, transaction: TransactionDomain, actor: ActorDomain = None) -> SubTransactionDomain:
@@ -34,4 +35,5 @@ class SubTransactionFactory:
             installment_info=data["installment_info"],
             transaction=transaction,
             actor=actor,
+            user_provided_description=data.get("user_provided_description", None),
         )

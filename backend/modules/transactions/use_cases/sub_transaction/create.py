@@ -18,9 +18,9 @@ class CreateSubTransactionUseCase:
         self.sub_transaction_serializer = sub_transaction_serializer
         self.sub_transaction_factory = sub_transaction_factory
 
-    def execute(self, data: dict) -> dict:
-        transaction = self.transaction_repository.get(data["transaction"])
-        actor = self.actor_repository.get(data["actor"]) if "actor" in data else None
+    def execute(self, data: dict, user_id: int) -> dict:
+        transaction = self.transaction_repository.get(data["transaction"], user_id)
+        actor = self.actor_repository.get(data["actor"], user_id) if "actor" in data else None
         sub_transaction = self.sub_transaction_factory.build(data, transaction, actor)
 
         created_sub_transaction = self.sub_transaction_repository.create(sub_transaction)

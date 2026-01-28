@@ -33,10 +33,11 @@ class Transaction(TimedModel, UserOwnedModel):
 class SubTransaction(TimedModel):
     date = models.DateField()
     description = models.CharField(max_length=255)
+    user_provided_description = models.CharField(max_length=255, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     installment_info = models.CharField(max_length=255)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
-    actor = models.ForeignKey(Actor, on_delete=models.CASCADE, null=True, blank=True)
+    actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"

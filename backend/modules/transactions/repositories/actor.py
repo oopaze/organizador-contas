@@ -8,23 +8,26 @@ class ActorRepository:
         self.model = model
         self.actor_factory = actor_factory
 
-    def get(self, actor_id: str) -> ActorDomain:
-        actor_instance = self.model.objects.get(id=actor_id)
+    def get(self, actor_id: str, user_id: int) -> ActorDomain:
+        actor_instance = self.model.objects.get(id=actor_id, user_id=user_id)
         return self.actor_factory.build_from_model(actor_instance)
-    
-    def get_all(self) -> list[ActorDomain]:
-        actor_instances = self.model.objects.all()
+
+    def get_all(self, user_id: int) -> list[ActorDomain]:
+        actor_instances = self.model.objects.filter(user_id=user_id)
         return [self.actor_factory.build_from_model(actor) for actor in actor_instances]
-    
+
     def create(self, actor: ActorDomain) -> ActorDomain:
-        actor_instance = self.model.objects.create(name=actor.name)
+        actor_instance = self.model.objects.create(
+            name=actor.name,
+            user_id=actor.user_id,
+        )
         return self.actor_factory.build_from_model(actor_instance)
 
     def update(self, actor: ActorDomain) -> ActorDomain:
-        actor_instance = self.model.objects.get(id=actor.id)
+        actor_instance = self.model.objects.get(id=actor.id, user_id=actor.user_id)
         actor_instance.name = actor.name
         actor_instance.save()
         return self.actor_factory.build_from_model(actor_instance)
-    
-    def delete(self, actor_id: str):
-        self.model.objects.get(id=actor_id).delete()
+
+    def delete(self, actor_id: str, user_id: int):
+        self.model.objects.get(id=actor_id, user_id=user_id).delete()

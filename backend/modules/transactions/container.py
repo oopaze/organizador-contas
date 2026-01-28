@@ -5,6 +5,7 @@ from modules.transactions.factories.actor import ActorFactory
 from modules.transactions.models import Actor, Transaction, SubTransaction
 from modules.transactions.repositories import ActorRepository, TransactionRepository, SubTransactionRepository
 from modules.transactions.serializers import ActorSerializer, TransactionSerializer, SubTransactionSerializer
+from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
 from modules.transactions.use_cases.actor import (
     CreateActorUseCase,
     DeleteActorUseCase,
@@ -18,6 +19,7 @@ from modules.transactions.use_cases.transaction import (
     GetTransactionUseCase,
     ListTransactionsUseCase,
     UpdateTransactionUseCase,
+    TransactionStatsUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
@@ -57,12 +59,16 @@ class TransactionsContainer(containers.DeclarativeContainer):
         ListActorsUseCase,
         actor_repository=actor_repository,
         actor_serializer=actor_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+        sub_transaction_serializer=sub_transaction_serializer,
     )
 
     get_actor_use_case = providers.Factory(
         GetActorUseCase,
         actor_repository=actor_repository,
         actor_serializer=actor_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+        sub_transaction_serializer=sub_transaction_serializer,
     )
 
     create_actor_use_case = providers.Factory(
@@ -93,6 +99,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         GetTransactionUseCase,
         transaction_repository=transaction_repository,
         transaction_serializer=transaction_serializer,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     create_transaction_use_case = providers.Factory(
@@ -111,6 +118,12 @@ class TransactionsContainer(containers.DeclarativeContainer):
     delete_transaction_use_case = providers.Factory(
         DeleteTransactionUseCase,
         transaction_repository=transaction_repository,
+    )
+
+    transaction_stats_use_case = providers.Factory(
+        TransactionStatsUseCase,
+        transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     create_sub_transaction_use_case = providers.Factory(

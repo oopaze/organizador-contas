@@ -10,13 +10,13 @@ async function updateSubTransactionMock(id: number, data: Partial<SubTransaction
   return mockSubTransactions[index];
 }
 
-async function updateSubTransactionReal(id: number, data: Partial<SubTransaction>): Promise<SubTransaction> {
+async function updateSubTransactionReal(id: number, data: Partial<Omit<SubTransaction, 'id'>>): Promise<SubTransaction> {
   return apiRequest<SubTransaction>(`/transactions/sub_transactions/${id}/`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
 }
 
-export async function updateSubTransaction(id: number, data: Partial<SubTransaction>): Promise<SubTransaction> {
+export async function updateSubTransaction(id: number, data: Partial<Omit<SubTransaction, 'id'>>): Promise<SubTransaction> {
   return USE_MOCK_API ? await updateSubTransactionMock(id, data) : await updateSubTransactionReal(id, data);
 }

@@ -5,5 +5,5 @@ class DeleteActorUseCase:
     def __init__(self, actor_repository: ActorRepository):
         self.actor_repository = actor_repository
 
-    def execute(self, actor_id: str):
-        self.actor_repository.delete(actor_id)
+    def execute(self, actor_id: str, user_id: int):
+        self.actor_repository.delete(actor_id, user_id)

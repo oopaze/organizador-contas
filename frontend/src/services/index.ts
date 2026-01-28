@@ -17,6 +17,7 @@ export { getTransaction } from './transactions/getTransaction';
 export { createTransaction } from './transactions/createTransaction';
 export { updateTransaction } from './transactions/updateTransaction';
 export { deleteTransaction } from './transactions/deleteTransaction';
+export { getTransactionStats } from './transactions/getTransactionStats';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';

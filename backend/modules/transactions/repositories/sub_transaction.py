@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from datetime import datetime
 
 from modules.transactions.domains import SubTransactionDomain
 from modules.transactions.models import SubTransaction
@@ -12,12 +13,67 @@ class SubTransactionRepository:
         self.model = model
         self.sub_transaction_factory = sub_transaction_factory
 
-    def get(self, sub_transaction_id: str) -> "SubTransactionDomain":
-        sub_transaction_instance = self.model.objects.get(id=sub_transaction_id)
+    def get(self, sub_transaction_id: str, user_id: int) -> "SubTransactionDomain":
+        sub_transaction_instance = self.model.objects.get(id=sub_transaction_id, transaction__user_id=user_id)
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+    
+    def get_by_actor_id(self, actor_id: str, user_id: int, due_date: str = None) -> "SubTransactionDomain":
+        sub_transaction_instances = self.model.objects.filter(actor_id=actor_id, transaction__user_id=user_id)
 
-    def get_all(self) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.model.objects.all()
+        if due_date:
+            date = datetime.strptime(due_date, "%Y-%m-%d")
+            sub_transaction_instances = sub_transaction_instances.filter(
+                transaction__due_date__month=date.month, 
+                transaction__due_date__year=date.year
+            )
+
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+
+    def get_all(self, user_id: int, due_date: str = None, actor_id: str = None) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.model.objects.filter(transaction__user_id=user_id)
+
+        if due_date:
+            date = datetime.strptime(due_date, "%Y-%m-%d")
+            sub_transaction_instances = sub_transaction_instances.filter(
+                transaction__due_date__month=date.month, 
+                transaction__due_date__year=date.year
+            )
+
+        if actor_id:
+            sub_transaction_instances = sub_transaction_instances.filter(actor_id=actor_id)
+
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+
+    def get_all_by_transaction_id(self, transaction_id: str) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.model.objects.filter(transaction_id=transaction_id)
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+    
+    def get_all_by_transaction_ids(self, transaction_ids: list[str]) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.model.objects.filter(transaction_id__in=transaction_ids)
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+    
+    def get_all_by_actor_ids(self, actor_ids: list[str], due_date: str = None) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.model.objects.filter(actor_id__in=actor_ids)
+
+        if due_date:
+            date = datetime.strptime(due_date, "%Y-%m-%d")
+            sub_transaction_instances = sub_transaction_instances.filter(
+                transaction__due_date__month=date.month, 
+                transaction__due_date__year=date.year
+            )
+
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
@@ -36,6 +92,7 @@ class SubTransactionRepository:
             installment_info=sub_transaction.installment_info,
             transaction_id=sub_transaction.transaction.id,
             actor_id=actor_id,
+            user_provided_description=sub_transaction.user_provided_description,
         )
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
@@ -51,8 +108,9 @@ class SubTransactionRepository:
         sub_transaction_instance.amount = sub_transaction.amount
         sub_transaction_instance.installment_info = sub_transaction.installment_info
         sub_transaction_instance.transaction_id = sub_transaction.transaction.id
-        if sub_transaction.actor:
-            sub_transaction_instance.actor_id = sub_transaction.actor.id
+        if isinstance(sub_transaction.actor, int):
+            sub_transaction_instance.actor_id = sub_transaction.actor
+        sub_transaction_instance.user_provided_description = sub_transaction.user_provided_description
         sub_transaction_instance.save()
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     

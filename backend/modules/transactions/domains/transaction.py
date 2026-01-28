@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from modules.pdf_reader.domains.file import FileDomain
-
 if TYPE_CHECKING:
     from modules.transactions.domains.sub_transaction import SubTransactionDomain
 

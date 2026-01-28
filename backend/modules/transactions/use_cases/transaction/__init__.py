@@ -3,6 +3,7 @@ from modules.transactions.use_cases.transaction.delete import DeleteTransactionU
 from modules.transactions.use_cases.transaction.get import GetTransactionUseCase
 from modules.transactions.use_cases.transaction.list import ListTransactionsUseCase
 from modules.transactions.use_cases.transaction.update import UpdateTransactionUseCase
+from modules.transactions.use_cases.transaction.stats import TransactionStatsUseCase
 
 __all__ = [
     "CreateTransactionUseCase",
@@ -10,4 +11,5 @@ __all__ = [
     "GetTransactionUseCase",
     "ListTransactionsUseCase",
     "UpdateTransactionUseCase",
+    "TransactionStatsUseCase",
 ]
