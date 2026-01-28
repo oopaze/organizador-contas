@@ -9,32 +9,42 @@ from modules.pdf_reader.serializers.file import FileSerializer
 from modules.pdf_reader.use_cases.transpose_file_bill_to_models import TransposeFileBillToModelsUseCase
 
 PROMPT = """
-You will receive as input a PDF file containing a CREDIT CARD STATEMENT.
+You will receive TEXT extracted from a PDF CREDIT CARD STATEMENT.
 
-Your task is ONLY to extract and organize the explicit data that represents actual financial movements and the current bill status. 
-DO NOT extract marketing offers, future installment simulations, or credit limit summaries.
+Your task is ONLY to extract explicit financial movements and the current bill status.
+Do NOT infer, estimate, or guess any value.
+
+IGNORE marketing offers, simulations, credit limits, and future statements.
+
+If a field is not explicitly present, return null.
+
+Extract:
 
 1. BASIC STATEMENT INFORMATION
-Extract only:
-- [cite_start]bill_identifier: Card name/bank (e.g., "C&A VISA GOLD") [cite: 2, 144]
-- [cite_start]total_amount: Total amount due for the current month (float) [cite: 4, 149]
-- [cite_start]due_date: Due date in YYYY-MM-DD format [cite: 6, 150]
+- bill_identifier: Card name or bank
+- total_amount: Total amount due for the current month (float)
+- due_date: Due date in YYYY-MM-DD format
 
-2. TRANSACTIONS (VALID MOVEMENTS ONLY)
-[cite_start]List ALL real transactions located in the "Lançamentos" or "Transações" section. 
-[cite_start]IGNORE sections like "Parcelamento da fatura" (simulations), "Limites", or "Próxima Fatura"[cite: 112, 113, 143].
+2. TRANSACTIONS
+Extract ONLY real transactions listed under sections like
+"Lançamentos" or "Transações".
 
-For each valid transaction (purchases, fees, payments, credits), extract:
-- [cite_start]date: Include the statement year (YYYY-MM-DD) [cite: 76, 107]
-- [cite_start]description: Text exactly as it appears [cite: 107]
-- [cite_start]amount: Float value (negative for payments/credits) [cite: 107]
-- [cite_start]installment_info: Use "installment X of Y" if present (e.g., 03/10); otherwise "not installment" [cite: 107]
+IGNORE sections like:
+"Parcelamento da fatura", "Limites", "Próxima Fatura".
 
-Mandatory formatting rules:
-- Response MUST be a single, valid JSON object.
-- DO NOT include "created_at", "updated_at", or internal IDs.
-- NO extra text, comments, or explanations.
-- All numeric values must be directly parseable (dots for decimals, no currency symbols).
+For each transaction:
+- date: YYYY-MM-DD (include statement year)
+- description: Exact text
+- amount: Float (negative for payments or credits)
+- installment_info: "installment X of Y" or "not installment"
+
+Formatting rules:
+- Output MUST be a single valid JSON object
+- No extra text or explanations
+- Use "." as decimal separator
+- No currency symbols
+
+If no transactions exist, return an empty array.
 
 Response format:
 {
