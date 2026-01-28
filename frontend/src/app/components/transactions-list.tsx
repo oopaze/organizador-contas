@@ -7,9 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible';
-import { Trash2, ChevronRight } from 'lucide-react';
+import { Trash2, ChevronRight, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { SubTransactionsTable } from './sub-transactions-table';
+import { EditTransactionDialog } from './edit-transaction-dialog';
 
 interface TransactionsListProps {
   type: 'expenses' | 'income' | 'all';
@@ -37,6 +38,14 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   loading,
 }) => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+
+  const handleEditClick = (transaction: Transaction, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTransactionToEdit(transaction);
+    setEditDialogOpen(true);
+  };
 
   const toggleRow = (id: number) => {
     setExpandedRows(prev => {
@@ -133,16 +142,25 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                               R$ {parseFloat(transaction.total_amount).toFixed(2)}
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteTransaction(transaction.id);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4 text-red-600" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => handleEditClick(transaction, e)}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteTransaction(transaction.id);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-600" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         </CollapsibleTrigger>
@@ -169,6 +187,16 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
           Nenhuma {parseTypeToPortuguese[type]} encontrada
         </div>
       )}
+
+      <EditTransactionDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => {
+          setEditDialogOpen(false);
+          onUpdate();
+        }}
+        transaction={transactionToEdit}
+      />
     </div>
   );
 };

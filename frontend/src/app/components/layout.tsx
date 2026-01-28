@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/app/components/ui/button';
-import { LogOut, Wallet, Home, Users } from 'lucide-react';
+import { LogOut, Wallet, Home, Users, MessageSquare } from 'lucide-react';
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -44,6 +44,17 @@ export const Layout: React.FC = () => {
                     title="Atores"
                   >
                     <Users className="w-5 h-5" />
+                  </Button>
+                )}
+              </NavLink>
+              <NavLink to="/chat">
+                {({ isActive }) => (
+                  <Button
+                    variant={isActive ? 'secondary' : 'ghost'}
+                    size="icon"
+                    title="Assistente IA"
+                  >
+                    <MessageSquare className="w-5 h-5" />
                   </Button>
                 )}
               </NavLink>

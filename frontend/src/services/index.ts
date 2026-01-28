@@ -37,3 +37,6 @@ export { deleteActor } from './actors/deleteActor';
 export { getBills } from './bills/getBills';
 export { getBill } from './bills/getBill';
 export { uploadBill } from './bills/uploadBill';
+
+// Chat services
+export { sendChatMessage } from './chat/sendMessage';

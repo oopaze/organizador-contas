@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/app/components/protected-route';
 import { PublicRoute } from '@/app/components/public-route';
 import { DashboardPage } from './dashboard-page';
 import { ActorsPage } from './actors-page';
+import { ChatPage } from './chat-page';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ export const AppRoutes: React.FC = () => {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/actors" element={<ActorsPage />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Route>
 
       {/* Catch all - redirect to home */}
