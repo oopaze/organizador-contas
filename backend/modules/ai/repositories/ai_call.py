@@ -16,5 +16,6 @@ class AICallRepository:
             input_used_tokens=ai_response.input_used_tokens,
             output_used_tokens=ai_response.output_used_tokens,
             response_id=ai_response.google_response.response_id,
+            model=ai_response.model,
         )
         return self.ai_response_factory.build_from_model(ai_call_instance)

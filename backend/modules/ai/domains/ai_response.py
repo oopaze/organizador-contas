@@ -13,6 +13,7 @@ class AIResponseDomain:
         created_at: str = None,
         updated_at: str = None,
         google_response: GenerateContentResponse = None,
+        model: str = None,
     ):
         self.total_tokens = total_tokens
         self.input_used_tokens = input_used_tokens
@@ -23,3 +24,4 @@ class AIResponseDomain:
         self.created_at = created_at
         self.updated_at = updated_at
         self.google_response = google_response
+        self.model = model

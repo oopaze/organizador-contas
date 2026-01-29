@@ -7,7 +7,7 @@ from modules.ai.models import AICall
 
 
 class AIResponseFactory:
-    def build_from_llm_response(self, ai_response: GenerateContentResponse, prompt: list[str]) -> AIResponseDomain:
+    def build_from_llm_response(self, ai_response: GenerateContentResponse, prompt: list[str], model: str) -> AIResponseDomain:
         return AIResponseDomain(
             total_tokens=ai_response.usage_metadata.total_token_count,
             input_used_tokens=ai_response.usage_metadata.prompt_token_count,
@@ -15,6 +15,7 @@ class AIResponseFactory:
             response=loads(ai_response.text),
             prompt=prompt,
             google_response=ai_response,
+            model=model,
         )
     
     def build_from_model(self, model: AICall) -> AIResponseDomain:
@@ -27,4 +28,5 @@ class AIResponseFactory:
             created_at=model.created_at,
             updated_at=model.updated_at,
             prompt=model.prompt,
+            model=model.model,
         )

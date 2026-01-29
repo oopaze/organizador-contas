@@ -1,7 +1,6 @@
 from django.db import models
 
 from modules.base.models import TimedModel, UserOwnedModel
-from pgvector.django import VectorField
 
 
 class Conversation(TimedModel, UserOwnedModel):

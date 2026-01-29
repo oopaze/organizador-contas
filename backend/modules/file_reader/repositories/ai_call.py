@@ -15,6 +15,7 @@ class AICallRepository:
             total_tokens=ai_call.total_tokens,
             input_used_tokens=ai_call.input_used_tokens,
             output_used_tokens=ai_call.output_used_tokens,
+            model=ai_call.model,
         )
         return self.ai_call_factory.build_from_model(ai_call_instance)
     

@@ -9,6 +9,7 @@ class AICallDomain:
         id: int = None,
         created_at: str = None,
         updated_at: str = None,
+        model: str = None,
     ):
         self.prompt = prompt
         self.response = response
@@ -18,3 +19,4 @@ class AICallDomain:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
+        self.model = model

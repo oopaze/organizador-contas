@@ -44,4 +44,5 @@ class AskUseCase:
         return self.ai_response_factory.build_from_llm_response(
             ask_fn(ai_request),
             ai_request.prompt,
+            ai_request.model,
         )
