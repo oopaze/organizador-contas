@@ -8,7 +8,7 @@ async function getBillsMock(): Promise<Bill[]> {
 }
 
 async function getBillsReal(): Promise<Bill[]> {
-  return apiRequest<Bill[]>('/pdf_reader/bills/');
+  return apiRequest<Bill[]>('/file_reader/bills/');
 }
 
 export async function getBills(): Promise<Bill[]> {

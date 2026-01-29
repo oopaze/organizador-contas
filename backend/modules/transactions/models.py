@@ -15,7 +15,7 @@ class Transaction(TimedModel, UserOwnedModel):
     due_date = models.DateField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_identifier = models.CharField(max_length=255)
-    file = models.ForeignKey("pdf_reader.File", on_delete=models.CASCADE, null=True, blank=True)
+    file = models.ForeignKey("file_reader.File", on_delete=models.CASCADE, null=True, blank=True)
     transaction_type = models.CharField(max_length=255, choices=TransactionType.choices, default=TransactionType.OUTGOING)
     is_salary = models.BooleanField(default=False)
     is_recurrent = models.BooleanField(default=False)

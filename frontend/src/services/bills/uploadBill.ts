@@ -18,7 +18,7 @@ async function uploadBillMock(file: File): Promise<Bill> {
 async function uploadBillReal(file: File): Promise<Bill> {
   const formData = new FormData();
   formData.append('file', file);
-  return apiUploadRequest<Bill>('/pdf_reader/upload/', formData);
+  return apiUploadRequest<Bill>('/file_reader/upload/', formData);
 }
 
 export async function uploadBill(file: File): Promise<Bill> {

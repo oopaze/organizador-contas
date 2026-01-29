@@ -13,7 +13,7 @@ async function getBillMock(id: number): Promise<Bill & { transactions: SubTransa
 }
 
 async function getBillReal(id: number): Promise<Bill & { transactions: SubTransaction[] }> {
-  return apiRequest<Bill & { transactions: SubTransaction[] }>(`/pdf_reader/bills/${id}/`);
+  return apiRequest<Bill & { transactions: SubTransaction[] }>(`/file_reader/bills/${id}/`);
 }
 
 export async function getBill(id: number): Promise<Bill & { transactions: SubTransaction[] }> {
