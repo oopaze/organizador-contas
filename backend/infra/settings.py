@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "modules.ai",
+    "modules.ai.chat",
     "modules.file_reader",
     "modules.base",
     "modules.transactions",

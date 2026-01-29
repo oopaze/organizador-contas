@@ -2,7 +2,6 @@ from django.core.files.uploadedfile import UploadedFile
 
 from modules.file_reader.factories.ai_call import AICallFactory
 from modules.file_reader.factories.file import FileFactory
-from modules.ai.gateways.gemini import GoogleModels
 from modules.file_reader.repositories.ai_call import AICallRepository
 from modules.file_reader.repositories.file import FileRepository
 from modules.file_reader.serializers.file import FileSerializer
@@ -89,7 +88,7 @@ class UploadFileUseCase:
         pdf_text = saved_file.extract_text_from_pdf()
 
         prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]
-        ai_call_id = self.ask_use_case.execute(prompt, GoogleModels.GEMINI_2_5_FLASH_LITE)
+        ai_call_id = self.ask_use_case.execute(prompt)
         ai_call = self.ai_call_repository.get(ai_call_id)
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)

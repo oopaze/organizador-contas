@@ -2,7 +2,7 @@ from modules.ai.domains.ai_request import AIRequestDomain
 from modules.ai.domains.ai_response import AIResponseDomain
 from modules.ai.factories.ai_request import AIRequestFactory
 from modules.ai.factories.ai_response import AIResponseFactory
-from modules.ai.gateways.gemini import GoogleLLMGateway
+from modules.ai.gateways.gemini import GoogleLLMGateway, GoogleModels
 from modules.ai.repositories.ai_call import AICallRepository
 
 
@@ -22,7 +22,7 @@ class AskUseCase:
     def execute(
         self,
         prompt: list[str],
-        model: str,
+        model: str = GoogleModels.GEMINI_2_5_FLASH_LITE,
         attachments: list[str] = None,
     ) -> AIResponseDomain:
         ai_request = self.ai_request_factory.build(prompt, model, attachments)
