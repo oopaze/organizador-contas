@@ -2,6 +2,8 @@ django==6.0
 djangorestframework==3.16.1
 dependency-injector==4.48.3
 python-dotenv==1.0.1
+psycopg2-binary==2.9.10
+pgvector==0.4.2
 
 # Linting & Formatting
 black==24.10.0

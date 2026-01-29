@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "modules.pdf_reader",
+    "modules.ai",
+    "modules.file_reader",
     "modules.base",
     "modules.transactions",
     "modules.userdata",
@@ -92,11 +93,14 @@ WSGI_APPLICATION = "infra.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DATABASE_NAME,
+        "USER": DATABASE_USER,
+        "PASSWORD": DATABASE_PASSWORD,
+        "HOST": DATABASE_HOST,
+        "PORT": DATABASE_PORT,
     }
 }
 
@@ -142,6 +146,3 @@ AUTH_USER_MODEL = "userdata.User"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-GOOGLE_LLM_API_KEY = "AIzaSyCb2UoT0yM4OhvGgTwionGQP8lY8kH0c7M"

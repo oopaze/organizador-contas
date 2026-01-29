@@ -7,7 +7,7 @@ A full-stack application for managing bills and transactions with PDF parsing ca
 ### Backend
 - **Python 3.12+** with Django 6.0
 - **Django REST Framework** for API endpoints
-- **SQLite** database (development)
+- **PostgreSQL 16** with **pgvector** extension
 - PDF parsing for bill extraction
 
 ### Frontend
@@ -44,6 +44,32 @@ bills-manager/
 
 ### Local Development
 
+#### Database (PostgreSQL with pgvector)
+
+Start only the database container for local development:
+```bash
+make db_up
+```
+
+This starts PostgreSQL on `localhost:5432` with:
+- Database: `bills_manager`
+- User: `postgres`
+- Password: `postgres`
+
+To enable the pgvector extension (run once):
+```bash
+make db_init_pgvector
+```
+
+Available database commands:
+| Command | Description |
+|---------|-------------|
+| `make db_up` | Start the PostgreSQL container |
+| `make db_down` | Stop the PostgreSQL container |
+| `make db_logs` | Follow database logs |
+| `make db_shell` | Open a psql shell to the database |
+| `make db_init_pgvector` | Enable the pgvector extension |
+
 #### Backend
 ```bash
 cd backend
@@ -63,16 +89,18 @@ yarn dev
 
 ### Using Docker
 
-Build and run both services:
+Build and run all services (db, backend, frontend):
 ```bash
 docker-compose up --build
 ```
 
-Or run services individually:
+Run only specific services:
 ```bash
-# Backend only
-docker build -f Dockerfile.backend -t bills-manager-backend .
-docker run -p 8000:8000 bills-manager-backend
+# Database only (for local development)
+docker-compose up -d db
+
+# Database + Backend
+docker-compose up -d db backend
 
 # Frontend only
 docker build -f Dockerfile.frontend -t bills-manager-frontend .
