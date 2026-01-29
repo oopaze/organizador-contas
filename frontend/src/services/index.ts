@@ -39,4 +39,7 @@ export { getBill } from './bills/getBill';
 export { uploadBill } from './bills/uploadBill';
 
 // Chat services
-export { sendChatMessage } from './chat/sendMessage';
+export { startChat } from './chat/startChat';
+export { listConversations } from './chat/listConversations';
+export { getConversationMessages } from './chat/getConversationMessages';
+export { sendMessageToConversation } from './chat/sendMessageToConversation';

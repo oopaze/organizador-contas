@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage, sendChatMessage } from '@/services';
+import {
+  ChatMessage,
+  ChatConversation,
+  startChat,
+  listConversations,
+  getConversationMessages,
+  sendMessageToConversation,
+} from '@/services';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { Textarea } from '@/app/components/ui/textarea';
 import { ScrollArea } from '@/app/components/ui/scroll-area';
-import { Send, Bot, User, MessageSquarePlus, Loader2, Sparkles } from 'lucide-react';
+import { Send, Bot, User, MessageSquarePlus, Loader2, Sparkles, MessageCircle } from 'lucide-react';
 import { cn } from '@/app/components/ui/utils';
-
-interface Conversation {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-}
 
 const suggestedQuestions = [
   'Quanto gastei esse mês?',
@@ -21,12 +22,16 @@ const suggestedQuestions = [
 ];
 
 export const ChatPage: React.FC = () => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [activeConversation, setActiveConversation] = useState<ChatConversation | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const conversationsEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,55 +41,75 @@ export const ChatPage: React.FC = () => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      const lineHeight = 24; // approximate line height in pixels
-      const maxHeight = lineHeight * 4; // 4 lines max
+      const lineHeight = 24;
+      const maxHeight = lineHeight * 4;
       textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
     }
   };
 
+  // Load conversations on mount
+  useEffect(() => {
+    const loadConversations = async () => {
+      try {
+        const data = await listConversations();
+        // Sort by created_at descending (newest first)
+        const sorted = [...data].sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setConversations(sorted);
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      } finally {
+        setIsLoadingConversations(false);
+      }
+    };
+    loadConversations();
+  }, []);
+
+  // Scroll conversations list to bottom on load
+  useEffect(() => {
+    if (!isLoadingConversations && conversations.length > 0) {
+      conversationsEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [isLoadingConversations, conversations.length]);
+
+  // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [activeConversation?.messages]);
+  }, [messages]);
+
+  // Load messages when active conversation changes
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!activeConversation) {
+        setMessages([]);
+        setIsLoadingMessages(false);
+        return;
+      }
+      // Clear messages and show loading state immediately
+      setMessages([]);
+      setIsLoadingMessages(true);
+      try {
+        const data = await getConversationMessages(activeConversation.id);
+        setMessages(data);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+    loadMessages();
+  }, [activeConversation?.id]);
 
   const createNewConversation = () => {
-    const newConversation: Conversation = {
-      id: crypto.randomUUID(),
-      title: 'Nova conversa',
-      messages: [],
-    };
-    setConversations(prev => [newConversation, ...prev]);
-    setActiveConversation(newConversation);
+    setActiveConversation(null);
+    setMessages([]);
   };
 
   const handleSendMessage = async (message?: string) => {
     const messageToSend = message || inputMessage.trim();
     if (!messageToSend || isLoading) return;
 
-    let conversation = activeConversation;
-    if (!conversation) {
-      conversation = {
-        id: crypto.randomUUID(),
-        title: messageToSend.slice(0, 30) + (messageToSend.length > 30 ? '...' : ''),
-        messages: [],
-      };
-      setConversations(prev => [conversation!, ...prev]);
-    }
-
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: messageToSend,
-      timestamp: new Date(),
-    };
-
-    const updatedConversation = {
-      ...conversation,
-      messages: [...conversation.messages, userMessage],
-    };
-    setActiveConversation(updatedConversation);
-    setConversations(prev =>
-      prev.map(c => (c.id === updatedConversation.id ? updatedConversation : c))
-    );
     setInputMessage('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -92,15 +117,37 @@ export const ChatPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const aiResponse = await sendChatMessage(messageToSend);
-      const finalConversation = {
-        ...updatedConversation,
-        messages: [...updatedConversation.messages, aiResponse],
-      };
-      setActiveConversation(finalConversation);
-      setConversations(prev =>
-        prev.map(c => (c.id === finalConversation.id ? finalConversation : c))
-      );
+      if (!activeConversation) {
+        // Start a new conversation
+        const response = await startChat(messageToSend);
+        const newConversation = {
+          ...response.conversation,
+          title: response.conversation.title,
+        };
+        setConversations(prev => [newConversation, ...prev]);
+        setActiveConversation(newConversation);
+        setMessages([response.user_message, response.ai_message]);
+      } else {
+        // Send message to existing conversation
+        // Optimistically add user message
+        const tempUserMessage: ChatMessage = {
+          id: Date.now(),
+          role: 'human',
+          content: messageToSend,
+          ai_call: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, tempUserMessage]);
+
+        const response = await sendMessageToConversation(activeConversation.id, messageToSend);
+        // Replace temp message with real ones
+        setMessages(prev => [
+          ...prev.filter(m => m.id !== tempUserMessage.id),
+          response.user_message,
+          response.ai_message,
+        ]);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -121,37 +168,80 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)] gap-4 -mt-4">
+    <div className="flex h-[calc(100vh-120px)] gap-2 -mt-4">
       {/* Sidebar */}
       <div className="w-64 flex-shrink-0">
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col overflow-hidden gap-0">
           <div className="p-3 border-b">
             <Button onClick={createNewConversation} className="w-full" variant="outline">
               <MessageSquarePlus className="w-4 h-4 mr-2" />
               Nova Conversa
             </Button>
           </div>
-          <ScrollArea className="flex-1 p-2">
-            {conversations.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhuma conversa ainda
-              </p>
+          <ScrollArea className="flex-1 min-h-0 p-2">
+            {isLoadingConversations ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <MessageCircle className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  Nenhuma conversa ainda
+                </p>
+                <p className="text-xs text-muted-foreground/70 text-center mt-1">
+                  Comece uma nova conversa!
+                </p>
+              </div>
             ) : (
-              <div className="space-y-1">
-                {conversations.map(conv => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setActiveConversation(conv)}
-                    className={cn(
-                      'w-full text-left px-3 py-2 rounded-md text-sm truncate transition-colors',
-                      activeConversation?.id === conv.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted'
-                    )}
-                  >
-                    {conv.title}
-                  </button>
-                ))}
+              <div className="flex flex-col-reverse">
+                <div ref={conversationsEndRef} />
+                {[...conversations].reverse().map((conv, index, arr) => {
+                  const isActive = activeConversation?.id === conv.id;
+                  const date = new Date(conv.created_at);
+                  const formattedDate = date.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'short',
+                  });
+                  const isLast = index === arr.length - 1;
+
+                  return (
+                    <div key={conv.id}>
+                      {!isLast && (
+                        <div className="mx-3 my-1 border-t border-border/50" />
+                      )}
+                      <button
+                        onClick={() => setActiveConversation(conv)}
+                        className={cn(
+                          'w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 group',
+                          isActive
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'hover:bg-muted/80'
+                        )}
+                      >
+                        <div className="flex items-start gap-2">
+                          <MessageCircle className={cn(
+                            'w-4 h-4 mt-0.5 flex-shrink-0',
+                            isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+                          )} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium line-clamp-2" title={conv.title}>
+                              {conv.title}
+                            </p>
+                            <p className={cn(
+                              'text-xs mt-0.5',
+                              isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                            )}>
+                              {formattedDate}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
@@ -159,10 +249,15 @@ export const ChatPage: React.FC = () => {
       </div>
 
       {/* Chat Area */}
-      <Card className="flex-1 flex flex-col">
+      <Card className="flex-1 flex flex-col gap-0 overflow-hidden">
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4">
-          {!activeConversation || activeConversation.messages.length === 0 ? (
+        <ScrollArea className="flex-1 min-h-0 p-4">
+          {isLoadingMessages ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground mt-3">Carregando mensagens...</p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
@@ -185,14 +280,25 @@ export const ChatPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            // Messages will be added in the next edit
-            <div className="space-y-4">
-              {activeConversation.messages.map(msg => (
+            <div className="flex flex-col-reverse gap-3">
+              <div ref={messagesEndRef} />
+              {isLoading && (
+                <div className="flex gap-3 justify-start mb-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="bg-muted rounded-lg px-4 py-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  </div>
+                </div>
+              )}
+              {[...messages].reverse().map((msg, index) => (
                 <div
                   key={msg.id}
                   className={cn(
                     'flex gap-3',
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    msg.role === 'human' ? 'justify-end' : 'justify-start',
+                    index !== messages.length - 1 && 'mb-4'
                   )}
                 >
                   {msg.role === 'assistant' && (
@@ -203,31 +309,20 @@ export const ChatPage: React.FC = () => {
                   <div
                     className={cn(
                       'max-w-[70%] rounded-lg px-4 py-2',
-                      msg.role === 'user'
+                      msg.role === 'human'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
                     )}
                   >
                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   </div>
-                  {msg.role === 'user' && (
+                  {msg.role === 'human' && (
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                       <User className="w-4 h-4 text-primary-foreground" />
                     </div>
                   )}
                 </div>
               ))}
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="bg-muted rounded-lg px-4 py-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
             </div>
           )}
         </ScrollArea>

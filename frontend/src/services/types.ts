@@ -94,17 +94,39 @@ export interface TransactionStats {
 }
 
 // Chat types
+export interface AICall {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  total_tokens: number;
+  input_used_tokens: number;
+  output_used_tokens: number;
+}
+
 export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
+  id: number;
+  role: 'human' | 'assistant';
   content: string;
-  timestamp: Date;
+  ai_call: AICall | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ChatConversation {
-  id: string;
+  id: number;
   title: string;
+  created_at: string;
+  updated_at: string;
   messages: ChatMessage[];
-  createdAt: Date;
-  updatedAt: Date;
+}
+
+export interface StartChatResponse {
+  conversation: ChatConversation;
+  user_message: ChatMessage;
+  ai_message: ChatMessage;
+}
+
+export interface SendMessageResponse {
+  user_message: ChatMessage;
+  ai_message: ChatMessage;
 }
