@@ -15,11 +15,12 @@ class MessageFactory:
         return MessageDomain(
             role=model.role,
             content=model.content,
-            ai_call=self.ai_call_factory.build_from_model(model.ai_call),
+            ai_call=self.ai_call_factory.build_from_model(model.ai_call) if model.ai_call else None,
             conversation_id=model.conversation_id,
             id=model.id,
             created_at=model.created_at,
             updated_at=model.updated_at,
+            embedding_id=model.embedding_id,
         )
     
     def build(self, content: str, conversation_id: int, role: str = Message.Role.HUMAN) -> MessageDomain:

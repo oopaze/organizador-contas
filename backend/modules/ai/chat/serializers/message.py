@@ -20,3 +20,9 @@ class MessageSerializer:
             "created_at": message.created_at,
             "updated_at": message.updated_at,
         }
+    
+    def serialize_only_content_and_role(self, message: "MessageDomain") -> dict:
+        return {
+            "role": message.role,
+            "content": message.content,
+        }

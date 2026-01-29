@@ -1,9 +1,9 @@
 from dependency_injector import containers, providers
 
-from modules.ai.chat.factories import ConversationFactory, MessageFactory, AICallFactory
+from modules.ai.chat.factories import ConversationFactory, MessageFactory, AICallFactory, EmbeddingCallFactory
 from modules.ai.chat.models import Conversation, Message
-from modules.ai.models import AICall
-from modules.ai.chat.repositories import ConversationRepository, MessageRepository, AICallRepository
+from modules.ai.models import AICall, EmbeddingCall
+from modules.ai.chat.repositories import ConversationRepository, MessageRepository, AICallRepository, EmbeddingCallRepository
 from modules.ai.chat.serializers import ConversationSerializer, MessageSerializer, AICallSerializer
 from modules.ai.chat.use_cases.conversion import StartConversionUseCase, ListConversationsUseCase
 from modules.ai.chat.use_cases.conversion.message import ListMessagesUseCase, SendConversionMessageUseCase
@@ -12,16 +12,19 @@ from modules.ai.chat.use_cases.conversion.message import ListMessagesUseCase, Se
 class AIChatContainer(containers.DeclarativeContainer):
     # GATEWAYS
     ask_use_case = providers.Dependency()
+    create_embedding_use_case = providers.Dependency()
 
     # FACTORIES
     ai_call_factory = providers.Factory(AICallFactory)
     conversation_factory = providers.Factory(ConversationFactory)
     message_factory = providers.Factory(MessageFactory, ai_call_factory=ai_call_factory)
+    embedding_call_factory = providers.Factory(EmbeddingCallFactory)
 
     # REPOSITORIES
     ai_call_repository = providers.Factory(AICallRepository, model=AICall, ai_call_factory=ai_call_factory)
     conversation_repository = providers.Factory(ConversationRepository, model=Conversation, conversation_factory=conversation_factory)
     message_repository = providers.Factory(MessageRepository, model=Message, message_factory=message_factory)
+    embedding_call_repository = providers.Factory(EmbeddingCallRepository, model=EmbeddingCall, embedding_call_factory=embedding_call_factory)
 
     # SERIALIZERS
     ai_call_serializer = providers.Factory(AICallSerializer)
@@ -44,6 +47,8 @@ class AIChatContainer(containers.DeclarativeContainer):
     send_conversion_message_use_case = providers.Factory(
         SendConversionMessageUseCase,
         ask_use_case=ask_use_case,
+        create_embedding_use_case=create_embedding_use_case,
+        embedding_call_repository=embedding_call_repository,
         ai_call_repository=ai_call_repository,
         conversation_repository=conversation_repository,
         message_repository=message_repository,
@@ -54,6 +59,8 @@ class AIChatContainer(containers.DeclarativeContainer):
     start_conversion_use_case = providers.Factory(
         StartConversionUseCase,
         ask_use_case=ask_use_case,
+        create_embedding_use_case=create_embedding_use_case,
+        embedding_call_repository=embedding_call_repository,
         ai_call_repository=ai_call_repository,
         conversation_repository=conversation_repository,
         conversation_factory=conversation_factory,

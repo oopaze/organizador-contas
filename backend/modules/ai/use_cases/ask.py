@@ -1,3 +1,5 @@
+from google.genai.types import ToolListUnion
+
 from modules.ai.domains.ai_request import AIRequestDomain
 from modules.ai.domains.ai_response import AIResponseDomain
 from modules.ai.factories.ai_request import AIRequestFactory
@@ -24,8 +26,10 @@ class AskUseCase:
         prompt: list[str],
         model: str = GoogleModels.GEMINI_2_5_FLASH_LITE,
         attachments: list[str] = None,
+        history: list[dict] = None,
+        tools: list[ToolListUnion] = None,
     ) -> AIResponseDomain:
-        ai_request = self.ai_request_factory.build(prompt, model, attachments)
+        ai_request = self.ai_request_factory.build(prompt, model, attachments, history, tools)
         response = self.ask_ai(ai_request)
         ai_response = self.ai_call_repository.create(response)
         return ai_response.id

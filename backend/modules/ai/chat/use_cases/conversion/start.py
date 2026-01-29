@@ -2,10 +2,13 @@ from typing import TypedDict
 
 from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_TITLE_FROM_MESSAGE_PROMPT, ASK_USER_MESSAGE_PROMPT
 from modules.ai.use_cases.ask import AskUseCase
+from modules.ai.use_cases.create_embedding import CreateEmbeddingUseCase
 from modules.ai.chat.repositories import ConversationRepository, MessageRepository, AICallRepository
 from modules.ai.chat.factories import ConversationFactory, MessageFactory
 from modules.ai.chat.models import Message
 from modules.ai.chat.serializers import ConversationSerializer, MessageSerializer
+from modules.ai.chat.domains import MessageDomain
+from modules.ai.gateways.gemini import GoogleModels
 
 
 class StartConversionData(TypedDict):
@@ -14,9 +17,12 @@ class StartConversionData(TypedDict):
 
 
 class StartConversionUseCase:
+    model = GoogleModels.GEMINI_2_5_FLASH
+    
     def __init__(
         self,
         ask_use_case: AskUseCase,
+        create_embedding_use_case: CreateEmbeddingUseCase,
         ai_call_repository: AICallRepository,
         conversation_repository: ConversationRepository,
         conversation_factory: ConversationFactory,
@@ -26,6 +32,8 @@ class StartConversionUseCase:
         message_serializer: MessageSerializer,
     ):
         self.ask_use_case = ask_use_case
+        self.create_embedding_use_case = create_embedding_use_case
+
         self.ai_call_repository = ai_call_repository
         self.conversation_repository = conversation_repository
         self.conversation_factory = conversation_factory
@@ -40,7 +48,7 @@ class StartConversionUseCase:
 
         prompts_for_title = [SCOPE_BOUNDARIES_PROMPT, ASK_TITLE_FROM_MESSAGE_PROMPT.format(content=content)]
 
-        ai_call_id = self.ask_use_case.execute(prompts_for_title)
+        ai_call_id = self.ask_use_case.execute(prompts_for_title, model=self.model)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         conversation = self.conversation_repository.create(
@@ -51,14 +59,21 @@ class StartConversionUseCase:
         user_message = self.message_factory.build(content, conversation.id)
 
         prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message)
+        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.model)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)
+        if user_message.should_create_embedding():
+            embedding_id = self.create_embedding_use_case.execute(user_message.content, model=self.model)
+            user_message.update_embedding_id(embedding_id)
         user_message = self.message_repository.create(user_message)
 
         ai_message = self.message_factory.build(ai_call.response["text"], conversation.id, Message.Role.ASSISTANT)
         ai_message.update_ai_call(ai_call)
+        if ai_message.should_create_embedding():
+            embedding_id = self.create_embedding_use_case.execute(ai_message.content, model=self.model)
+            ai_message.update_embedding_id(embedding_id)
+        
         ai_message = self.message_repository.create(ai_message)
 
         return {
@@ -66,3 +81,4 @@ class StartConversionUseCase:
             "user_message": self.message_serializer.serialize(user_message),
             "ai_message": self.message_serializer.serialize(ai_message),
         }
+    

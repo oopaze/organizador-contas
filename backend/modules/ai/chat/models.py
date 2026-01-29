@@ -1,6 +1,7 @@
 from django.db import models
 
 from modules.base.models import TimedModel, UserOwnedModel
+from pgvector.django import VectorField
 
 
 class Conversation(TimedModel, UserOwnedModel):
@@ -17,3 +18,4 @@ class Message(TimedModel):
     content = models.TextField()
     conversation = models.ForeignKey(Conversation, on_delete=models.DO_NOTHING)
     ai_call = models.ForeignKey("ai.AICall", on_delete=models.DO_NOTHING, null=True, blank=True)
+    embedding = models.ForeignKey("ai.EmbeddingCall", on_delete=models.DO_NOTHING, null=True, blank=True)
