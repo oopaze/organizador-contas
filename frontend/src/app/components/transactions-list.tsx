@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { SubTransactionsTable } from './sub-transactions-table';
 import { EditTransactionDialog } from './edit-transaction-dialog';
 import { AddSubTransactionDialog } from './add-sub-transaction-dialog';
+import { ConfirmationDialog } from './confirmation-dialog';
 
 interface TransactionsListProps {
   type: 'expenses' | 'income' | 'all';
@@ -43,6 +44,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [addSubDialogOpen, setAddSubDialogOpen] = useState(false);
   const [transactionIdForSub, setTransactionIdForSub] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEditClick = (transaction: Transaction, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -73,17 +77,26 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
     return t.transaction_type === parseTypeToTransactionType[type];
   }), [transactions, type]);
 
-  const handleDeleteTransaction = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
-    
+  const handleDeleteClick = (transaction: Transaction, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTransactionToDelete(transaction);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await deleteTransaction(id);
-      toast.success('Transação excluída');
+      await deleteTransaction(transactionToDelete.id);
+      toast.success('Transação excluída com sucesso');
+      setDeleteDialogOpen(false);
+      setTransactionToDelete(null);
       onUpdate();
     } catch (error) {
-      debugger
-
       toast.error('Falha ao excluir transação');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -175,10 +188,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteTransaction(transaction.id);
-                                  }}
+                                  onClick={(e) => handleDeleteClick(transaction, e)}
                                   title="Excluir transação"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
@@ -232,6 +242,18 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
           }}
         />
       )}
+
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Excluir transação"
+        description={`Tem certeza que deseja excluir a transação "${transactionToDelete?.transaction_identifier}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
