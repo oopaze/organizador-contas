@@ -151,6 +151,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         UpdateSubTransactionUseCase,
         sub_transaction_repository=sub_transaction_repository,
         sub_transaction_serializer=sub_transaction_serializer,
+        actor_repository=actor_repository,
     )
 
     delete_sub_transaction_use_case = providers.Factory(

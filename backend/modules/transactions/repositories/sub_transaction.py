@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 
-from modules.transactions.domains import SubTransactionDomain
+from modules.transactions.domains import SubTransactionDomain, ActorDomain
 from modules.transactions.models import SubTransaction
 
 if TYPE_CHECKING:
@@ -12,13 +12,14 @@ class SubTransactionRepository:
     def __init__(self, model: SubTransaction, sub_transaction_factory: "SubTransactionFactory"):
         self.model = model
         self.sub_transaction_factory = sub_transaction_factory
+        self.queryset = self.model.objects.order_by("id")
 
     def get(self, sub_transaction_id: str, user_id: int) -> "SubTransactionDomain":
-        sub_transaction_instance = self.model.objects.get(id=sub_transaction_id, transaction__user_id=user_id)
+        sub_transaction_instance = self.queryset.get(id=sub_transaction_id, transaction__user_id=user_id)
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
     def get_by_actor_id(self, actor_id: str, user_id: int, due_date: str = None) -> "SubTransactionDomain":
-        sub_transaction_instances = self.model.objects.filter(actor_id=actor_id, transaction__user_id=user_id)
+        sub_transaction_instances = self.queryset.filter(actor_id=actor_id, transaction__user_id=user_id)
 
         if due_date:
             date = datetime.strptime(due_date, "%Y-%m-%d")
@@ -33,7 +34,7 @@ class SubTransactionRepository:
         ]
 
     def get_all(self, user_id: int, due_date: str = None, actor_id: str = None) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.model.objects.filter(transaction__user_id=user_id)
+        sub_transaction_instances = self.queryset.filter(transaction__user_id=user_id)
 
         if due_date:
             date = datetime.strptime(due_date, "%Y-%m-%d")
@@ -51,21 +52,21 @@ class SubTransactionRepository:
         ]
 
     def get_all_by_transaction_id(self, transaction_id: str) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.model.objects.filter(transaction_id=transaction_id)
+        sub_transaction_instances = self.queryset.filter(transaction_id=transaction_id)
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
         ]
     
     def get_all_by_transaction_ids(self, transaction_ids: list[str]) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.model.objects.filter(transaction_id__in=transaction_ids)
+        sub_transaction_instances = self.queryset.filter(transaction_id__in=transaction_ids)
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
         ]
     
     def get_all_by_actor_ids(self, actor_ids: list[str], due_date: str = None) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.model.objects.filter(actor_id__in=actor_ids)
+        sub_transaction_instances = self.queryset.filter(actor_id__in=actor_ids)
 
         if due_date:
             date = datetime.strptime(due_date, "%Y-%m-%d")
@@ -102,17 +103,26 @@ class SubTransactionRepository:
         ]
     
     def update(self, sub_transaction: "SubTransactionDomain") -> "SubTransactionDomain":
-        sub_transaction_instance = self.model.objects.get(id=sub_transaction.id)
+        sub_transaction_instance = self.queryset.get(id=sub_transaction.id)
         sub_transaction_instance.date = sub_transaction.date
         sub_transaction_instance.description = sub_transaction.description
         sub_transaction_instance.amount = sub_transaction.amount
         sub_transaction_instance.installment_info = sub_transaction.installment_info
         sub_transaction_instance.transaction_id = sub_transaction.transaction.id
-        if isinstance(sub_transaction.actor, int):
-            sub_transaction_instance.actor_id = sub_transaction.actor
+        sub_transaction_instance.actor_id = sub_transaction.actor_id 
         sub_transaction_instance.user_provided_description = sub_transaction.user_provided_description
         sub_transaction_instance.save()
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
     def delete(self, sub_transaction_id: str):
         self.model.objects.get(id=sub_transaction_id).delete()
+
+    def duplicate(self, sub_transaction_id: str, extra_data: dict = {}) -> "SubTransactionDomain":
+        sub_transaction_instance = self.queryset.get(id=sub_transaction_id)
+        sub_transaction_instance.pk = None
+
+        for key, value in extra_data.items():
+            setattr(sub_transaction_instance, key, value)
+        
+        sub_transaction_instance.save()
+        return self.sub_transaction_factory.build_from_model(sub_transaction_instance)

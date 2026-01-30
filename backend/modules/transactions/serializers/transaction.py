@@ -21,4 +21,5 @@ class TransactionSerializer:
             "recurrence_count": transaction.recurrence_count,
             "installment_number": transaction.installment_number,
             "main_transaction": transaction.main_transaction.id if transaction.main_transaction else None,
+            "amount_from_actor": transaction.amount_from_actor if transaction.amount_from_actor else None,
         }

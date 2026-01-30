@@ -18,6 +18,7 @@ class TransactionFactory:
             installment_number=model.installment_number,
             main_transaction=model.main_transaction,
             recurrence_count=model.recurrence_count,
+            amount_from_actor=model.get_total_from_actors(),
         )
     
     def build(self, data: dict) -> TransactionDomain:

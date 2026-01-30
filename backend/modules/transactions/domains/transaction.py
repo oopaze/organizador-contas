@@ -21,6 +21,7 @@ class TransactionDomain:
         installment_number: int = None,
         main_transaction: "TransactionDomain" = None,
         recurrence_count: int = None,
+        amount_from_actor: float = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -36,6 +37,7 @@ class TransactionDomain:
         self.installment_number = installment_number
         self.main_transaction = main_transaction
         self.recurrence_count = recurrence_count
+        self.amount_from_actor = amount_from_actor
 
     def set_sub_transactions(self, sub_transactions: list["SubTransactionDomain"]):
         self.sub_transactions = sub_transactions

@@ -28,6 +28,9 @@ class Transaction(TimedModel, UserOwnedModel):
     
     def __repr__(self):
         return f"<Transaction {self.id} - {self.transaction_identifier} - {self.due_date}>"
+    
+    def get_total_from_actors(self) -> float:
+        return sum([sub_transaction.amount for sub_transaction in self.subtransaction_set.all() if sub_transaction.actor_id])
 
 
 class SubTransaction(TimedModel):
