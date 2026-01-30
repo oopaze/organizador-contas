@@ -7,17 +7,18 @@ class TransactionRepository:
     def __init__(self, model: Transaction, transaction_factory: TransactionFactory):
         self.model = model
         self.transaction_factory = transaction_factory
+        self.queryset = self.model.objects.order_by("id")
 
     def filter(self, filters: dict) -> list["TransactionDomain"]:
-        queryset = self.model.objects.filter(**filters)
+        queryset = self.queryset.filter(**filters)
         return [self.transaction_factory.build_from_model(transaction) for transaction in queryset]
 
     def get(self, transaction_id: str, user_id: int) -> "TransactionDomain":
-        transaction_instance = self.model.objects.get(id=transaction_id, user_id=user_id)
+        transaction_instance = self.queryset.get(id=transaction_id, user_id=user_id)
         return self.transaction_factory.build_from_model(transaction_instance)
     
     def get_all(self, user_id: int) -> list["TransactionDomain"]:
-        transaction_instances = self.model.objects.filter(user_id=user_id)
+        transaction_instances = self.queryset.filter(user_id=user_id)
         return [self.transaction_factory.build_from_model(transaction) for transaction in transaction_instances]
     
     def create(self, transaction: "TransactionDomain") -> "TransactionDomain":
@@ -36,7 +37,7 @@ class TransactionRepository:
         return self.transaction_factory.build_from_model(transaction_instance)
     
     def update(self, transaction: "TransactionDomain") -> "TransactionDomain":
-        transaction_instance = self.model.objects.get(id=transaction.id, user_id=transaction.user_id)
+        transaction_instance = self.queryset.get(id=transaction.id, user_id=transaction.user_id)
         transaction_instance.due_date = transaction.due_date
         transaction_instance.total_amount = transaction.total_amount
         transaction_instance.transaction_identifier = transaction.transaction_identifier
@@ -47,5 +48,5 @@ class TransactionRepository:
         return self.transaction_factory.build_from_model(transaction_instance)
     
     def delete(self, transaction_id: str, user_id: int):
-        self.model.objects.get(id=transaction_id, user_id=user_id).delete()
+        self.queryset.get(id=transaction_id, user_id=user_id).delete()
 
