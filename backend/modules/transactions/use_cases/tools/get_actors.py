@@ -35,6 +35,9 @@ class GetActorsToolUseCase:
         self.user_id = user_id
 
     def execute(self, due_date_start: str, due_date_end: str) -> str:
+        return self.get_actors(due_date_start, due_date_end)
+
+    def get_actors(self, due_date_start: str, due_date_end: str) -> str:
         """
         Get actors. Use this tool when you need to list the actors in a specific period.
 
@@ -42,6 +45,7 @@ class GetActorsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
+        print("GetActorsToolUseCase.execute", due_date_start, due_date_end)
         actors = self.actor_repository.get_all(self.user_id)
         filters = {
             "transaction__due_date__gte": due_date_start, 

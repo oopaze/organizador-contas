@@ -19,6 +19,7 @@ class TransactionFactory:
             main_transaction=model.main_transaction,
             recurrence_count=model.recurrence_count,
             amount_from_actor=model.get_total_from_actors(),
+            file_id=model.file.id if model.file else None,
         )
     
     def build_from_serialized(self, serialized_transaction: dict) -> TransactionDomain:

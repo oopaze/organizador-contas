@@ -19,7 +19,7 @@ class CreateSubTransactionUseCase:
         self.sub_transaction_factory = sub_transaction_factory
 
     def execute(self, data: dict, user_id: int) -> dict:
-        transaction = self.transaction_repository.get(data["transaction"], user_id)
+        transaction = self.transaction_repository.get(data["transaction_id"], user_id)
         actor = self.actor_repository.get(data["actor"], user_id) if "actor" in data else None
         sub_transaction = self.sub_transaction_factory.build(data, transaction, actor)
 

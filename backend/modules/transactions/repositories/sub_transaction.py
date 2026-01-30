@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
+from django.utils import timezone
 
 from modules.transactions.domains import SubTransactionDomain
 from modules.transactions.models import SubTransaction
@@ -12,7 +13,16 @@ class SubTransactionRepository:
     def __init__(self, model: SubTransaction, sub_transaction_factory: "SubTransactionFactory"):
         self.model = model
         self.sub_transaction_factory = sub_transaction_factory
-        self.queryset = self.model.objects.order_by("id").select_related("actor").select_related("transaction")
+
+    @property
+    def queryset(self):
+        return (
+            self.model.objects
+                .order_by("id")
+                .select_related("actor")
+                .select_related("transaction")
+                .exclude(deleted_at__isnull=False)
+        )
 
     def get(self, sub_transaction_id: str, user_id: int) -> "SubTransactionDomain":
         sub_transaction_instance = self.queryset.get(id=sub_transaction_id, transaction__user_id=user_id)
@@ -129,7 +139,11 @@ class SubTransactionRepository:
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
     def delete(self, sub_transaction_id: str):
-        self.model.objects.get(id=sub_transaction_id).delete()
+        self.queryset.filter(id=sub_transaction_id).update(deleted_at=timezone.now())
+
+    def delete_many(self, sub_transactions: list["SubTransactionDomain"]):
+        sub_transaction_ids = [sub_transaction.id for sub_transaction in sub_transactions]
+        self.queryset.filter(id__in=sub_transaction_ids).update(deleted_at=timezone.now())
 
     def duplicate(self, sub_transaction_id: str, extra_data: dict = {}) -> "SubTransactionDomain":
         sub_transaction_instance = self.queryset.get(id=sub_transaction_id)

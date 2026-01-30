@@ -2,10 +2,12 @@ from modules.transactions.domains import SubTransactionDomain
 from modules.transactions.serializers import ActorSerializer
 
 SUB_TRANSACTION_FOR_TOOL_PROMPT = """
-SubTransaction {description} (#{sub_transaction_id}):
+SubTransaction {description}:
+- id: {sub_transaction_id}
 - Valor: {amount}
 - Parcela: {installment_info}
 - Ator: {actor}
+- Tipo: {type}
 """
 
 class SubTransactionSerializer:
@@ -37,6 +39,7 @@ class SubTransactionSerializer:
             amount=sub_transaction.amount,
             installment_info=sub_transaction.installment_info,
             actor=sub_transaction.actor_id if sub_transaction.actor else "Nenhum",
+            type="Entrada" if sub_transaction.amount < 0 else "Saída",
         )
     
     def serialize_many_for_tool(self, sub_transactions: list["SubTransactionDomain"]) -> str:

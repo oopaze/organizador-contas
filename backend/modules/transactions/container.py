@@ -120,12 +120,15 @@ class TransactionsContainer(containers.DeclarativeContainer):
         transaction_repository=transaction_repository,
         transaction_serializer=transaction_serializer,
         transaction_factory=transaction_factory,
+        sub_transaction_factory=sub_transaction_factory,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     update_transaction_use_case = providers.Factory(
         UpdateTransactionUseCase,
         transaction_repository=transaction_repository,
         transaction_serializer=transaction_serializer,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     delete_transaction_use_case = providers.Factory(
@@ -218,16 +221,12 @@ class TransactionsContainer(containers.DeclarativeContainer):
         user_id=user_id,
     )
 
-    tools_use_cases = providers.List(
-        get_actors_tool_use_case,
-        get_actor_detail_tool_use_case,
-        get_actor_stats_tool_use_case,
-        get_sub_transactions_from_transaction_tool_use_case,
-        get_user_general_stats_tool_use_case,
-        get_transactions_tool_use_case,
-    )
-
     get_tools_for_ai_use_case = providers.Factory(
         GetToolsForAIUseCase,
-        tools_use_cases=tools_use_cases,
+        get_actors_tool_use_case=get_actors_tool_use_case,
+        get_actor_detail_tool_use_case=get_actor_detail_tool_use_case,
+        get_actor_stats_tool_use_case=get_actor_stats_tool_use_case,
+        get_sub_transactions_from_transaction_tool_use_case=get_sub_transactions_from_transaction_tool_use_case,
+        get_user_general_stats_tool_use_case=get_user_general_stats_tool_use_case,
+        get_transactions_tool_use_case=get_transactions_tool_use_case,
     )

@@ -3,13 +3,15 @@ from modules.transactions.serializers.sub_transaction import SubTransactionSeria
 
 
 TRANSACTION_FOR_TOOL_PROMPT = """
-Transaction {transaction_identifier} (#{transaction_id}):
+Transaction {transaction_identifier}:
+- id: {transaction_id}
 - Due Date: {due_date}
 - Total Amount: {total_amount}
 - Transaction Type: {transaction_type}
 - Recurrence Count: {recurrence_count}
 - Installment Number: {installment_number}
 - Main Transaction: {main_transaction}
+- Is Credit Card: {is_credit_card}
 """
 
 
@@ -45,6 +47,7 @@ class TransactionSerializer:
             recurrence_count=transaction.recurrence_count,
             installment_number=transaction.installment_number,
             main_transaction=transaction.main_transaction.id if transaction.main_transaction else None,
+            is_credit_card=transaction.file_id is not None,
         )
     
     def serialize_many_for_tool(self, transactions: list["TransactionDomain"]) -> str:

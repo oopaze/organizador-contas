@@ -22,6 +22,7 @@ class TransactionDomain:
         main_transaction: "TransactionDomain" = None,
         recurrence_count: int = None,
         amount_from_actor: float = None,
+        file_id: int = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -38,6 +39,7 @@ class TransactionDomain:
         self.main_transaction = main_transaction
         self.recurrence_count = recurrence_count
         self.amount_from_actor = amount_from_actor
+        self.file_id = file_id
 
     def set_sub_transactions(self, sub_transactions: list["SubTransactionDomain"]):
         self.sub_transactions = sub_transactions
@@ -46,6 +48,7 @@ class TransactionDomain:
         self.due_date = data.get("due_date", self.due_date)
         self.total_amount = data.get("total_amount", self.total_amount)
         self.transaction_identifier = data.get("transaction_identifier", self.transaction_identifier)
-        self.file = data.get("file", self.file)
         self.transaction_type = data.get("transaction_type", self.transaction_type)
         self.is_salary = data.get("is_salary", self.is_salary)
+
+

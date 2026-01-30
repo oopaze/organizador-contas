@@ -37,6 +37,9 @@ class GetActorStatsToolUseCase:
         self.user_id = user_id
 
     def execute(self, due_date_start: str, due_date_end: str) -> str:
+        return self.get_actor_stats(due_date_start, due_date_end)
+
+    def get_actor_stats(self, due_date_start: str, due_date_end: str) -> str:
         """
         Get actor stats. Use this tool to get a resume of the actors spent in a specific period.
 
@@ -44,5 +47,6 @@ class GetActorStatsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
+        print("GetActorStatsToolUseCase.execute", due_date_start, due_date_end)
         stats = self.actor_stats_use_case.execute(self.user_id, due_date_start, due_date_end)
         return ACTOR_STATS_FOR_TOOL_PROMPT.format(**stats)

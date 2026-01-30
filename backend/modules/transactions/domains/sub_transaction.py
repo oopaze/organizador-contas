@@ -17,7 +17,7 @@ class SubTransactionDomain:
         actor: "ActorDomain" = None,
         user_provided_description: str = "",
     ):
-        self.date = date
+        self.date = date if date else transaction.due_date
         self.description = description
         self.installment_info = installment_info
         self.id = id

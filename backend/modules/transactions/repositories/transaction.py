@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.factories.transaction import TransactionFactory
 from modules.transactions.models import Transaction
@@ -7,7 +9,14 @@ class TransactionRepository:
     def __init__(self, model: Transaction, transaction_factory: TransactionFactory):
         self.model = model
         self.transaction_factory = transaction_factory
-        self.queryset = self.model.objects.order_by("id")
+
+    @property
+    def queryset(self):
+        return (
+            self.model.objects
+                .order_by("id")
+                .exclude(deleted_at__isnull=False)
+        )
 
     def filter(self, filters: dict) -> list["TransactionDomain"]:
         queryset = self.queryset.filter(**filters)
@@ -16,6 +25,10 @@ class TransactionRepository:
     def get(self, transaction_id: str, user_id: int) -> "TransactionDomain":
         transaction_instance = self.queryset.get(id=transaction_id, user_id=user_id)
         return self.transaction_factory.build_from_model(transaction_instance)
+    
+    def get_children_transactions(self, transaction_id: str, user_id: int) -> list["TransactionDomain"]:
+        transaction_instances = self.queryset.filter(main_transaction_id=transaction_id, user_id=user_id)
+        return [self.transaction_factory.build_from_model(transaction) for transaction in transaction_instances]
     
     def get_all(self, user_id: int) -> list["TransactionDomain"]:
         transaction_instances = self.queryset.filter(user_id=user_id)
@@ -47,6 +60,14 @@ class TransactionRepository:
         transaction_instance.save()
         return self.transaction_factory.build_from_model(transaction_instance)
     
+    def update_many(self, transactions: list["TransactionDomain"]) -> list["TransactionDomain"]:
+        return [self.update(transaction) for transaction in transactions]
+    
     def delete(self, transaction_id: str, user_id: int):
-        self.queryset.get(id=transaction_id, user_id=user_id).delete()
+        self.queryset.filter(id=transaction_id, user_id=user_id).update(deleted_at=timezone.now())
+
+    def delete_many(self, transactions: list["TransactionDomain"]):
+        transaction_ids = [transaction.id for transaction in transactions]
+        self.queryset.filter(id__in=transaction_ids).update(deleted_at=timezone.now())
+
 

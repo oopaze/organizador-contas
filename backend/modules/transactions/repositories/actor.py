@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from modules.transactions.domains.actor import ActorDomain
 from modules.transactions.factories.actor import ActorFactory
 from modules.transactions.models import Actor
@@ -7,7 +9,14 @@ class ActorRepository:
     def __init__(self, model: Actor, actor_factory: ActorFactory):
         self.model = model
         self.actor_factory = actor_factory
-        self.queryset = self.model.objects.order_by("name")
+    
+    @property
+    def queryset(self):
+        return (
+            self.model.objects
+                .order_by("name")
+                .exclude(deleted_at__isnull=False)
+        )
 
     def get(self, actor_id: str, user_id: int) -> ActorDomain:
         actor_instance = self.queryset.get(id=actor_id, user_id=user_id)
@@ -31,4 +40,4 @@ class ActorRepository:
         return self.actor_factory.build_from_model(actor_instance)
 
     def delete(self, actor_id: str, user_id: int):
-        self.queryset.get(id=actor_id, user_id=user_id).delete()
+        self.queryset.filter(id=actor_id, user_id=user_id).update(deleted_at=timezone.now())

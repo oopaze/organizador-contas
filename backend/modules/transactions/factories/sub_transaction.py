@@ -29,11 +29,19 @@ class SubTransactionFactory:
     
     def build(self, data: dict, transaction: TransactionDomain, actor: ActorDomain = None) -> SubTransactionDomain:
         return SubTransactionDomain(
-            date=data["date"],
             description=data["description"],
             amount=data["amount"],
-            installment_info=data["installment_info"],
+            installment_info=data.get("installment_info"),
             transaction=transaction,
             actor=actor,
             user_provided_description=data.get("user_provided_description", None),
+        )
+    
+    def build_from_transaction(self, transaction: TransactionDomain, installment = "1/1") -> SubTransactionDomain:
+        return SubTransactionDomain(
+            date=transaction.due_date,
+            amount=transaction.total_amount,
+            transaction=transaction,
+            description=transaction.transaction_identifier,
+            installment_info=installment,
         )

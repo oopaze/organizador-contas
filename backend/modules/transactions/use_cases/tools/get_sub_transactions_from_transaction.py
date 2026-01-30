@@ -34,15 +34,19 @@ class GetSubTransactionsFromTransactionToolUseCase:
         self.user_id = user_id
 
     def execute(self, transaction_id: int) -> str:
+        return self.get_sub_transactions_from_transaction(transaction_id)
+
+    def get_sub_transactions_from_transaction(self, transaction_id: int) -> str:
         """
         Get sub transactions from transaction. Use this tool when you need to understand better a specific transaction.
 
         Args:
             transaction_id: The transaction id.
         """
+        print("GetSubTransactionsFromTransactionToolUseCase.execute", transaction_id)
         transaction = self.transaction_repository.get(transaction_id, self.user_id)
         transaction.set_sub_transactions(
             self.sub_transaction_repository.get_all_by_transaction_id(transaction_id, self.user_id)
         )
         sub_transactions_for_tool = self.sub_transaction_serializer.serialize_many_for_tool(transaction.sub_transactions)
-        return f"Subtransações da transação {transaction_id}:\n{sub_transactions_for_tool}"
+        return f"Subtransações da transação (ID:{transaction_id}):\n{sub_transactions_for_tool}"

@@ -48,6 +48,9 @@ class GetActorDetailToolUseCase:
         self.user_id = user_id
 
     def execute(self, actor_id: str, due_date_start: str, due_date_end: str) -> str:
+        return self.get_actor_detail(actor_id, due_date_start, due_date_end)
+
+    def get_actor_detail(self, actor_id: str, due_date_start: str, due_date_end: str) -> str:
         """
         Get actor detail. Use this tool to get a resume of the actor spent in a specific period.
 
@@ -56,6 +59,7 @@ class GetActorDetailToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
+        print("GetActorDetailToolUseCase.execute", actor_id, due_date_start, due_date_end)
         actor = self.actor_repository.get(actor_id, self.user_id)
         filters = {
             "transaction__due_date__gte": due_date_start, 

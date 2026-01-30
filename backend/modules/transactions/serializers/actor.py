@@ -1,12 +1,14 @@
 from modules.transactions.domains.actor import ActorDomain
 
 ACTOR_FOR_TOOL_PROMPT = """
-Ator {name} (#{actor_id}):
+Ator {name}:
+- id: {actor_id}
 - Total gasto: {total_spent}
 """
 
 ACTOR_DETAIL_FOR_TOOL_PROMPT = """
-Ator {name} (#{actor_id}):
+Ator {name}:
+- id: {actor_id}
 - Total gasto: {total_spent}
 """
 

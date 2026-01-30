@@ -40,6 +40,9 @@ class GetTransactionsToolUseCase:
         self.user_id = user_id
 
     def execute(self, transaction_type: str = None, due_date_start: str = None, due_date_end: str = None) -> str:
+        return self.get_transactions(transaction_type, due_date_start, due_date_end)
+
+    def get_transactions(self, transaction_type: str = None, due_date_start: str = None, due_date_end: str = None) -> str:
         """
         Get transactions. Use this tool when knowing the transactions is relevant to answer the question in a specific period.
 
@@ -48,6 +51,7 @@ class GetTransactionsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
+        print("GetTransactionsToolUseCase.execute", transaction_type, due_date_start, due_date_end)
         filters = {"user_id": self.user_id, "due_date__gte": due_date_start, "due_date__lte": due_date_end}
         if transaction_type:
             filters["transaction_type"] = transaction_type
