@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from modules.ai.chat.container import AIChatContainer
 from modules.ai.container import AIContainer
 from modules.userdata.authentication import JWTAuthentication
+from modules.transactions.container import TransactionsContainer
 
 
 class StartConversionView(views.APIView):
@@ -16,7 +17,14 @@ class StartConversionView(views.APIView):
         ai_container = AIContainer()
         ask_use_case = ai_container.ask_use_case()
         create_embedding_use_case = ai_container.create_embedding_use_case()
-        self.container = AIChatContainer(ask_use_case=ask_use_case, create_embedding_use_case=create_embedding_use_case)
+
+        tools = TransactionsContainer(user_id=self.request.user.id).get_tools_for_ai_use_case().execute()
+
+        self.container = AIChatContainer(
+            ask_use_case=ask_use_case, 
+            create_embedding_use_case=create_embedding_use_case, 
+            tools=tools
+        )
 
     def post(self, request):
         data = request.data
@@ -63,7 +71,14 @@ class SendConversionMessageView(views.APIView):
         ai_container = AIContainer()
         ask_use_case = ai_container.ask_use_case()
         create_embedding_use_case = ai_container.create_embedding_use_case()
-        self.container = AIChatContainer(ask_use_case=ask_use_case, create_embedding_use_case=create_embedding_use_case)
+
+        tools = TransactionsContainer(user_id=self.request.user.id).get_tools_for_ai_use_case().execute()
+
+        self.container = AIChatContainer(
+            ask_use_case=ask_use_case, 
+            create_embedding_use_case=create_embedding_use_case, 
+            tools=tools
+        )
 
     def post(self, request, conversation_id):
         user_id = request.user.id

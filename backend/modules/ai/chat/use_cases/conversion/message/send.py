@@ -1,13 +1,13 @@
-from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT
+from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT, MODELS_EXPLANATION_PROMPT
 from modules.ai.chat.factories import MessageFactory
 from modules.ai.chat.repositories import AICallRepository, MessageRepository, ConversationRepository, EmbeddingCallRepository
 from modules.ai.chat.serializers import MessageSerializer
 from modules.ai.chat.models import Message
-from modules.ai.chat.domains import MessageDomain
 from modules.ai.use_cases.ask import AskUseCase
 from modules.ai.use_cases.create_embedding import CreateEmbeddingUseCase
 from modules.ai.gateways.gemini import GoogleModels
 from modules.ai.gateways.openai_embedding import EmbeddingModels
+from google.genai.types import ToolListUnion
 
 
 class SendConversionMessageUseCase:
@@ -24,6 +24,7 @@ class SendConversionMessageUseCase:
         message_repository: MessageRepository,
         message_factory: MessageFactory,
         message_serializer: MessageSerializer,
+        tools: list[ToolListUnion],
     ):
         self.ask_use_case = ask_use_case
         self.create_embedding_use_case = create_embedding_use_case
@@ -33,6 +34,7 @@ class SendConversionMessageUseCase:
         self.message_repository = message_repository
         self.message_factory = message_factory
         self.message_serializer = message_serializer
+        self.tools = tools
 
     def execute(self, conversation_id: int, content: str, user_id: int) -> dict:
         conversation = self.conversation_repository.get(conversation_id, user_id)
@@ -47,9 +49,9 @@ class SendConversionMessageUseCase:
             contextualized_history = self.message_repository.get_contextualized_messages_from_conversation(embedding.embedding, conversation.id)
             history.extend([self.message_serializer.serialize_only_content_and_role(message) for message in contextualized_history])
  
-        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
+        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
 
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.llm_model, history=history)
+        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.llm_model, history=history, tools=self.tools)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)

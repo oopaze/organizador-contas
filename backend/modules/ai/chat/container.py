@@ -13,6 +13,7 @@ class AIChatContainer(containers.DeclarativeContainer):
     # GATEWAYS
     ask_use_case = providers.Dependency()
     create_embedding_use_case = providers.Dependency()
+    tools = providers.Dependency()
 
     # FACTORIES
     ai_call_factory = providers.Factory(AICallFactory)
@@ -54,6 +55,7 @@ class AIChatContainer(containers.DeclarativeContainer):
         message_repository=message_repository,
         message_factory=message_factory,
         message_serializer=message_serializer,
+        tools=tools,
     )
 
     start_conversion_use_case = providers.Factory(
@@ -67,4 +69,5 @@ class AIChatContainer(containers.DeclarativeContainer):
         message_factory=message_factory,
         message_repository=message_repository,
         message_serializer=message_serializer,
+        tools=tools,
     )

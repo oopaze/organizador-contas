@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_TITLE_FROM_MESSAGE_PROMPT, ASK_USER_MESSAGE_PROMPT
+from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_TITLE_FROM_MESSAGE_PROMPT, ASK_USER_MESSAGE_PROMPT, MODELS_EXPLANATION_PROMPT
 from modules.ai.use_cases.ask import AskUseCase
 from modules.ai.use_cases.create_embedding import CreateEmbeddingUseCase
 from modules.ai.chat.repositories import ConversationRepository, MessageRepository, AICallRepository
@@ -9,6 +9,7 @@ from modules.ai.chat.models import Message
 from modules.ai.chat.serializers import ConversationSerializer, MessageSerializer
 from modules.ai.gateways.gemini import GoogleModels
 from modules.ai.gateways.openai_embedding import EmbeddingModels
+from google.genai.types import ToolListUnion
 
 
 class StartConversionData(TypedDict):
@@ -31,6 +32,7 @@ class StartConversionUseCase:
         message_factory: MessageFactory,
         message_repository: MessageRepository,
         message_serializer: MessageSerializer,
+        tools: list[ToolListUnion],
     ):
         self.ask_use_case = ask_use_case
         self.create_embedding_use_case = create_embedding_use_case
@@ -43,6 +45,7 @@ class StartConversionUseCase:
         self.message_factory = message_factory
         self.message_repository = message_repository
         self.message_serializer = message_serializer
+        self.tools = tools
 
     def execute(self, data: StartConversionData) -> dict:
         content = data["content"]
@@ -59,8 +62,8 @@ class StartConversionUseCase:
 
         user_message = self.message_factory.build(content, conversation.id)
 
-        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.model)
+        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
+        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.model, tools=self.tools)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)

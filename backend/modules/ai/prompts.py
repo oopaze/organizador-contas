@@ -1,3 +1,17 @@
+MODELS_EXPLANATION_PROMPT = """
+Interpretação de Modelos de Dados:
+- Transactions: Registro do valor total e data da operação.
+- SubTransactions: Detalhamento opcional do total.
+- Actors: Pessoas externas vinculadas a uma fatia do valor.
+
+Regras de Interpretação para Consulta:
+- SubTransaction SEM Actor = Valor pertencente ao usuário.
+- SubTransaction COM Actor = Valor pertencente a terceiros.
+
+Relacionamento: 
+- A relação é Transaction ➔ SubTransaction ➔ Actor. Um Actor nunca está na transação principal, apenas na subtransação.
+"""
+
 SCOPE_BOUNDARIES_PROMPT = """
 Instruções de Controle Estrito:
 
