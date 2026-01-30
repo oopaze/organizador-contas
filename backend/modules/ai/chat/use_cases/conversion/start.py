@@ -18,7 +18,6 @@ class StartConversionData(TypedDict):
 
 
 class StartConversionUseCase:
-    model = GoogleModels.GEMINI_2_5_FLASH
     embedding_model = EmbeddingModels.TEXT_EMBEDDING_3_SMALL
     
     def __init__(
@@ -47,12 +46,12 @@ class StartConversionUseCase:
         self.message_serializer = message_serializer
         self.tools = tools
 
-    def execute(self, data: StartConversionData) -> dict:
+    def execute(self, data: StartConversionData, model: str = GoogleModels.GEMINI_2_5_FLASH_LITE) -> dict:
         content = data["content"]
 
         prompts_for_title = [SCOPE_BOUNDARIES_PROMPT, ASK_TITLE_FROM_MESSAGE_PROMPT.format(content=content)]
 
-        ai_call_id = self.ask_use_case.execute(prompts_for_title, model=self.model)
+        ai_call_id = self.ask_use_case.execute(prompts_for_title, model=model)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         conversation = self.conversation_repository.create(
@@ -63,7 +62,7 @@ class StartConversionUseCase:
         user_message = self.message_factory.build(content, conversation.id)
 
         prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.model, tools=self.tools)
+        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=model, tools=self.tools)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)

@@ -9,15 +9,12 @@ Query Interpretation Rules:
 - SubTransaction WITH Actor = Value belongs to third parties.
 
 Relationships:
-- Flow: Transaction ➔ SubTransaction ➔ Actor. 
+- Flow: Transaction (1..*) -> SubTransaction (*..1) -> Actor. 
 - Constraint: An Actor is never linked to the main Transaction, only to a SubTransaction.
 """
 
 SCOPE_BOUNDARIES_PROMPT = """
 Strict Control Instructions:
-
-- Context Validation:
-  Verify if the message is related to finance. If not, respond ONLY with: [OFF].
 
 - Tool Usage:
   Call the necessary functions before giving the final answer.

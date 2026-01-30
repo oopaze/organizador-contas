@@ -11,7 +11,6 @@ from google.genai.types import ToolListUnion
 
 
 class SendConversionMessageUseCase:
-    llm_model = GoogleModels.GEMINI_2_5_FLASH
     embedding_model = EmbeddingModels.TEXT_EMBEDDING_3_SMALL
 
     def __init__(
@@ -36,7 +35,7 @@ class SendConversionMessageUseCase:
         self.message_serializer = message_serializer
         self.tools = tools
 
-    def execute(self, conversation_id: int, content: str, user_id: int) -> dict:
+    def execute(self, conversation_id: int, content: str, user_id: int, model: str = GoogleModels.GEMINI_2_5_FLASH_LITE) -> dict:
         conversation = self.conversation_repository.get(conversation_id, user_id)
 
         user_message = self.message_factory.build(content, conversation_id)
@@ -51,7 +50,7 @@ class SendConversionMessageUseCase:
  
         prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
 
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=self.llm_model, history=history, tools=self.tools)
+        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=model, history=history, tools=self.tools)
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)

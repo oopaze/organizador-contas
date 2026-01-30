@@ -27,9 +27,10 @@ class StartConversionView(views.APIView):
     def post(self, request):
         data = request.data
         data["user"] = request.user.id
+        model = data.get("model")
 
         container = self.get_container()
-        result = container.start_conversion_use_case().execute(data)
+        result = container.start_conversion_use_case().execute(data, model=model)
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -80,6 +81,7 @@ class SendConversionMessageView(views.APIView):
     def post(self, request, conversation_id):
         user_id = request.user.id
         content = request.data["content"]
+        model = request.data.get("model")
         container = self.get_container()
-        result = container.send_conversion_message_use_case().execute(conversation_id, content, user_id)
+        result = container.send_conversion_message_use_case().execute(conversation_id, content, user_id, model=model)
         return Response(result, status=status.HTTP_200_OK)

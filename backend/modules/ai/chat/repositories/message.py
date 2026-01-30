@@ -38,11 +38,11 @@ class MessageRepository:
         conversation_id: int, 
         limit: int = 30,
     ) -> list[MessageDomain]:
-        last_10_messages = self.model.objects.filter(conversation_id=conversation_id).order_by("-created_at")[:10]
-        last_10_messages_ids = [message.id for message in last_10_messages]
+        minimum_history_messages = self.model.objects.filter(conversation_id=conversation_id).order_by("-created_at")[:20]
+        minimum_history_messages_id = [message.id for message in minimum_history_messages]
         message_instances = (
             self.model.objects
-            .exclude(id__in=last_10_messages_ids)
+            .exclude(id__in=minimum_history_messages_id)
             .filter(
                 conversation_id=conversation_id, 
                 embedding__isnull=False,
@@ -54,5 +54,5 @@ class MessageRepository:
         )
 
         context_message = [self.message_factory.build_from_model(message) for message in message_instances]
-        context_message.extend([self.message_factory.build_from_model(message) for message in last_10_messages])
+        context_message.extend([self.message_factory.build_from_model(message) for message in minimum_history_messages])
         return context_message 

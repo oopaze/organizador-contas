@@ -15,6 +15,6 @@ class Message(TimedModel):
 
     role = models.CharField(max_length=255, choices=Role.choices)
     content = models.TextField()
-    conversation = models.ForeignKey(Conversation, on_delete=models.DO_NOTHING)
+    conversation = models.ForeignKey(Conversation, on_delete=models.DO_NOTHING, related_name="messages", null=True, blank=True)
     ai_call = models.ForeignKey("ai.AICall", on_delete=models.DO_NOTHING, null=True, blank=True)
     embedding = models.ForeignKey("ai.EmbeddingCall", on_delete=models.DO_NOTHING, null=True, blank=True)
