@@ -7,6 +7,7 @@ from modules.file_reader.repositories.file import FileRepository
 from modules.file_reader.serializers.file import FileSerializer
 from modules.file_reader.use_cases.transpose_file_bill_to_models import TransposeFileBillToModelsUseCase
 from modules.ai.use_cases.ask import AskUseCase
+from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPasswordUseCase
 
 PROMPT = """
 You will receive TEXT extracted from a PDF CREDIT CARD STATEMENT.
@@ -73,6 +74,7 @@ class UploadFileUseCase:
         ai_call_repository: AICallRepository,
         ai_call_factory: AICallFactory,
         ask_use_case: AskUseCase,
+        remove_pdf_password_use_case: RemovePDFPasswordUseCase,
     ):
         self.file_repository = file_repository
         self.file_factory = file_factory
@@ -81,11 +83,17 @@ class UploadFileUseCase:
         self.ai_call_repository = ai_call_repository
         self.ai_call_factory = ai_call_factory
         self.ask_use_case = ask_use_case
+        self.remove_pdf_password_use_case = remove_pdf_password_use_case
 
-    def execute(self, file: UploadedFile, user_id: int):
+    def execute(self, file: UploadedFile, user_id: int, password: str = None):
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
-        pdf_text = saved_file.extract_text_from_pdf()
+
+        if password:
+            file_path = self.remove_pdf_password_use_case.execute(saved_file, password)
+        
+        file_path = saved_file.uploaded_file.path
+        pdf_text = saved_file.extract_text_from_pdf(file_path)
 
         prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]
         ai_call_id = self.ask_use_case.execute(prompt)

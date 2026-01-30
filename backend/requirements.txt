@@ -6,6 +6,8 @@ psycopg2-binary==2.9.10
 pgvector==0.4.2
 google-genai==1.56.0
 openai==2.16.0
+pypdf2==3.14.0
+pycryptodome==3.23.0
 
 # Linting & Formatting
 black==24.10.0

@@ -20,6 +20,7 @@ from modules.file_reader.use_cases.list_bills import ListBillsUseCase
 from modules.file_reader.use_cases.load_bills_with_transactions import LoadBillsWithTransactionsUseCase
 from modules.file_reader.use_cases.transpose_file_bill_to_models import TransposeFileBillToModelsUseCase
 from modules.file_reader.use_cases.upload_file import UploadFileUseCase
+from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPasswordUseCase
 
 
 class FileReaderContainer(containers.DeclarativeContainer):
@@ -57,6 +58,8 @@ class FileReaderContainer(containers.DeclarativeContainer):
 
     ask_use_case = providers.Dependency()
 
+    remove_pdf_password_use_case = providers.Factory(RemovePDFPasswordUseCase)
+
     upload_file_use_case = providers.Factory(
         UploadFileUseCase,
         file_repository=file_repository,
@@ -66,6 +69,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
         ai_call_repository=ai_call_repository,
         ai_call_factory=ai_call_factory,
         ask_use_case=ask_use_case,
+        remove_pdf_password_use_case=remove_pdf_password_use_case,
     )
 
     load_bills_with_transactions_use_case = providers.Factory(

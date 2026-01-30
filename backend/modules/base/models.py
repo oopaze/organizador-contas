@@ -14,3 +14,10 @@ class UserOwnedModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class SoftDeleteModel(models.Model):
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True

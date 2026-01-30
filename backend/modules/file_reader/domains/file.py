@@ -61,11 +61,11 @@ class FileDomain:
     def file(self):
         return self.url or self.uploaded_file
     
-    def extract_text_from_pdf(self):
+    def extract_text_from_pdf(self, password: str = None):
         if not self.is_saved():
             raise Exception("File is not saved")
-        
-        with pdf_open(self.url) as pdf:
+
+        with pdf_open(self.url, password=password) as pdf:
             text = ""
             for page in pdf.pages:
                 text += page.extract_text()

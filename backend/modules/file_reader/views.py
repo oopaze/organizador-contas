@@ -27,7 +27,8 @@ class UploadFileView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        self.container.upload_file_use_case().execute(file, request.user.id)
+        password = request.data.get("password")
+        self.container.upload_file_use_case().execute(file, request.user.id, password)
         return Response(
             {"message": "File uploaded successfully"},
             status=status.HTTP_201_CREATED,
