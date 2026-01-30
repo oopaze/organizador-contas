@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/app/components/ui/button';
 import { LogOut, Wallet, Home, Users, MessageSquare } from 'lucide-react';
 

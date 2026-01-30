@@ -28,7 +28,6 @@ export const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
     due_date: '',
     transaction_type: 'outgoing' as TransactionType,
     is_salary: false,
-    is_recurrent: false,
   });
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
         due_date: transaction.due_date,
         transaction_type: transaction.transaction_type,
         is_salary: transaction.is_salary,
-        is_recurrent: transaction.is_recurrent,
       });
     }
   }, [transaction]);
@@ -135,19 +133,6 @@ export const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
               />
               <Label htmlFor="edit-is_salary" className="cursor-pointer">
                 É salário?
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="edit-is_recurrent"
-                checked={formData.is_recurrent}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, is_recurrent: checked as boolean })
-                }
-              />
-              <Label htmlFor="edit-is_recurrent" className="cursor-pointer">
-                É recorrente?
               </Label>
             </div>
           </div>

@@ -25,7 +25,6 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
   const [loadingActors, setLoadingActors] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
     description: '',
     user_provided_description: '',
     amount: '',
@@ -38,7 +37,6 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
       fetchActors();
       // Reset form when dialog opens
       setFormData({
-        date: new Date().toISOString().split('T')[0],
         description: '',
         user_provided_description: '',
         amount: '',
@@ -67,7 +65,6 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
     setSaving(true);
     try {
       await createSubTransaction({
-        date: formData.date,
         description: formData.description,
         user_provided_description: formData.user_provided_description || undefined,
         amount: formData.amount,
@@ -98,17 +95,6 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Nome</Label>
               <Input

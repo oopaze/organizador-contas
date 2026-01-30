@@ -62,7 +62,7 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 403) {
       // Token expired, try to refresh
       const { refreshToken } = await import('./auth/refresh');
       const refreshed = await refreshToken();

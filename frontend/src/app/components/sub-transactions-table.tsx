@@ -8,6 +8,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { EditSubTransactionDialog } from './edit-sub-transaction-dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { toast } from 'sonner';
+import { useUser } from '@/contexts/user-context';
 
 interface SubTransactionsTableProps {
   transactionId: number;
@@ -16,6 +17,7 @@ interface SubTransactionsTableProps {
 export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
   transactionId,
 }) => {
+  const { user } = useUser();
   const [subTransactions, setSubTransactions] = useState<SubTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,7 +176,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                   {subTransaction.actor ? (
                     <span className="text-foreground">{(subTransaction?.actor as Actor)?.name}</span>
                   ) : (
-                    <span className="text-muted-foreground">Sem ator</span>
+                    <span className="text-muted-foreground">{user?.profile?.first_name} {user?.profile?.last_name} (Eu)</span>
                   )}
                 </TableCell>
                 <TableCell className={`text-right text-sm ${isNegative ? 'text-green-600' : 'text-red-600'}`}>
