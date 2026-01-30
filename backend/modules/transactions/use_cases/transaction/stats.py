@@ -7,11 +7,15 @@ class TransactionStatsUseCase:
         self.transaction_repository = transaction_repository
         self.sub_transaction_repository = sub_transaction_repository
 
-    def execute(self, user_id: int, due_date: str) -> dict:
+    def execute(self, user_id: int, due_date: str = "", due_date_start: str = "", due_date_end: str = "") -> dict:
         filters = {"user_id": user_id}
         if due_date:
             filters["due_date__month"] = due_date.split("-")[1]
             filters["due_date__year"] = due_date.split("-")[0]
+
+        if due_date_start and due_date_end:
+            filters["due_date__gte"] = due_date_start
+            filters["due_date__lte"] = due_date_end
 
         transactions = self.transaction_repository.filter(filters)
         sub_transactions = self.sub_transaction_repository.get_all_by_transaction_ids([transaction.id for transaction in transactions])

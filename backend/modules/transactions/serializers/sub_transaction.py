@@ -1,6 +1,12 @@
 from modules.transactions.domains import SubTransactionDomain
 from modules.transactions.serializers import ActorSerializer
 
+SUB_TRANSACTION_FOR_TOOL_PROMPT = """
+SubTransaction {description} (#{sub_transaction_id}):
+- Valor: {amount}
+- Parcela: {installment_info}
+- Ator: {actor}
+"""
 
 class SubTransactionSerializer:
     def __init__(self, actor_serializer: ActorSerializer):
@@ -23,3 +29,15 @@ class SubTransactionSerializer:
 
     def serialize_many(self, sub_transactions: list["SubTransactionDomain"], include_actor: bool = True) -> list[dict]:
         return [self.serialize(sub_transaction, include_actor) for sub_transaction in sub_transactions]
+    
+    def serialize_for_tool(self, sub_transaction: "SubTransactionDomain") -> str:
+        return SUB_TRANSACTION_FOR_TOOL_PROMPT.format(
+            description=sub_transaction.description,
+            sub_transaction_id=sub_transaction.id,
+            amount=sub_transaction.amount,
+            installment_info=sub_transaction.installment_info,
+            actor=sub_transaction.actor_id if sub_transaction.actor else "Nenhum",
+        )
+    
+    def serialize_many_for_tool(self, sub_transactions: list["SubTransactionDomain"]) -> str:
+        return "\n".join([self.serialize_for_tool(sub_transaction) for sub_transaction in sub_transactions])

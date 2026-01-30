@@ -2,6 +2,17 @@ from modules.transactions.domains import TransactionDomain
 from modules.transactions.serializers.sub_transaction import SubTransactionSerializer
 
 
+TRANSACTION_FOR_TOOL_PROMPT = """
+Transaction {transaction_identifier} (#{transaction_id}):
+- Due Date: {due_date}
+- Total Amount: {total_amount}
+- Transaction Type: {transaction_type}
+- Recurrence Count: {recurrence_count}
+- Installment Number: {installment_number}
+- Main Transaction: {main_transaction}
+"""
+
+
 class TransactionSerializer:
     def __init__(self, sub_transaction_serializer: SubTransactionSerializer):
         self.sub_transaction_serializer = sub_transaction_serializer
@@ -23,3 +34,18 @@ class TransactionSerializer:
             "main_transaction": transaction.main_transaction.id if transaction.main_transaction else None,
             "amount_from_actor": transaction.amount_from_actor if transaction.amount_from_actor else None,
         }
+    
+    def serialize_for_tool(self, transaction: "TransactionDomain") -> str:
+        return TRANSACTION_FOR_TOOL_PROMPT.format(
+            transaction_identifier=transaction.transaction_identifier,
+            transaction_id=transaction.id,
+            due_date=transaction.due_date,
+            total_amount=transaction.total_amount,
+            transaction_type=transaction.transaction_type,
+            recurrence_count=transaction.recurrence_count,
+            installment_number=transaction.installment_number,
+            main_transaction=transaction.main_transaction.id if transaction.main_transaction else None,
+        )
+    
+    def serialize_many_for_tool(self, transactions: list["TransactionDomain"]) -> str:
+        return "\n".join([self.serialize_for_tool(transaction) for transaction in transactions])

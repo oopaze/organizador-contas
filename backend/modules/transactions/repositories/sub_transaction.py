@@ -12,7 +12,7 @@ class SubTransactionRepository:
     def __init__(self, model: SubTransaction, sub_transaction_factory: "SubTransactionFactory"):
         self.model = model
         self.sub_transaction_factory = sub_transaction_factory
-        self.queryset = self.model.objects.order_by("id")
+        self.queryset = self.model.objects.order_by("id").select_related("actor").select_related("transaction")
 
     def get(self, sub_transaction_id: str, user_id: int) -> "SubTransactionDomain":
         sub_transaction_instance = self.queryset.get(id=sub_transaction_id, transaction__user_id=user_id)
@@ -51,8 +51,8 @@ class SubTransactionRepository:
             for sub_transaction_instance in sub_transaction_instances
         ]
 
-    def get_all_by_transaction_id(self, transaction_id: str) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.queryset.filter(transaction_id=transaction_id)
+    def get_all_by_transaction_id(self, transaction_id: str, user_id: int, filters: dict = {}) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.queryset.filter(transaction_id=transaction_id, transaction__user_id=user_id, **filters)
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
@@ -75,6 +75,20 @@ class SubTransactionRepository:
                 transaction__due_date__year=date.year
             )
 
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+    
+    def filter_by_actor_ids(self, actor_ids: list[str], filters: dict = {}) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.queryset.filter(actor_id__in=actor_ids, **filters)
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+    
+    def filter_by_actor_id(self, actor_id: str, filters: dict = {}) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.queryset.filter(actor_id=actor_id, **filters)
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances

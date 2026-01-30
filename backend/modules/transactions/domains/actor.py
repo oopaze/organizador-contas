@@ -27,6 +27,15 @@ class ActorDomain:
     def set_sub_transactions(self, sub_transactions: list["SubTransactionDomain"]):
         self.sub_transactions = sub_transactions
 
+    def get_total_spent(self) -> float:
+        return sum(sub_transaction.amount for sub_transaction in self.sub_transactions) if self.sub_transactions else 0
+
     @property
     def total_spent(self) -> float:
-        return sum(sub_transaction.amount for sub_transaction in self.sub_transactions) if self.sub_transactions else 0
+        return self.get_total_spent()
+    
+    def __lt__(self, other):
+        return self.total_spent < other.total_spent
+    
+    def __gt__(self, other):
+        return self.total_spent > other.total_spent
