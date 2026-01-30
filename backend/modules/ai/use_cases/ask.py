@@ -26,10 +26,16 @@ class AskUseCase:
         prompt: list[str],
         model: str = GoogleModels.GEMINI_2_5_FLASH_LITE,
         attachments: list[str] = None,
-        history: list[dict] = None,
-        tools: list[ToolListUnion] = None,
+        history: list[dict] = [],
+        tools: list[ToolListUnion] = [],
     ) -> AIResponseDomain:
-        ai_request = self.ai_request_factory.build(prompt, model, attachments, history, tools)
+        ai_request = self.ai_request_factory.build(
+            prompt=prompt,
+            model=model,
+            attachments=attachments,
+            history=history,
+            tools=tools,
+        )
         response = self.ask_ai(ai_request)
         ai_response = self.ai_call_repository.create(response)
         return ai_response.id

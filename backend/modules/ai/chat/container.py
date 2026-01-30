@@ -60,7 +60,6 @@ class AIChatContainer(containers.DeclarativeContainer):
         StartConversionUseCase,
         ask_use_case=ask_use_case,
         create_embedding_use_case=create_embedding_use_case,
-        embedding_call_repository=embedding_call_repository,
         ai_call_repository=ai_call_repository,
         conversation_repository=conversation_repository,
         conversation_factory=conversation_factory,

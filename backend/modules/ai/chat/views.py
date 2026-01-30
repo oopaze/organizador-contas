@@ -13,8 +13,10 @@ class StartConversionView(views.APIView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        ask_use_case = AIContainer().ask_use_case()
-        self.container = AIChatContainer(ask_use_case=ask_use_case)
+        ai_container = AIContainer()
+        ask_use_case = ai_container.ask_use_case()
+        create_embedding_use_case = ai_container.create_embedding_use_case()
+        self.container = AIChatContainer(ask_use_case=ask_use_case, create_embedding_use_case=create_embedding_use_case)
 
     def post(self, request):
         data = request.data

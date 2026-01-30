@@ -42,7 +42,7 @@ class MessageRepository:
             conversation_id=conversation_id, 
             embedding__isnull=False,
         ).alias(
-            distance=CosineDistance("embedding_embedding", embedding)
+            distance=CosineDistance("embedding__embedding", embedding)
         ).filter(
             distance__lt=self.HISTORY_THRESHOLD
         ).order_by("distance")[:limit]

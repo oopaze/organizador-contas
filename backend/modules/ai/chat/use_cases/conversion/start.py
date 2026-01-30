@@ -7,8 +7,8 @@ from modules.ai.chat.repositories import ConversationRepository, MessageReposito
 from modules.ai.chat.factories import ConversationFactory, MessageFactory
 from modules.ai.chat.models import Message
 from modules.ai.chat.serializers import ConversationSerializer, MessageSerializer
-from modules.ai.chat.domains import MessageDomain
 from modules.ai.gateways.gemini import GoogleModels
+from modules.ai.gateways.openai_embedding import EmbeddingModels
 
 
 class StartConversionData(TypedDict):
@@ -18,6 +18,7 @@ class StartConversionData(TypedDict):
 
 class StartConversionUseCase:
     model = GoogleModels.GEMINI_2_5_FLASH
+    embedding_model = EmbeddingModels.TEXT_EMBEDDING_3_SMALL
     
     def __init__(
         self,
@@ -64,14 +65,14 @@ class StartConversionUseCase:
 
         user_message.update_ai_call(ai_call)
         if user_message.should_create_embedding():
-            embedding_id = self.create_embedding_use_case.execute(user_message.content, model=self.model)
+            embedding_id = self.create_embedding_use_case.execute(user_message.content, model=self.embedding_model)
             user_message.update_embedding_id(embedding_id)
         user_message = self.message_repository.create(user_message)
 
         ai_message = self.message_factory.build(ai_call.response["text"], conversation.id, Message.Role.ASSISTANT)
         ai_message.update_ai_call(ai_call)
         if ai_message.should_create_embedding():
-            embedding_id = self.create_embedding_use_case.execute(ai_message.content, model=self.model)
+            embedding_id = self.create_embedding_use_case.execute(ai_message.content, model=self.embedding_model)
             ai_message.update_embedding_id(embedding_id)
         
         ai_message = self.message_repository.create(ai_message)
