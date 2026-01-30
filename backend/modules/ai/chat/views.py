@@ -12,15 +12,13 @@ class StartConversionView(views.APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def get_container(self):
         ai_container = AIContainer()
         ask_use_case = ai_container.ask_use_case()
         create_embedding_use_case = ai_container.create_embedding_use_case()
-
         tools = TransactionsContainer(user_id=self.request.user.id).get_tools_for_ai_use_case().execute()
 
-        self.container = AIChatContainer(
+        return AIChatContainer(
             ask_use_case=ask_use_case, 
             create_embedding_use_case=create_embedding_use_case, 
             tools=tools
@@ -30,7 +28,8 @@ class StartConversionView(views.APIView):
         data = request.data
         data["user"] = request.user.id
 
-        result = self.container.start_conversion_use_case().execute(data)
+        container = self.get_container()
+        result = container.start_conversion_use_case().execute(data)
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -66,15 +65,13 @@ class SendConversionMessageView(views.APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def get_container(self):
         ai_container = AIContainer()
         ask_use_case = ai_container.ask_use_case()
         create_embedding_use_case = ai_container.create_embedding_use_case()
-
         tools = TransactionsContainer(user_id=self.request.user.id).get_tools_for_ai_use_case().execute()
 
-        self.container = AIChatContainer(
+        return AIChatContainer(
             ask_use_case=ask_use_case, 
             create_embedding_use_case=create_embedding_use_case, 
             tools=tools
@@ -83,5 +80,6 @@ class SendConversionMessageView(views.APIView):
     def post(self, request, conversation_id):
         user_id = request.user.id
         content = request.data["content"]
-        result = self.container.send_conversion_message_use_case().execute(conversation_id, content, user_id)
+        container = self.get_container()
+        result = container.send_conversion_message_use_case().execute(conversation_id, content, user_id)
         return Response(result, status=status.HTTP_200_OK)

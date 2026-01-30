@@ -19,7 +19,7 @@ class AIRequestFactory:
             tools=tools,
             history=[
                 types.Content(
-                    role=message["role"],
+                    role= "user" if message["role"] == "human" else "model",
                     parts=[types.Part.from_text(text=message["content"])]
                 )
                 for message in history

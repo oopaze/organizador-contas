@@ -23,13 +23,12 @@ class GoogleLLMGateway:
 
     def get_config(self, tools: list[ToolListUnion] = []):
         return types.GenerateContentConfig(
-            response_mime_type="application/json",
+            response_mime_type="application/json" if not tools else None,
             temperature=0.1,
             candidate_count=1,
             tools=tools,
             automatic_function_calling=types.AutomaticFunctionCallingConfig(
                 disable=False,
-                ignore_call_history=True,
             ),
         )
 

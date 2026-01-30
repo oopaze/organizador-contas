@@ -16,5 +16,5 @@ class ConversationFactory:
         return ConversationDomain(title=title)
     
     def build_from_ai_call(self, ai_call: AICallDomain) -> ConversationDomain:
-        title = ai_call.response.get("title", "Sem título")
+        title = ai_call.response or "Sem título"
         return ConversationDomain(title=title, ai_call=ai_call)

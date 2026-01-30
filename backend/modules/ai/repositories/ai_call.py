@@ -13,8 +13,8 @@ class AICallRepository:
             prompt=ai_response.prompt,
             response=ai_response.response,
             total_tokens=ai_response.total_tokens,
-            input_used_tokens=ai_response.input_used_tokens,
-            output_used_tokens=ai_response.output_used_tokens,
+            input_used_tokens=ai_response.input_used_tokens if ai_response.input_used_tokens else 0,
+            output_used_tokens=ai_response.output_used_tokens if ai_response.output_used_tokens else 0,
             response_id=ai_response.google_response.response_id,
             model=ai_response.model,
         )

@@ -5,8 +5,8 @@ class AIResponseDomain:
     def __init__(
         self, 
         total_tokens: int = None,
-        input_used_tokens: int = None,
-        output_used_tokens: int = None,
+        input_used_tokens: int = 0,
+        output_used_tokens: int = 0,
         prompt: list[str] = None,
         response: dict = None,
         id: int = None,

@@ -8,11 +8,16 @@ from modules.ai.models import AICall
 
 class AIResponseFactory:
     def build_from_llm_response(self, ai_response: GenerateContentResponse, prompt: list[str], model: str) -> AIResponseDomain:
+        try:
+            response = loads(ai_response.text)
+        except Exception as e:
+            response = {"text": ai_response.text}
+            
         return AIResponseDomain(
             total_tokens=ai_response.usage_metadata.total_token_count,
             input_used_tokens=ai_response.usage_metadata.prompt_token_count,
             output_used_tokens=ai_response.usage_metadata.candidates_token_count,
-            response=loads(ai_response.text),
+            response=response,
             prompt=prompt,
             google_response=ai_response,
             model=model,

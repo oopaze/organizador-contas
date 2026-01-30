@@ -4,8 +4,8 @@ class AICallDomain:
         response: dict,
         prompt: list[str] = None,
         total_tokens: int = None,
-        input_used_tokens: int = None,
-        output_used_tokens: int = None,
+        input_used_tokens: int = 0,
+        output_used_tokens: int = 0,
         id: int = None,
         created_at: str = None,
         updated_at: str = None,
@@ -16,5 +16,5 @@ class AICallDomain:
         self.updated_at = updated_at
         self.prompt = prompt
         self.total_tokens = total_tokens
-        self.input_used_tokens = input_used_tokens
+        self.input_used_tokens = input_used_tokens 
         self.output_used_tokens = output_used_tokens

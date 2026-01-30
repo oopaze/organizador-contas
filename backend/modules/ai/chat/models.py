@@ -1,9 +1,9 @@
 from django.db import models
 
-from modules.base.models import TimedModel, UserOwnedModel
+from modules.base.models import TimedModel, UserOwnedModel, SoftDeleteModel
 
 
-class Conversation(TimedModel, UserOwnedModel):
+class Conversation(TimedModel, UserOwnedModel, SoftDeleteModel):
     title = models.CharField(max_length=255, null=True, blank=True)
     ai_call = models.ForeignKey("ai.AICall", on_delete=models.DO_NOTHING, null=True, blank=True)
 

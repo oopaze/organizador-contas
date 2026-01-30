@@ -36,14 +36,23 @@ class MessageRepository:
         self, 
         embedding: list[float], 
         conversation_id: int, 
-        limit: int = 20,
+        limit: int = 30,
     ) -> list[MessageDomain]:
-        message_instances = self.model.objects.filter(
-            conversation_id=conversation_id, 
-            embedding__isnull=False,
-        ).alias(
-            distance=CosineDistance("embedding__embedding", embedding)
-        ).filter(
-            distance__lt=self.HISTORY_THRESHOLD
-        ).order_by("distance")[:limit]
-        return [self.message_factory.build_from_model(message) for message in message_instances]
+        last_10_messages = self.model.objects.filter(conversation_id=conversation_id).order_by("-created_at")[:10]
+        last_10_messages_ids = [message.id for message in last_10_messages]
+        message_instances = (
+            self.model.objects
+            .exclude(id__in=last_10_messages_ids)
+            .filter(
+                conversation_id=conversation_id, 
+                embedding__isnull=False,
+            ).alias(
+                distance=CosineDistance("embedding__embedding", embedding)
+            ).filter(
+                distance__lt=self.HISTORY_THRESHOLD
+            ).order_by("distance")[:limit]
+        )
+
+        context_message = [self.message_factory.build_from_model(message) for message in message_instances]
+        context_message.extend([self.message_factory.build_from_model(message) for message in last_10_messages])
+        return context_message 
