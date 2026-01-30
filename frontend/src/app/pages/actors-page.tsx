@@ -4,8 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
-import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, UserCheck } from 'lucide-react';
-import { Actor, getActors, getActor, deleteActor } from '@/services';
+import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, TrendingDown, UserCheck, Calculator } from 'lucide-react';
+import { Actor, ActorStats, getActors, getActor, deleteActor, getActorStats } from '@/services';
 import { ActorSubTransactionsTable } from '@/app/components/actor-sub-transactions-table';
 import { ConfirmationDialog } from '@/app/components/confirmation-dialog';
 import { AddActorDialog } from '@/app/components/add-actor-dialog';
@@ -26,6 +26,7 @@ export const ActorsPage: React.FC = () => {
   const [actorDetails, setActorDetails] = useState<Record<number, Actor>>({});
   const [loadingActors, setLoadingActors] = useState<Set<number>>(new Set());
   const [actorErrors, setActorErrors] = useState<Record<number, string | null>>({});
+  const [actorStats, setActorStats] = useState<ActorStats | null>(null);
 
   // Month/Year filter
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -61,9 +62,18 @@ export const ActorsPage: React.FC = () => {
     setActorDetails({}); // Clear cached details when month changes
     setExpandedRows(new Set()); // Close expanded rows when month changes
     try {
+      const [year, month] = selectedMonth.split('-');
       const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD
-      const data = await getActors({ due_date: dueDate });
-      setActors(data);
+      const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+      const dueDateEnd = `${selectedMonth}-${String(lastDay).padStart(2, '0')}`;
+
+      const [actorsData, statsData] = await Promise.all([
+        getActors({ due_date: dueDate }),
+        getActorStats({ due_date_start: dueDate, due_date_end: dueDateEnd }),
+      ]);
+
+      setActors(actorsData);
+      setActorStats(statsData);
     } catch (err) {
       setError('Falha ao carregar atores');
       console.error('Error fetching actors:', err);
@@ -141,15 +151,6 @@ export const ActorsPage: React.FC = () => {
     }
   };
 
-  // Calculate actor insights
-  const totalSpent = actors.reduce((sum, actor) => sum + (actor.total_spent || 0), 0);
-  const activeActors = actors.filter(actor => (actor.total_spent || 0) > 0);
-  const topSpender = activeActors.length > 0
-    ? activeActors.reduce((top, actor) =>
-        (actor.total_spent || 0) > (top.total_spent || 0) ? actor : top
-      )
-    : null;
-
   return (
     <>
       {/* Month Navigation */}
@@ -168,7 +169,7 @@ export const ActorsPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Gasto</CardTitle>
@@ -176,7 +177,7 @@ export const ActorsPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {totalSpent.toFixed(2)}
+              R$ {(actorStats?.total_spent || 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Soma de todos os atores
@@ -191,10 +192,40 @@ export const ActorsPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {topSpender ? topSpender.name : '-'}
+              {actorStats?.biggest_spender || '-'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {topSpender ? `R$ ${topSpender.total_spent?.toFixed(2)}` : 'Nenhum gasto no período'}
+              {actorStats?.biggest_spender ? `R$ ${actorStats.biggest_spender_amount.toFixed(2)}` : 'Nenhum gasto no período'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Menor Gastador</CardTitle>
+            <TrendingDown className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {actorStats?.smallest_spender || '-'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {actorStats?.smallest_spender ? `R$ ${actorStats.smallest_spender_amount.toFixed(2)}` : 'Nenhum gasto no período'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Média por Ator</CardTitle>
+            <Calculator className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              R$ {(actorStats?.average_spent || 0).toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Gasto médio por ator
             </p>
           </CardContent>
         </Card>
@@ -202,11 +233,11 @@ export const ActorsPage: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Atores Ativos</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
+            <UserCheck className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {activeActors.length}
+            <div className="text-2xl font-bold text-purple-600">
+              {actorStats?.active_actors || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               De {actors.length} atores cadastrados

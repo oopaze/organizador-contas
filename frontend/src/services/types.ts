@@ -94,6 +94,16 @@ export interface TransactionStats {
   outgoing_from_actors: number;
 }
 
+export interface ActorStats {
+  total_spent: number;
+  biggest_spender: string;
+  biggest_spender_amount: number;
+  smallest_spender: string;
+  smallest_spender_amount: number;
+  average_spent: number;
+  active_actors: number;
+}
+
 // Chat types
 export interface AICall {
   id: number;

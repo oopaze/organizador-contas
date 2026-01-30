@@ -32,6 +32,7 @@ export { getActor } from './actors/getActor';
 export { createActor } from './actors/createActor';
 export { updateActor } from './actors/updateActor';
 export { deleteActor } from './actors/deleteActor';
+export { getActorStats } from './actors/getActorStats';
 
 // Bill services
 export { getBills } from './bills/getBills';
