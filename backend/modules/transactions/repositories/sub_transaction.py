@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 
-from modules.transactions.domains import SubTransactionDomain, ActorDomain
+from modules.transactions.domains import SubTransactionDomain
 from modules.transactions.models import SubTransaction
 
 if TYPE_CHECKING:
