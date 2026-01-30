@@ -1,568 +1,971 @@
-{
-  "_type": "export",
-  "__export_format": 4,
-  "__export_date": "2026-01-07T00:00:00.000Z",
-  "__export_source": "insomnia.desktop.app:v2023.5.8",
-  "resources": [
-    {
-      "_id": "wrk_bills_manager",
-      "_type": "workspace",
-      "name": "Bills Manager API",
-      "description": "API para gerenciamento de contas e faturas",
-      "scope": "collection"
-    },
-    {
-      "_id": "fld_auth",
-      "_type": "request_group",
-      "name": "auth",
-      "description": "Endpoints de autenticacao",
-      "parentId": "wrk_bills_manager"
-    },
-    {
-      "_id": "req_login",
-      "_type": "request",
-      "name": "Login",
-      "description": "Autentica usuario com email e senha",
-      "method": "POST",
-      "url": "{{ _.base_url }}/auth/login/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "parentId": "fld_auth"
-    },
-    {
-      "_id": "req_refresh",
-      "_type": "request",
-      "name": "Refresh Token",
-      "description": "Gera novos tokens a partir do refresh token",
-      "method": "POST",
-      "url": "{{ _.base_url }}/auth/refresh/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"refresh_token\": \"your_refresh_token_here\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "parentId": "fld_auth"
-    },
-    {
-      "_id": "fld_user",
-      "_type": "request_group",
-      "name": "user",
-      "description": "Endpoints de usuario",
-      "parentId": "wrk_bills_manager"
-    },
-    {
-      "_id": "req_register",
-      "_type": "request",
-      "name": "Register",
-      "description": "Registra um novo usuario",
-      "method": "POST",
-      "url": "{{ _.base_url }}/user/register/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "parentId": "fld_user"
-    },
-    {
-      "_id": "req_me",
-      "_type": "request",
-      "name": "Me",
-      "description": "Retorna dados do usuario autenticado",
-      "method": "GET",
-      "url": "{{ _.base_url }}/user/me/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_user"
-    },
-    {
-      "_id": "req_update_profile",
-      "_type": "request",
-      "name": "Update Profile",
-      "description": "Atualiza o perfil do usuario autenticado",
-      "method": "PUT",
-      "url": "{{ _.base_url }}/user/me/profile/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+5511999999999\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_user"
-    },
-    {
-      "_id": "fld_pdf_reader",
-      "_type": "request_group",
-      "name": "pdf-reader",
-      "description": "Endpoints para leitura e processamento de PDFs",
-      "parentId": "wrk_bills_manager"
-    },
-    {
-      "_id": "req_upload_file",
-      "_type": "request",
-      "name": "Upload File",
-      "description": "Faz upload de um arquivo PDF para processamento",
-      "method": "POST",
-      "url": "{{ _.base_url }}/pdf_reader/upload/",
-      "body": {
-        "mimeType": "multipart/form-data",
-        "params": [
-          {
-            "name": "file",
-            "type": "file",
-            "fileName": "",
-            "description": "Arquivo PDF da fatura"
-          }
-        ]
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "multipart/form-data"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_pdf_reader"
-    },
-    {
-      "_id": "req_list_bills",
-      "_type": "request",
-      "name": "List Bills",
-      "description": "Lista todas as faturas sem transacoes",
-      "method": "GET",
-      "url": "{{ _.base_url }}/pdf_reader/bills/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_pdf_reader"
-    },
-    {
-      "_id": "req_get_bill",
-      "_type": "request",
-      "name": "Get Bill with Transactions",
-      "description": "Retorna uma fatura com suas transacoes",
-      "method": "GET",
-      "url": "{{ _.base_url }}/pdf_reader/bills/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_pdf_reader"
-    },
-    {
-      "_id": "fld_transactions",
-      "_type": "request_group",
-      "name": "transactions",
-      "description": "Modulo de transacoes",
-      "parentId": "wrk_bills_manager"
-    },
-    {
-      "_id": "fld_actors",
-      "_type": "request_group",
-      "name": "actor",
-      "description": "Endpoints para gerenciamento de atores",
-      "parentId": "fld_transactions"
-    },
-    {
-      "_id": "req_list_actors",
-      "_type": "request",
-      "name": "List Actors",
-      "description": "Lista todos os atores",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/actors/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_actors"
-    },
-    {
-      "_id": "req_get_actor",
-      "_type": "request",
-      "name": "Get Actor",
-      "description": "Retorna um ator pelo ID",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/actors/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_actors"
-    },
-    {
-      "_id": "req_create_actor",
-      "_type": "request",
-      "name": "Create Actor",
-      "description": "Cria um novo ator",
-      "method": "POST",
-      "url": "{{ _.base_url }}/transactions/actors/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Nome do Ator\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_actors"
-    },
-    {
-      "_id": "req_update_actor",
-      "_type": "request",
-      "name": "Update Actor",
-      "description": "Atualiza um ator existente",
-      "method": "PUT",
-      "url": "{{ _.base_url }}/transactions/actors/1/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Nome Atualizado\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_actors"
-    },
-    {
-      "_id": "req_delete_actor",
-      "_type": "request",
-      "name": "Delete Actor",
-      "description": "Remove um ator",
-      "method": "DELETE",
-      "url": "{{ _.base_url }}/transactions/actors/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_actors"
-    },
-    {
-      "_id": "fld_transaction",
-      "_type": "request_group",
-      "name": "transaction",
-      "description": "Endpoints para gerenciamento de transacoes",
-      "parentId": "fld_transactions"
-    },
-    {
-      "_id": "req_list_transactions",
-      "_type": "request",
-      "name": "List Transactions",
-      "description": "Lista todas as transacoes",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/transactions/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_transaction"
-    },
-    {
-      "_id": "req_get_transaction",
-      "_type": "request",
-      "name": "Get Transaction",
-      "description": "Retorna uma transacao pelo ID",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/transactions/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_transaction"
-    },
-    {
-      "_id": "req_create_transaction",
-      "_type": "request",
-      "name": "Create Transaction",
-      "description": "Cria uma nova transacao",
-      "method": "POST",
-      "url": "{{ _.base_url }}/transactions/transactions/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"due_date\": \"2026-01-15\",\n  \"total_amount\": \"100.00\",\n  \"transaction_identifier\": \"TRX-001\",\n  \"transaction_type\": \"credit_card\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_transaction"
-    },
-    {
-      "_id": "req_update_transaction",
-      "_type": "request",
-      "name": "Update Transaction",
-      "description": "Atualiza uma transacao existente",
-      "method": "PUT",
-      "url": "{{ _.base_url }}/transactions/transactions/1/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"due_date\": \"2026-01-20\",\n  \"total_amount\": \"150.00\",\n  \"transaction_identifier\": \"TRX-001-UPDATED\",\n  \"transaction_type\": \"credit_card\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_transaction"
-    },
-    {
-      "_id": "req_delete_transaction",
-      "_type": "request",
-      "name": "Delete Transaction",
-      "description": "Remove uma transacao",
-      "method": "DELETE",
-      "url": "{{ _.base_url }}/transactions/transactions/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_transaction"
-    },
-    {
-      "_id": "fld_sub_transaction",
-      "_type": "request_group",
-      "name": "sub_transaction",
-      "description": "Endpoints para gerenciamento de sub-transacoes",
-      "parentId": "fld_transactions"
-    },
-    {
-      "_id": "req_list_sub_transactions",
-      "_type": "request",
-      "name": "List Sub Transactions",
-      "description": "Lista todas as sub-transacoes",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/sub_transactions/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_sub_transaction"
-    },
-    {
-      "_id": "req_get_sub_transaction",
-      "_type": "request",
-      "name": "Get Sub Transaction",
-      "description": "Retorna uma sub-transacao pelo ID",
-      "method": "GET",
-      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_sub_transaction"
-    },
-    {
-      "_id": "req_create_sub_transaction",
-      "_type": "request",
-      "name": "Create Sub Transaction",
-      "description": "Cria uma nova sub-transacao",
-      "method": "POST",
-      "url": "{{ _.base_url }}/transactions/sub_transactions/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"date\": \"2026-01-10\",\n  \"description\": \"Compra exemplo\",\n  \"amount\": \"50.00\",\n  \"installment_info\": \"1/1\",\n  \"transaction_id\": 1,\n  \"actor_id\": 1\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_sub_transaction"
-    },
-    {
-      "_id": "req_update_sub_transaction",
-      "_type": "request",
-      "name": "Update Sub Transaction",
-      "description": "Atualiza uma sub-transacao existente",
-      "method": "PUT",
-      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"date\": \"2026-01-12\",\n  \"description\": \"Compra atualizada\",\n  \"amount\": \"75.00\",\n  \"installment_info\": \"1/2\",\n  \"transaction_id\": 1,\n  \"actor_id\": 1\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_sub_transaction"
-    },
-    {
-      "_id": "req_delete_sub_transaction",
-      "_type": "request",
-      "name": "Delete Sub Transaction",
-      "description": "Remove uma sub-transacao",
-      "method": "DELETE",
-      "url": "{{ _.base_url }}/transactions/sub_transactions/1/",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {% response 'body', 'req_login', '$.access_token' %}"
-        }
-      ],
-      "parentId": "fld_sub_transaction"
-    },
-    {
-      "_id": "env_base",
-      "_type": "environment",
-      "name": "Base Environment",
-      "data": {
-        "base_url": "http://localhost:8000"
-      },
-      "parentId": "wrk_bills_manager"
-    },
-    {
-      "_id": "env_development",
-      "_type": "environment",
-      "name": "Development",
-      "data": {
-        "base_url": "http://localhost:8000"
-      },
-      "parentId": "env_base"
-    },
-    {
-      "_id": "env_production",
-      "_type": "environment",
-      "name": "Production",
-      "data": {
-        "base_url": "https://api.billsmanager.com"
-      },
-      "parentId": "env_base"
-    }
-  ]
-}
-
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Organizador de Contas
+meta:
+  id: wrk_059052c5926c4bb7a05ee04820ff8419
+  created: 1767672395241
+  modified: 1738262400000
+  description: "API para gerenciamento de contas e transacoes financeiras"
+collection:
+  - name: auth
+    meta:
+      id: fld_edbdc49b872b4dee89a4199ec9b237b3
+      created: 1767754600902
+      modified: 1738262400000
+      sortKey: -1767754600902
+      description: Endpoints de autenticacao
+    children:
+      - url: "{{ _.base_url }}/auth/refresh/"
+        name: Refresh Token
+        meta:
+          id: req_5c2e4ad1c7fe4ea9a8e5dd76de3d19a0
+          created: 1767754600903
+          modified: 1738262400000
+          isPrivate: false
+          description: Gera novos tokens a partir do refresh token
+          sortKey: -1767754600903
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "refresh_token": "your_refresh_token_here"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/login/"
+        name: Login
+        meta:
+          id: req_b2bbe0d1b37543efbdbd2b2249ba6f6e
+          created: 1767754600903
+          modified: 1738262400000
+          isPrivate: false
+          description: Autentica usuario com email e senha
+          sortKey: -1767754600903
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "user@example.com",
+              "password": "your_password"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: none
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: user
+    meta:
+      id: fld_5e2d1c70443a431f88c9829ebca5d432
+      created: 1767754600904
+      modified: 1767754600904
+      sortKey: -1767754600904
+      description: Endpoints de usuario
+    children:
+      - url: "{{ _.base_url }}/user/register/"
+        name: Register
+        meta:
+          id: req_6575ade8593e4a5c8c517914eee0d85c
+          created: 1767754600904
+          modified: 1767754600904
+          isPrivate: false
+          description: Registra um novo usuario
+          sortKey: -1767754600904
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "newuser@example.com",
+              "password": "password123",
+              "first_name": "John",
+              "last_name": "Doe"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/user/me/"
+        name: Me
+        meta:
+          id: req_e74addf6d2434e32b06db9f2b5830a3e
+          created: 1767754600904
+          modified: 1767754600904
+          isPrivate: false
+          description: Retorna dados do usuario autenticado
+          sortKey: -1767754600904
+        method: GET
+        body:
+          mimeType: application/json
+          text: ""
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Authorization
+            value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+              '$.access_token' %}
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/user/me/profile/"
+        name: Update Profile
+        meta:
+          id: req_de235e3957fa48c2a3388072f9f89472
+          created: 1767754600906
+          modified: 1768365473086
+          isPrivate: false
+          description: Atualiza o perfil do usuario autenticado
+          sortKey: -1767754600906
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "first_name": "John",
+              "last_name": "Doe",
+              "phone": "+5511999999999"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Authorization
+            value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+              '$.access_token' %}
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: file-reader
+    meta:
+      id: fld_c6f6a8a1e3b64da8a76631550b8a4b4a
+      created: 1767754600906
+      modified: 1769657344914
+      sortKey: -1767754600906
+      description: Endpoints para leitura e processamento de PDFs
+    children:
+      - url: "{{ _.base_url }}/file_reader/upload/"
+        name: Upload File
+        meta:
+          id: req_75c308deadf94a9881ff6c174641e713
+          created: 1767754600908
+          modified: 1769654158621
+          isPrivate: false
+          description: Faz upload de um arquivo PDF para processamento
+          sortKey: -1767754600908
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: file
+              description: Arquivo PDF da fatura
+              fileName: /Users/josepedrodasilvagomes/Downloads/fatura.pdf
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: Authorization
+            value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+              '$.access_token' %}
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/file_reader/bills/"
+        name: List Bills
+        meta:
+          id: req_1e5a12b5b1bf4e3c8a998fb932e6d291
+          created: 1767754600909
+          modified: 1769654137549
+          isPrivate: false
+          description: Lista todas as faturas sem transacoes
+          sortKey: -1767754600909
+        method: GET
+        body:
+          mimeType: application/json
+          text: ""
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Authorization
+            value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+              '$.access_token' %}
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/file_reader/bills/1/"
+        name: Get Bill with Transactions
+        meta:
+          id: req_2cc29386e4ae47fabe0c06b16d98a6bc
+          created: 1767754600909
+          modified: 1769654134074
+          isPrivate: false
+          description: Retorna uma fatura com suas transacoes
+          sortKey: -1767754600909
+        method: GET
+        body:
+          mimeType: application/json
+          text: ""
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Authorization
+            value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+              '$.access_token' %}
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: transactions
+    meta:
+      id: fld_466ac5167b40491db07b6ea25ee13c36
+      created: 1767754600909
+      modified: 1767754600909
+      sortKey: -1767754600909
+      description: Modulo de transacoes
+    children:
+      - name: actor
+        meta:
+          id: fld_363711f73cdd459eae5591ac120aa422
+          created: 1767754600910
+          modified: 1767754600910
+          sortKey: -1767754600910
+          description: Endpoints para gerenciamento de atores
+        children:
+          - url: "{{ _.base_url }}/transactions/actors/1/"
+            name: Get Actor
+            meta:
+              id: req_4bde6aa9bb2044d9b4bb1b4f3cf72c1e
+              created: 1767754600911
+              modified: 1767754600911
+              isPrivate: false
+              description: Retorna um ator pelo ID
+              sortKey: -1767754600911
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/actors/"
+            name: List Actors
+            meta:
+              id: req_6af8b6f5bd7e407abfe5226b2327dc27
+              created: 1767754600911
+              modified: 1767754600911
+              isPrivate: false
+              description: Lista todos os atores
+              sortKey: -1767754600911
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/actors/"
+            name: Create Actor
+            meta:
+              id: req_e8946ef234b64ebfafe7c668db8fab65
+              created: 1767754600911
+              modified: 1767754600911
+              isPrivate: false
+              description: Cria um novo ator
+              sortKey: -1767754600911
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "Nome do Ator"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/actors/1/"
+            name: Update Actor
+            meta:
+              id: req_dbb58204bce54d9fac399ae4a3e9b3f4
+              created: 1767754600912
+              modified: 1767754600912
+              isPrivate: false
+              description: Atualiza um ator existente
+              sortKey: -1767754600912
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "Nome Atualizado"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/actors/1/"
+            name: Delete Actor
+            meta:
+              id: req_ee789d5b8ff041ebaa57f15d6afd14e5
+              created: 1767754600912
+              modified: 1767754600912
+              isPrivate: false
+              description: Remove um ator
+              sortKey: -1767754600912
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/actors/stats/"
+            name: Stats Actors
+            meta:
+              id: req_2e69889e57ca49fa83c29f9df19c781a
+              created: 1769743794645
+              modified: 1769743835293
+              isPrivate: false
+              description: Lista todos os atores
+              sortKey: -1767754600910
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: transaction
+        meta:
+          id: fld_cba1a1c56ba24efd94764a9bf438e756
+          created: 1767754600912
+          modified: 1767754600912
+          sortKey: -1767754600912
+          description: Endpoints para gerenciamento de transacoes
+        children:
+          - url: "{{ _.base_url }}/transactions/transactions/?due_date__gte=2026-01-01"
+            name: List Transactions
+            meta:
+              id: req_756c4c22fe0f413499f9c0edabad4392
+              created: 1767754600912
+              modified: 1768365828600
+              isPrivate: false
+              description: Lista todas as transacoes
+              sortKey: -1767754600912
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/transactions/1/"
+            name: Update Transaction
+            meta:
+              id: req_4563f40c54a847d8bedb4a08f48d1fff
+              created: 1767754600913
+              modified: 1767754600913
+              isPrivate: false
+              description: Atualiza uma transacao existente
+              sortKey: -1767754600913
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "due_date": "2026-01-20",
+                  "total_amount": "150.00",
+                  "transaction_identifier": "TRX-001-UPDATED",
+                  "transaction_type": "credit_card"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/transactions/"
+            name: Create Transaction
+            meta:
+              id: req_b65ee444504a431aa12d19ed0a961116
+              created: 1767754600913
+              modified: 1767754918285
+              isPrivate: false
+              description: Cria uma nova transacao
+              sortKey: -1767754600913
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "due_date": "2026-01-15",
+                  "total_amount": "100.00",
+                  "transaction_identifier": "TRX-001",
+                  "transaction_type": "credit_card"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/transactions/3/"
+            name: Get Transaction
+            meta:
+              id: req_cece0d797ff843e8a379a13d812b36d6
+              created: 1767754600913
+              modified: 1769563861341
+              isPrivate: false
+              description: Retorna uma transacao pelo ID
+              sortKey: -1767754600913
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/transactions/1/"
+            name: Delete Transaction
+            meta:
+              id: req_d871f8415dee4392b5dd2cc09ddb1c37
+              created: 1767754600914
+              modified: 1767754600914
+              isPrivate: false
+              description: Remove uma transacao
+              sortKey: -1767754600914
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/transactions/stats/?due_date=2026-01-15"
+            name: Stats Transaction
+            meta:
+              id: req_4255f7ac22d847ef8fa02ddef1c1c0ce
+              created: 1769572155378
+              modified: 1738262400000
+              isPrivate: false
+              description: Retorna estatisticas das transacoes do usuario
+              sortKey: -1769572155378
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: sub_transaction
+        meta:
+          id: fld_3007a1ec8eef421784daa9a4277cab1c
+          created: 1767754600914
+          modified: 1767754600914
+          sortKey: -1767754600914
+          description: Endpoints para gerenciamento de sub-transacoes
+        children:
+          - url: "{{ _.base_url }}/transactions/sub_transactions/1/"
+            name: Update Sub Transaction
+            meta:
+              id: req_08367b78389f4ed99102f2a97ab615ca
+              created: 1767754600915
+              modified: 1767754600915
+              isPrivate: false
+              description: Atualiza uma sub-transacao existente
+              sortKey: -1767754600915
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "date": "2026-01-12",
+                  "description": "Compra atualizada",
+                  "amount": "75.00",
+                  "installment_info": "1/2",
+                  "transaction_id": 1,
+                  "actor_id": 1
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/sub_transactions/1/"
+            name: Get Sub Transaction
+            meta:
+              id: req_1d7a47221ef44226a022bbc09027a013
+              created: 1767754600915
+              modified: 1767754600915
+              isPrivate: false
+              description: Retorna uma sub-transacao pelo ID
+              sortKey: -1767754600915
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/sub_transactions/"
+            name: Create Sub Transaction
+            meta:
+              id: req_4e7091938f054d6298885ec1dc154cc0
+              created: 1767754600915
+              modified: 1767755027708
+              isPrivate: false
+              description: Cria uma nova sub-transacao
+              sortKey: -1767754600915
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "date": "2026-01-10",
+                  "description": "Compra exemplo",
+                  "amount": "50.00",
+                  "installment_info": "1/1",
+                  "transaction": 1,
+                  "actor": 1
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/sub_transactions/"
+            name: List Sub Transactions
+            meta:
+              id: req_71dedcacfe864008b5bf562097dd2b50
+              created: 1767754600915
+              modified: 1767754600915
+              isPrivate: false
+              description: Lista todas as sub-transacoes
+              sortKey: -1767754600915
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/transactions/sub_transactions/1/"
+            name: Delete Sub Transaction
+            meta:
+              id: req_1c54152b8c474ea799d2a4706dafdd12
+              created: 1767754600916
+              modified: 1767754600916
+              isPrivate: false
+              description: Remove uma sub-transacao
+              sortKey: -1767754600916
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+  - name: AI
+    meta:
+      id: fld_8baa338d9cda4054abd4ff51d7aa7ac9
+      created: 1769657353272
+      modified: 1769657353272
+      sortKey: -1769657353272
+      description: ""
+    children:
+      - name: Chat
+        meta:
+          id: fld_0bc611c1b77d40388a591545759217d2
+          created: 1769657361806
+          modified: 1769657361806
+          sortKey: -1769657361806
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/ai/chat/start/"
+            name: Start Conversation
+            meta:
+              id: req_335a38b77e77481884a07591f0af99e2
+              created: 1769657473045
+              modified: 1769660996761
+              isPrivate: false
+              description: ""
+              sortKey: -1769657473045
+            method: POST
+            body:
+              mimeType: application/json
+              text: >-
+                {
+                	"content": "Opa, queria saber como posso economizar meu dinheiro nesse próximo mes."
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.3.0
+                description: ""
+                disabled: false
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+                description: ""
+                disabled: false
+            authentication:
+              type: none
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/ai/chat/list/"
+            name: List Conversations
+            meta:
+              id: req_b718ff05e8e34a8e9a34d5fede2a922e
+              created: 1769660556613
+              modified: 1769660992118
+              isPrivate: false
+              description: ""
+              sortKey: -1769660556613
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.3.0
+                description: ""
+                disabled: false
+              - name: Authorization
+                value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                  '$.access_token' %}
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - name: Message
+            meta:
+              id: fld_6324a754a1b144e48bb82a266e4f135c
+              created: 1769660651934
+              modified: 1769660651934
+              sortKey: -1769660651934
+              description: ""
+            children:
+              - url: "{{ _.base_url }}/ai/chat/5/messages"
+                name: List Messages from conversation
+                meta:
+                  id: req_f36040bb949347a6b162d81001296858
+                  created: 1769660654172
+                  modified: 1769669245497
+                  isPrivate: false
+                  description: ""
+                  sortKey: -1769660654172
+                method: GET
+                headers:
+                  - name: Authorization
+                    value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                      '$.access_token' %}
+                    description: ""
+                    disabled: false
+                settings:
+                  renderRequestBody: true
+                  encodeUrl: true
+                  followRedirects: global
+                  cookies:
+                    send: true
+                    store: true
+                  rebuildPath: true
+              - url: "{{ _.base_url }}/ai/chat/5/ask"
+                name: Send message to conversation
+                meta:
+                  id: req_d467141222f04e45a0bd34eeb0047ccf
+                  created: 1769660962705
+                  modified: 1769669288885
+                  isPrivate: false
+                  description: ""
+                  sortKey: -1769660962705
+                method: POST
+                body:
+                  mimeType: application/json
+                  text: |-
+                    {
+                    	"content": "Queria saber um pouco mais sobre como investir"
+                    }
+                headers:
+                  - name: Content-Type
+                    value: application/json
+                  - name: User-Agent
+                    value: insomnia/12.3.0
+                    description: ""
+                    disabled: false
+                  - name: Authorization
+                    value: Bearer {% response 'body', 'req_b2bbe0d1b37543efbdbd2b2249ba6f6e',
+                      '$.access_token' %}
+                    description: ""
+                    disabled: false
+                settings:
+                  renderRequestBody: true
+                  encodeUrl: true
+                  followRedirects: global
+                  cookies:
+                    send: true
+                    store: true
+                  rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_287bef37ec50875d935189915c57310676ebb43a
+    created: 1767672395243
+    modified: 1767672395243
+environments:
+  name: Base Environment
+  meta:
+    id: env_287bef37ec50875d935189915c57310676ebb43a
+    created: 1767672395242
+    modified: 1738262400000
+    isPrivate: false
+  subEnvironments:
+    - name: Development
+      meta:
+        id: env_3a9362be609e48b8b6d5eb3b970b4cf3
+        created: 1767672472954
+        modified: 1738262400000
+        isPrivate: false
+        sortKey: 1767672472954
+      data:
+        base_url: http://localhost:8000
+    - name: Production
+      meta:
+        id: env_f5b57f21a9d24d5ea4904f37260787da
+        created: 1767672472955
+        modified: 1738262400000
+        isPrivate: false
+        sortKey: 1767672472955
+      data:
+        base_url: https://api.billsmanager.com
