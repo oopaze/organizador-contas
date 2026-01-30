@@ -1,9 +1,9 @@
 from django.db import models
 
-from modules.base.models import TimedModel
+from modules.base.models import TimedModel, UserOwnedModel
 
 
-class File(TimedModel):
+class File(TimedModel, UserOwnedModel):
     raw_file = models.FileField("Link to File", upload_to="files/")
     raw_text = models.TextField(null=True, blank=True)
 

@@ -84,7 +84,7 @@ class UploadFileUseCase:
 
     def execute(self, file: UploadedFile, user_id: int):
         uploaded_file = self.file_factory.build(file)
-        saved_file = self.file_repository.create(uploaded_file)
+        saved_file = self.file_repository.create(uploaded_file, user_id)
         pdf_text = saved_file.extract_text_from_pdf()
 
         prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]

@@ -12,8 +12,8 @@ class FileRepository:
         file_instance = self.model.objects.get(id=file_id)
         return self.file_factory.build_from_model(file_instance)
 
-    def create(self, file: FileDomain) -> FileDomain:
-        file_instance = self.model.objects.create(raw_file=file.uploaded_file)
+    def create(self, file: FileDomain, user_id: int) -> FileDomain:
+        file_instance = self.model.objects.create(raw_file=file.uploaded_file, user_id=user_id)
         return self.file_factory.build_from_model(file_instance)
 
     def update(self, file: FileDomain) -> FileDomain:

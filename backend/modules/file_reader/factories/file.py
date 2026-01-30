@@ -23,4 +23,5 @@ class FileFactory:
             updated_at=model.updated_at,
             raw_text=model.raw_text,
             ai_call=self.ai_call_factory.build_from_model(model.ai_call) if model.ai_call else None,
+            user_id=model.user.id,
         )

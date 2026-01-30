@@ -35,6 +35,7 @@ class FileDomain:
         updated_at: str = None,
         raw_text: str = None,
         ai_call: AICallDomain = None,
+        user_id: int = None,
     ):
         self.url = self._format_url(url)
         self.uploaded_file = uploaded_file
@@ -43,6 +44,7 @@ class FileDomain:
         self.updated_at = updated_at
         self.raw_text = raw_text
         self.ai_call = ai_call
+        self.user_id = user_id
 
     def update_ai_info(self, ai_call: AICallDomain):
         self.ai_call = ai_call
