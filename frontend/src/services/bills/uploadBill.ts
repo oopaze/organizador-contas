@@ -15,12 +15,15 @@ async function uploadBillMock(file: File): Promise<Bill> {
   return newBill;
 }
 
-async function uploadBillReal(file: File): Promise<Bill> {
+async function uploadBillReal(file: File, password?: string): Promise<Bill> {
   const formData = new FormData();
   formData.append('file', file);
+  if (password) {
+    formData.append('password', password);
+  }
   return apiUploadRequest<Bill>('/file_reader/upload/', formData);
 }
 
-export async function uploadBill(file: File): Promise<Bill> {
-  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file);
+export async function uploadBill(file: File, password?: string): Promise<Bill> {
+  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file, password);
 }

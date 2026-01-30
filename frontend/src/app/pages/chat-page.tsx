@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   ChatMessage,
   ChatConversation,
@@ -168,9 +170,9 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)] gap-2 -mt-4">
+    <div className="flex h-[calc(100vh-120px)] gap-2 -mt-3">
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0">
+      <div className="w-80 flex-shrink-0">
         <Card className="h-full flex flex-col overflow-hidden gap-0">
           <div className="p-3 border-b">
             <Button onClick={createNewConversation} className="w-full" variant="outline">
@@ -223,15 +225,15 @@ export const ChatPage: React.FC = () => {
                       >
                         <div className="flex items-start gap-2">
                           <MessageCircle className={cn(
-                            'w-4 h-4 mt-0.5 flex-shrink-0',
+                            'w-4 h-4 mt-0.5 flex-shrink-0 mr-1',
                             isActive ? 'text-primary-foreground' : 'text-muted-foreground'
                           )} />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium line-clamp-2" title={conv.title}>
+                            <p className="text-[0.8rem] font-medium line-clamp-2" title={conv.title}>
                               {conv.title}
                             </p>
                             <p className={cn(
-                              'text-xs mt-0.5',
+                              'text-[0.7rem] mt-0.5',
                               isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'
                             )}>
                               {formattedDate}
@@ -259,12 +261,15 @@ export const ChatPage: React.FC = () => {
             </div>
           ) : messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Sparkles className="w-8 h-8 text-primary" />
+              <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                <span className="text-4xl">🐰</span>
               </div>
-              <h2 className="text-xl font-semibold mb-2">Assistente Financeiro</h2>
+              <h2 className="text-2xl font-bold mb-1 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                Bunny Money
+              </h2>
+              <p className="text-sm text-muted-foreground mb-1">Seu assistente financeiro fofo 💰</p>
               <p className="text-muted-foreground mb-6 max-w-md">
-                Pergunte sobre suas finanças, gastos, receitas ou peça dicas de economia.
+                Oi! Sou o Bunny Money! 🥕 Posso te ajudar com suas finanças, gastos, receitas ou dar dicas de economia. Vamos conversar?
               </p>
               <div className="grid grid-cols-2 gap-2 max-w-md">
                 {suggestedQuestions.map((question, index) => (
@@ -314,7 +319,43 @@ export const ChatPage: React.FC = () => {
                         : 'bg-muted'
                     )}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === 'assistant' ? (
+                      <div className={cn(
+                        "text-sm prose prose-sm dark:prose-invert max-w-none",
+                        // Paragraphs
+                        "prose-p:my-2 prose-p:leading-relaxed",
+                        // Lists
+                        "prose-ul:my-2 prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1",
+                        "prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:space-y-1",
+                        "prose-li:my-0.5 prose-li:pl-1",
+                        // Headings
+                        "prose-headings:font-semibold prose-headings:my-2 prose-headings:mt-4",
+                        "prose-h1:text-lg prose-h2:text-base prose-h3:text-sm",
+                        // Code
+                        "prose-pre:my-2 prose-pre:bg-muted prose-pre:p-3 prose-pre:rounded-md prose-pre:overflow-x-auto",
+                        "prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none",
+                        // Links
+                        "prose-a:text-primary prose-a:underline prose-a:underline-offset-2 hover:prose-a:text-primary/80",
+                        // Blockquotes
+                        "prose-blockquote:border-l-4 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-2",
+                        // Tables
+                        "prose-table:my-2 prose-table:w-full prose-table:text-xs",
+                        "prose-th:border prose-th:border-border prose-th:px-2 prose-th:py-1 prose-th:bg-muted prose-th:font-semibold prose-th:text-left",
+                        "prose-td:border prose-td:border-border prose-td:px-2 prose-td:py-1",
+                        // Horizontal rule
+                        "prose-hr:my-4 prose-hr:border-border",
+                        // Strong & Emphasis
+                        "prose-strong:font-semibold prose-em:italic"
+                      )}>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                        >
+                          {msg.content.replace(/\\n/g, '\n')}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    )}
                   </div>
                   {msg.role === 'human' && (
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">

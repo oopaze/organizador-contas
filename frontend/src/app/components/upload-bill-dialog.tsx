@@ -3,6 +3,8 @@ import { uploadBill } from '@/services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
+import { Input } from '@/app/components/ui/input';
+import { Checkbox } from '@/app/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Upload, FileText, X } from 'lucide-react';
 
@@ -20,6 +22,8 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [pdfPassword, setPdfPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -64,8 +68,11 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
 
     setLoading(true);
     try {
-      await uploadBill(selectedFile);
+      const password = hasPassword ? pdfPassword : undefined;
+      await uploadBill(selectedFile, password);
       setSelectedFile(null);
+      setHasPassword(false);
+      setPdfPassword('');
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar fatura');
@@ -77,6 +84,8 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const handleClose = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedFile(null);
+      setHasPassword(false);
+      setPdfPassword('');
     }
     onOpenChange(isOpen);
   };
@@ -150,6 +159,29 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                 )}
               </div>
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasPassword"
+                checked={hasPassword}
+                onCheckedChange={(checked) => setHasPassword(checked === true)}
+              />
+              <Label htmlFor="hasPassword" className="cursor-pointer">
+                O PDF tem senha?
+              </Label>
+            </div>
+
+            {hasPassword && (
+              <div className="space-y-2">
+                <Label htmlFor="pdfPassword">Senha do PDF</Label>
+                <Input
+                  id="pdfPassword"
+                  placeholder="Digite a senha do PDF"
+                  value={pdfPassword}
+                  onChange={(e) => setPdfPassword(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           <DialogFooter>
