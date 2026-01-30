@@ -17,6 +17,6 @@ async function updateSubTransactionReal(id: number, data: Partial<Omit<SubTransa
   });
 }
 
-export async function updateSubTransaction(id: number, data: Partial<Omit<SubTransaction, 'id'>>): Promise<SubTransaction> {
+export async function updateSubTransaction(id: number, data: Partial<Omit<SubTransaction, 'id'>> & { actor_amount?: number, should_divide_for_actor?: boolean }): Promise<SubTransaction> {
   return USE_MOCK_API ? await updateSubTransactionMock(id, data) : await updateSubTransactionReal(id, data);
 }

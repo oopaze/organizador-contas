@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { SubTransaction, getTransaction } from '@/services';
+import { SubTransaction, getTransaction, deleteSubTransaction, Actor } from '@/services';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { EditSubTransactionDialog } from './edit-sub-transaction-dialog';
+import { ConfirmationDialog } from './confirmation-dialog';
+import { toast } from 'sonner';
 
 interface SubTransactionsTableProps {
   transactionId: number;
@@ -19,6 +21,9 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedSubTransaction, setSelectedSubTransaction] = useState<SubTransaction | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subTransactionToDelete, setSubTransactionToDelete] = useState<SubTransaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchSubTransactions = useCallback(async () => {
     setLoading(true);
@@ -45,6 +50,29 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
 
   const handleEditSuccess = () => {
     fetchSubTransactions();
+  };
+
+  const handleDeleteClick = (subTransaction: SubTransaction) => {
+    setSubTransactionToDelete(subTransaction);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!subTransactionToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteSubTransaction(subTransactionToDelete.id);
+      toast.success('Subtransação excluída');
+      setDeleteDialogOpen(false);
+      setSubTransactionToDelete(null);
+      fetchSubTransactions();
+    } catch (error) {
+      toast.error('Falha ao excluir subtransação');
+      console.error('Error deleting subtransaction:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -88,9 +116,13 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
 
   if (subTransactions.length === 0) {
     return (
-      <div className="text-center py-4 text-muted-foreground text-sm">
-        Nenhuma subtransação encontrada
-      </div>
+      <>
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <p className="text-muted-foreground text-sm mb-4">
+            Nenhuma subtransação encontrada
+          </p>
+        </div>
+      </>
     );
   }
 
@@ -99,6 +131,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>#</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Descrição</TableHead>
@@ -114,6 +147,9 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
             const isNegative = amount < 0;
             return (
               <TableRow key={subTransaction.id}>
+                <TableCell className="text-sm">
+                  {subTransaction.id}
+                </TableCell>
                 <TableCell className="text-sm">
                   {new Date(subTransaction.date).toLocaleDateString('pt-BR')}
                 </TableCell>
@@ -136,7 +172,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                 </TableCell>
                 <TableCell className="text-sm">
                   {subTransaction.actor ? (
-                    <span className="text-foreground">{subTransaction.actor.name}</span>
+                    <span className="text-foreground">{(subTransaction?.actor as Actor)?.name}</span>
                   ) : (
                     <span className="text-muted-foreground">Sem ator</span>
                   )}
@@ -145,26 +181,50 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                   R$ {Math.abs(amount).toFixed(2)}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditSubTransaction(subTransaction)}
-                    title="Editar subtransação"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditSubTransaction(subTransaction)}
+                      title="Editar subtransação"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteClick(subTransaction)}
+                      title="Excluir subtransação"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
+      {editDialogOpen && selectedSubTransaction && (
+        <EditSubTransactionDialog
+          key={selectedSubTransaction.id}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          subTransaction={selectedSubTransaction}
+          onSuccess={handleEditSuccess}
+        />
+      )}
 
-      <EditSubTransactionDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        subTransaction={selectedSubTransaction}
-        onSuccess={handleEditSuccess}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Excluir subtransação"
+        description={`Tem certeza que deseja excluir a subtransação "${subTransactionToDelete?.description}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </>
   );

@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
+import { Checkbox } from '@/app/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,30 +23,27 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
   onSuccess,
 }) => {
   const [actors, setActors] = useState<Actor[]>([]);
-  const [selectedActorId, setSelectedActorId] = useState<string>('');
-  const [userProvidedDescription, setUserProvidedDescription] = useState<string>('');
+  const [selectedActorId, setSelectedActorId] = useState<string>((subTransaction?.actor as Actor)?.id?.toString() ?? '');
+  const [userProvidedDescription, setUserProvidedDescription] = useState<string>(subTransaction?.user_provided_description ?? '');
+  const [date, setDate] = useState<string>(subTransaction?.date ?? '');
+  const [description, setDescription] = useState<string>(subTransaction?.description ?? '');
+  const [amount, setAmount] = useState<string>(subTransaction?.amount ?? '');
+  const [installmentInfo, setInstallmentInfo] = useState<string>(subTransaction?.installment_info ?? '');
+  const [shouldDivideForActor, setShouldDivideForActor] = useState(false);
+  const [actorAmount, setActorAmount] = useState<string>('');
   const [loadingActors, setLoadingActors] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open && subTransaction) {
       fetchActors();
-      // Pre-select current actor if exists
-      if (subTransaction.actor_id) {
-        setSelectedActorId(subTransaction.actor_id.toString());
-      } else {
-        setSelectedActorId('');
-      }
-      // Pre-fill user provided description
-      setUserProvidedDescription(subTransaction.user_provided_description || '');
-    }
-  }, [open, subTransaction]);
+  }, []);
 
   const fetchActors = async () => {
     setLoadingActors(true);
     try {
       const actorsList = await getActors();
       setActors(actorsList);
+      console.log({selectedActorId, subTransaction });
     } catch (error) {
       toast.error('Falha ao carregar atores');
       console.error('Error fetching actors:', error);
@@ -54,15 +52,35 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
     }
   };
 
+  const isActorAmountValid = (): boolean => {
+    if (!shouldDivideForActor) return true;
+    if (!actorAmount) return false;
+    const actorAmountNum = parseFloat(actorAmount);
+    const amountNum = parseFloat(amount);
+    return actorAmountNum > 0 && actorAmountNum <= amountNum;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subTransaction) return;
 
+    // Validate actor amount
+    if (shouldDivideForActor && !isActorAmountValid()) {
+      toast.error('O valor do ator deve ser maior que 0 e menor ou igual ao valor total');
+      return;
+    }
+
     setSaving(true);
     try {
       await updateSubTransaction(subTransaction.id, {
-        user_provided_description: userProvidedDescription.trim() || undefined,
+        date: date ?? undefined,
+        description: description.trim() ?? undefined,
+        user_provided_description: userProvidedDescription.trim() ?? undefined,
+        amount: String(amount).trim() ?? undefined,
+        installment_info: installmentInfo.trim() ?? undefined,
         actor: selectedActorId ? parseInt(selectedActorId, 10) : undefined,
+        should_divide_for_actor: shouldDivideForActor ?? undefined,
+        actor_amount: shouldDivideForActor && actorAmount ? parseFloat(actorAmount) : undefined,
       });
       toast.success('Subtransação atualizada com sucesso');
       onSuccess();
@@ -101,19 +119,61 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
         <DialogHeader>
           <DialogTitle>Editar Subtransação</DialogTitle>
           <DialogDescription>
-            Atualize a descrição e vincule um ator à subtransação.
+            Atualize os dados da subtransação.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
+              <Label htmlFor="date">Data</Label>
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Nome</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ex: Americanas S/A"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="userProvidedDescription">Descrição</Label>
               <Input
                 id="userProvidedDescription"
                 value={userProvidedDescription}
                 onChange={(e) => setUserProvidedDescription(e.target.value)}
-                placeholder="Descrição para a subtransação"
+                placeholder="Ex: Compras de meu cachorro"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="amount">Valor</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="installmentInfo">Parcela</Label>
+              <Input
+                id="installmentInfo"
+                value={installmentInfo}
+                onChange={(e) => setInstallmentInfo(e.target.value)}
+                placeholder="Ex: 1/12"
               />
             </div>
 
@@ -125,13 +185,22 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
                   <span className="text-sm text-muted-foreground">Carregando atores...</span>
                 </div>
               ) : (
-                <Select value={selectedActorId} onValueChange={setSelectedActorId}>
+                <Select value={selectedActorId} defaultValue={selectedActorId} onValueChange={(value) => {
+                  if (value === 'null') {
+                    setShouldDivideForActor(false);
+                    setActorAmount('');
+                    setSelectedActorId('');
+                    return 
+                  }
+                  setSelectedActorId(value);
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um ator" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="null">Nenhum</SelectItem>
                     {actors.map((actor) => (
-                      <SelectItem key={actor.id} value={actor.id.toString()}>
+                      <SelectItem key={actor.id}  value={actor.id.toString()}>
                         {actor.name}
                       </SelectItem>
                     ))}
@@ -144,6 +213,61 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
                 </p>
               )}
             </div>
+
+            {/* Show divide option only when an actor is selected */}
+            {selectedActorId && (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="shouldDivideForActor"
+                    checked={shouldDivideForActor}
+                    onCheckedChange={(checked) => {
+                      setShouldDivideForActor(checked === true);
+                      if (!checked) {
+                        setActorAmount('');
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="shouldDivideForActor"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    Atribuir valor parcial ao ator
+                  </Label>
+                </div>
+
+                {shouldDivideForActor && (
+                  <div className="space-y-2">
+                    <Label htmlFor="actorAmount">Valor do Ator</Label>
+                    <Input
+                      id="actorAmount"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={amount || undefined}
+                      value={actorAmount}
+                      onChange={(e) => setActorAmount(e.target.value)}
+                      placeholder="0.00"
+                    />
+                    {actorAmount && parseFloat(actorAmount) <= 0 && (
+                      <p className="text-xs text-destructive">
+                        O valor deve ser maior que 0.
+                      </p>
+                    )}
+                    {actorAmount && amount && parseFloat(actorAmount) > parseFloat(amount) && (
+                      <p className="text-xs text-destructive">
+                        O valor não pode ser maior que o valor total ({amount}).
+                      </p>
+                    )}
+                    {actorAmount && amount && parseFloat(actorAmount) > 0 && parseFloat(actorAmount) <= parseFloat(amount) && (
+                      <p className="text-xs text-muted-foreground">
+                        O valor restante ({(parseFloat(amount) - parseFloat(actorAmount)).toFixed(2)}) permanecerá na subtransação original.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <DialogFooter className="gap-2">
@@ -160,7 +284,7 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={saving || loadingActors}>
+            <Button type="submit" disabled={saving || loadingActors || !isActorAmountValid()}>
               {saving ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>
