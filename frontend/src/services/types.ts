@@ -52,6 +52,7 @@ export interface Transaction {
   recurrence_count?: number;
   file?: number;
   created_at?: string;
+  amount_from_actor?: number;
 }
 
 export interface SubTransaction {
@@ -60,7 +61,7 @@ export interface SubTransaction {
   description: string;
   amount: string;
   installment_info?: string;
-  transaction_identifier: string;
+  transaction_identifier?: string;
   transaction_id: number;
   actor_id?: number;
   actor?: Actor | number;

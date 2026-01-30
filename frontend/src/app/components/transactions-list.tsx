@@ -7,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible';
-import { Trash2, ChevronRight, Pencil } from 'lucide-react';
+import { Trash2, ChevronRight, Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { SubTransactionsTable } from './sub-transactions-table';
 import { EditTransactionDialog } from './edit-transaction-dialog';
+import { AddSubTransactionDialog } from './add-sub-transaction-dialog';
 
 interface TransactionsListProps {
   type: 'expenses' | 'income' | 'all';
@@ -40,11 +41,19 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [addSubDialogOpen, setAddSubDialogOpen] = useState(false);
+  const [transactionIdForSub, setTransactionIdForSub] = useState<number | null>(null);
 
   const handleEditClick = (transaction: Transaction, e: React.MouseEvent) => {
     e.stopPropagation();
     setTransactionToEdit(transaction);
     setEditDialogOpen(true);
+  };
+
+  const handleAddSubClick = (transactionId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTransactionIdForSub(transactionId);
+    setAddSubDialogOpen(true);
   };
 
   const toggleRow = (id: number) => {
@@ -101,6 +110,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                 <TableHead>Identificador</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="text-right">Valor de Terceiros</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -141,12 +151,24 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                             <TableCell className={`text-right ${transaction.transaction_type === 'incoming' ? 'text-green-600' : 'text-red-600'}`}>
                               R$ {parseFloat(transaction.total_amount).toFixed(2)}
                             </TableCell>
+                            <TableCell className={`text-right ${transaction.transaction_type === 'incoming' ? 'text-green-600' : 'text-red-600'}`}>
+                              R$ {transaction.amount_from_actor?.toFixed(2)}
+                            </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={(e) => handleAddSubClick(transaction.id, e)}
+                                  title="Adicionar subtransação"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={(e) => handleEditClick(transaction, e)}
+                                  title="Editar transação"
                                 >
                                   <Pencil className="w-4 h-4" />
                                 </Button>
@@ -157,6 +179,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                                     e.stopPropagation();
                                     handleDeleteTransaction(transaction.id);
                                   }}
+                                  title="Excluir transação"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                 </Button>
@@ -166,7 +189,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                         </CollapsibleTrigger>
                         <CollapsibleContent asChild>
                           <TableRow className="bg-muted/30 hover:bg-muted/30">
-                            <TableCell colSpan={6} className="p-4">
+                            <TableCell colSpan={7} className="p-4">
                               <div className="rounded-md border bg-background p-4">
                                 <SubTransactionsTable transactionId={transaction.id} />
                               </div>
@@ -197,6 +220,18 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         }}
         transaction={transactionToEdit}
       />
+
+      {transactionIdForSub && (
+        <AddSubTransactionDialog
+          open={addSubDialogOpen}
+          onOpenChange={setAddSubDialogOpen}
+          transactionId={transactionIdForSub}
+          onSuccess={() => {
+            setAddSubDialogOpen(false);
+            onUpdate();
+          }}
+        />
+      )}
     </div>
   );
 };
