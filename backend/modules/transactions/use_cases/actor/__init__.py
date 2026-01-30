@@ -3,6 +3,7 @@ from modules.transactions.use_cases.actor.delete import DeleteActorUseCase
 from modules.transactions.use_cases.actor.get import GetActorUseCase
 from modules.transactions.use_cases.actor.list import ListActorsUseCase
 from modules.transactions.use_cases.actor.update import UpdateActorUseCase
+from modules.transactions.use_cases.actor.stats import ActorStatsUseCase
 
 __all__ = [
     "CreateActorUseCase",
@@ -10,4 +11,5 @@ __all__ = [
     "GetActorUseCase",
     "ListActorsUseCase",
     "UpdateActorUseCase",
+    "ActorStatsUseCase",
 ]

@@ -6,31 +6,38 @@ from modules.transactions.models import Actor, Transaction, SubTransaction
 from modules.transactions.repositories import ActorRepository, TransactionRepository, SubTransactionRepository
 from modules.transactions.serializers import ActorSerializer, TransactionSerializer, SubTransactionSerializer
 from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
-from modules.transactions.use_cases.actor import (
+from modules.transactions.use_cases import (
+    GetToolsForAIUseCase,
     CreateActorUseCase,
     DeleteActorUseCase,
     GetActorUseCase,
     ListActorsUseCase,
     UpdateActorUseCase,
-)
-from modules.transactions.use_cases.transaction import (
+    ActorStatsUseCase,
     CreateTransactionUseCase,
     DeleteTransactionUseCase,
     GetTransactionUseCase,
     ListTransactionsUseCase,
     UpdateTransactionUseCase,
     TransactionStatsUseCase,
-)
-from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
     DeleteSubTransactionUseCase,
     GetSubTransactionUseCase,
     ListSubTransactionsUseCase,
     UpdateSubTransactionUseCase,
+    GetActorsToolUseCase,
+    GetActorDetailToolUseCase,
+    GetActorStatsToolUseCase,
+    GetSubTransactionsFromTransactionToolUseCase,
+    GetUserGeneralStatsToolUseCase,
+    GetTransactionsToolUseCase,
 )
 
 
 class TransactionsContainer(containers.DeclarativeContainer):
+    # DEPENDENCIES
+    user_id = providers.Dependency()
+
     # SERIALIZERS
     actor_serializer = providers.Factory(ActorSerializer)
     sub_transaction_serializer = providers.Factory(
@@ -87,6 +94,12 @@ class TransactionsContainer(containers.DeclarativeContainer):
     delete_actor_use_case = providers.Factory(
         DeleteActorUseCase,
         actor_repository=actor_repository,
+    )
+
+    actor_stats_use_case = providers.Factory(
+        ActorStatsUseCase,
+        actor_repository=actor_repository,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     list_transactions_use_case = providers.Factory(
@@ -157,4 +170,64 @@ class TransactionsContainer(containers.DeclarativeContainer):
     delete_sub_transaction_use_case = providers.Factory(
         DeleteSubTransactionUseCase,
         sub_transaction_repository=sub_transaction_repository,
+    )
+
+    get_actors_tool_use_case = providers.Factory(
+        GetActorsToolUseCase,
+        actor_repository=actor_repository,
+        actor_serializer=actor_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+        user_id=user_id,
+    )
+
+    get_actor_detail_tool_use_case = providers.Factory(
+        GetActorDetailToolUseCase,
+        actor_repository=actor_repository,
+        actor_serializer=actor_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+        sub_transaction_serializer=sub_transaction_serializer,
+        user_id=user_id,
+    )
+
+    get_actor_stats_tool_use_case = providers.Factory(
+        GetActorStatsToolUseCase,
+        actor_stats_use_case=actor_stats_use_case,
+        user_id=user_id,
+    )
+
+    get_sub_transactions_from_transaction_tool_use_case = providers.Factory(
+        GetSubTransactionsFromTransactionToolUseCase,
+        sub_transaction_serializer=sub_transaction_serializer,
+        sub_transaction_factory=sub_transaction_factory,
+        sub_transaction_repository=sub_transaction_repository,
+        transaction_repository=transaction_repository,
+        user_id=user_id,
+    )
+
+    get_user_general_stats_tool_use_case = providers.Factory(
+        GetUserGeneralStatsToolUseCase,
+        transaction_stats_use_case=transaction_stats_use_case,
+        user_id=user_id,
+    )
+
+    get_transactions_tool_use_case = providers.Factory(
+        GetTransactionsToolUseCase,
+        transaction_repository=transaction_repository,
+        transaction_serializer=transaction_serializer,
+        transaction_factory=transaction_factory,
+        user_id=user_id,
+    )
+
+    tools_use_cases = providers.List(
+        get_actors_tool_use_case,
+        get_actor_detail_tool_use_case,
+        get_actor_stats_tool_use_case,
+        get_sub_transactions_from_transaction_tool_use_case,
+        get_user_general_stats_tool_use_case,
+        get_transactions_tool_use_case,
+    )
+
+    get_tools_for_ai_use_case = providers.Factory(
+        GetToolsForAIUseCase,
+        tools_use_cases=tools_use_cases,
     )

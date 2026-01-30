@@ -38,6 +38,13 @@ class ActorViewSet(viewsets.ViewSet):
         self.container.delete_actor_use_case().execute(pk, request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+    @decorators.action(detail=False, methods=["GET"])
+    def stats(self, request):
+        due_date_start = request.query_params.get("due_date_start")
+        due_date_end = request.query_params.get("due_date_end")
+        stats = self.container.actor_stats_use_case().execute(request.user.id, due_date_start, due_date_end)
+        return Response(stats, status=status.HTTP_200_OK)
+    
 
 class TransactionViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
