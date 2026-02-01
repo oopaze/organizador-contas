@@ -3,7 +3,7 @@
 // Toggle this to switch between mock and real API
 export const USE_MOCK_API = false;
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.poupix.connectakit.com.br';
 
 // Token management
 export const tokenManager = {
