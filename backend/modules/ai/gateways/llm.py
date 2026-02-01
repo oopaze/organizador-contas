@@ -1,10 +1,13 @@
 import json
+import logging
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from modules.ai.domains.ai_request import AIRequestDomain
 from modules.ai.factories.ai_request import AIRequestFactory
+
+logger = logging.getLogger(__name__)
 
 
 class LLMGateway:

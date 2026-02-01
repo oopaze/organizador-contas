@@ -1,9 +1,13 @@
+import logging
+
 from openai.types.chat import ChatCompletion
 
 from modules.ai.domains import AIRequestDomain
 from modules.ai.types import LlmModels, LlmProviders
 from modules.ai.gateways import LLMGateway
 from modules.ai.exceptions import LLMGatewayException
+
+logger = logging.getLogger(__name__)
 
 
 class LLMService:
@@ -16,8 +20,15 @@ class LLMService:
 
     def ask(self, ai_request: AIRequestDomain) -> ChatCompletion:
         try:
-            gateway = self._gateways[LlmModels.get_model(ai_request.model).provider]
-            return gateway.ask(ai_request)
+            model_info = LlmModels.get_model(ai_request.model)
+            provider = model_info.provider
+            logger.info(f"[LLMService] Requesting model: {ai_request.model}, provider: {provider}")
+
+            gateway = self._gateways[provider]
+            logger.info(f"[LLMService] Calling gateway.ask()...")
+            result = gateway.ask(ai_request)
+            logger.info(f"[LLMService] Gateway returned successfully")
+            return result
         except Exception as e:
-            print("LLMService.ask.error", e)
-            raise LLMGatewayException("LLM Gateway could not process the request.")
+            logger.error(f"[LLMService] Error calling LLM: {type(e).__name__}: {e}")
+            raise LLMGatewayException(f"LLM Gateway could not process the request: {e}")
