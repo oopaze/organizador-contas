@@ -9,6 +9,7 @@ pgvector==0.4.2
 google-genai==1.56.0
 openai==2.16.0
 pypdf2==3.0.1
+pdfplumber==0.11.4
 pycryptodome==3.23.0
 
 # Linting & Formatting
