@@ -68,13 +68,14 @@ def process_sheet_upload(
         logger.info(f"[Task:UploadSheet] Calling AI with model: {model}...")
         ai_call_id = ask_use_case.execute(prompt, response_format="json_object", model=model)
         logger.info(f"[Task:UploadSheet] AI call completed with id: {ai_call_id}")
-        
+
         # Update file with AI info
         ai_call = ai_call_repository.get(ai_call_id)
+        logger.info(f"[Task:UploadSheet] AI response: {ai_call.response}")
         saved_file.update_ai_info(ai_call)
         file_repository.update(saved_file)
         logger.info(f"[Task:UploadSheet] File updated with AI info")
-        
+
         # Transpose to models (create transactions)
         logger.info(f"[Task:UploadSheet] Creating transactions...")
         transpose_use_case.execute(file_id, user_id)

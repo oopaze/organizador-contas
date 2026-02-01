@@ -16,10 +16,18 @@ class BillFactory:
         is_income = ai_response.get("is_income", False)
         transaction_type = "incoming" if is_income else "outgoing"
 
+        # Handle different field names that AI might return
+        due_date = ai_response.get("due_date") or ai_response.get("date") or ai_response.get("data")
+        total_amount = ai_response.get("total_amount") or ai_response.get("amount") or ai_response.get("valor") or 0
+        bill_identifier = ai_response.get("bill_identifier") or ai_response.get("description") or ai_response.get("descricao") or "Unknown"
+
+        if not due_date:
+            raise ValueError(f"Missing due_date in AI response: {ai_response}")
+
         return BillDomain(
-            due_date=ai_response["due_date"],
-            total_amount=ai_response["total_amount"],
-            bill_identifier=ai_response["bill_identifier"],
+            due_date=due_date,
+            total_amount=total_amount,
+            bill_identifier=bill_identifier,
             file=file,
             transaction_type=transaction_type,
         )
