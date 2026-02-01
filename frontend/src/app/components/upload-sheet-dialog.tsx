@@ -96,6 +96,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
       setSelectedFile(null);
       setSelectedModel('deepseek-chat');
       setDescription('');
+      toast.success('Sua planilha foi recebida e já está sendo processada, aguarde alguns minutos até ver suas transações');
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar planilha');
