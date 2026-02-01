@@ -1,6 +1,10 @@
+import logging
+
 from django.core.files.uploadedfile import UploadedFile
 
 from modules.file_reader.factories.ai_call import AICallFactory
+
+logger = logging.getLogger(__name__)
 from modules.file_reader.factories.file import FileFactory
 from modules.file_reader.repositories.ai_call import AICallRepository
 from modules.file_reader.repositories.file import FileRepository
@@ -112,26 +116,39 @@ class UploadSheetUseCase:
         self.transpose_file_bill_to_models_use_case = transpose_file_bill_to_models_use_case
 
     def execute(
-        self, 
-        uploaded_file: UploadedFile, 
-        user_id: int, 
+        self,
+        uploaded_file: UploadedFile,
+        user_id: int,
         model: str = LlmModels.DEEPSEEK_CHAT.name,
         user_provided_description: str = None,
     ):
+        logger.info(f"[UploadSheet] Starting upload for user {user_id}, file: {uploaded_file.name}, model: {model}")
+
         file = self.file_factory.build(uploaded_file)
         saved_file = self.file_repository.create(file, user_id)
+        logger.info(f"[UploadSheet] File saved with id: {saved_file.id}")
 
+        logger.info(f"[UploadSheet] Extracting text from spreadsheet...")
         spreadsheet_text = saved_file.extract_text_from_spreadsheet()
+        logger.info(f"[UploadSheet] Extracted {len(spreadsheet_text)} characters from spreadsheet")
 
         prompt = [SPREADSHEET_PROMPT]
         if user_provided_description:
+            logger.info(f"[UploadSheet] User provided description: {user_provided_description[:100]}...")
             prompt.append(USER_PROVIDED_DESCRIPTION_PROMPT.format(user_provided_description=user_provided_description))
         prompt.append(f"Here is the spreadsheet content:\n{spreadsheet_text}")
+
+        logger.info(f"[UploadSheet] Calling AI with model: {model}...")
         ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object", model=model)
+        logger.info(f"[UploadSheet] AI call completed with id: {ai_call_id}")
 
         ai_call = self.ai_call_repository.get(ai_call_id)
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
+        logger.info(f"[UploadSheet] File updated with AI info")
 
+        logger.info(f"[UploadSheet] Transposing file bills to models...")
         self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id)
+        logger.info(f"[UploadSheet] Upload completed successfully for file: {updated_file.id}")
+
         return self.file_serializer.serialize(updated_file)
