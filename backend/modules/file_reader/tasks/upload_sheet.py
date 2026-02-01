@@ -47,8 +47,8 @@ def process_sheet_upload(
         if not saved_file:
             logger.error(f"[Task:UploadSheet] File not found: {file_id}")
             return {"status": "error", "message": "File not found"}
-        
-        logger.info(f"[Task:UploadSheet] File loaded: {saved_file.name}")
+
+        logger.info(f"[Task:UploadSheet] File loaded: {saved_file.url}")
         
         # Extract text from spreadsheet
         logger.info(f"[Task:UploadSheet] Extracting text from spreadsheet...")
