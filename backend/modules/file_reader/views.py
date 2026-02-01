@@ -55,8 +55,7 @@ class UploadSheetView(APIView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        ask_use_case = AIContainer().ask_use_case()
-        self.container = FileReaderContainer(ask_use_case=ask_use_case)
+        self.container = FileReaderContainer()
 
     def post(self, request: Request) -> Response:
         file = request.FILES.get("file")
@@ -68,14 +67,18 @@ class UploadSheetView(APIView):
 
         model = request.data.get("model", LlmModels.DEEPSEEK_CHAT.name)
         user_provided_description = request.data.get("user_provided_description")
+
         try:
             result = self.container.upload_sheet_use_case().execute(
-                file, 
-                request.user.id, 
-                model=model, 
-                user_provided_description=user_provided_description
+                file,
+                request.user.id,
+                model=model,
+                user_provided_description=user_provided_description,
             )
-            return Response(result, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "File uploaded and queued for processing", "file_id": result.get("id")},
+                status=status.HTTP_202_ACCEPTED,
+            )
         except Exception as e:
             return Response(
                 {"error": str(e)},

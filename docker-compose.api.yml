@@ -4,8 +4,6 @@
 # Use this when frontend is deployed to a CDN
 # Usage: docker compose -f docker-compose.api.yml up -d
 
-version: '3.8'
-
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -18,6 +16,17 @@ services:
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U poupix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - poupix-network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -38,8 +47,35 @@ services:
     environment:
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - poupix-network
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    env_file:
+      - ./backend/.env
+    command: celery -A infra worker --loglevel=info --concurrency=2
+    volumes:
+      - backend_files:/app/files
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: always
     networks:

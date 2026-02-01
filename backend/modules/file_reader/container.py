@@ -57,7 +57,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
         file_repository=file_repository,
     )
 
-    ask_use_case = providers.Dependency()
+    ask_use_case = providers.Dependency(default=None)
 
     remove_pdf_password_use_case = providers.Factory(RemovePDFPasswordUseCase)
 
@@ -88,11 +88,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
 
     upload_sheet_use_case = providers.Factory(
         UploadSheetUseCase,
-        ask_use_case=ask_use_case,
         file_repository=file_repository,
         file_factory=file_factory,
         file_serializer=file_serializer,
-        ai_call_repository=ai_call_repository,
-        ai_call_factory=ai_call_factory,
-        transpose_file_bill_to_models_use_case=transpose_file_bill_to_models_use_case,
     )

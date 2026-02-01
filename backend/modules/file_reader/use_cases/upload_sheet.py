@@ -2,16 +2,12 @@ import logging
 
 from django.core.files.uploadedfile import UploadedFile
 
-from modules.file_reader.factories.ai_call import AICallFactory
-
-logger = logging.getLogger(__name__)
 from modules.file_reader.factories.file import FileFactory
-from modules.file_reader.repositories.ai_call import AICallRepository
 from modules.file_reader.repositories.file import FileRepository
 from modules.file_reader.serializers.file import FileSerializer
-from modules.file_reader.use_cases.transpose_file_bill_to_models import TransposeFileBillToModelsUseCase
-from modules.ai.use_cases.ask import AskUseCase
 from modules.ai.types import LlmModels
+
+logger = logging.getLogger(__name__)
 
 
 USER_PROVIDED_DESCRIPTION_PROMPT = """
@@ -99,21 +95,13 @@ Response format:
 class UploadSheetUseCase:
     def __init__(
         self,
-        ask_use_case: AskUseCase,
         file_repository: FileRepository,
         file_factory: FileFactory,
         file_serializer: FileSerializer,
-        ai_call_repository: AICallRepository,
-        ai_call_factory: AICallFactory,
-        transpose_file_bill_to_models_use_case: TransposeFileBillToModelsUseCase,
     ):
-        self.ask_use_case = ask_use_case
         self.file_repository = file_repository
         self.file_factory = file_factory
         self.file_serializer = file_serializer
-        self.ai_call_repository = ai_call_repository
-        self.ai_call_factory = ai_call_factory
-        self.transpose_file_bill_to_models_use_case = transpose_file_bill_to_models_use_case
 
     def execute(
         self,
@@ -122,33 +110,23 @@ class UploadSheetUseCase:
         model: str = LlmModels.DEEPSEEK_CHAT.name,
         user_provided_description: str = None,
     ):
+        from modules.file_reader.tasks import process_sheet_upload
+
         logger.info(f"[UploadSheet] Starting upload for user {user_id}, file: {uploaded_file.name}, model: {model}")
 
+        # Save file synchronously
         file = self.file_factory.build(uploaded_file)
         saved_file = self.file_repository.create(file, user_id)
         logger.info(f"[UploadSheet] File saved with id: {saved_file.id}")
 
-        logger.info(f"[UploadSheet] Extracting text from spreadsheet...")
-        spreadsheet_text = saved_file.extract_text_from_spreadsheet()
-        logger.info(f"[UploadSheet] Extracted {len(spreadsheet_text)} characters from spreadsheet")
+        # Queue processing task asynchronously
+        logger.info(f"[UploadSheet] Queuing processing task for file: {saved_file.id}")
+        process_sheet_upload.delay(
+            file_id=saved_file.id,
+            user_id=user_id,
+            model=model,
+            user_provided_description=user_provided_description,
+        )
+        logger.info(f"[UploadSheet] Task queued successfully")
 
-        prompt = [SPREADSHEET_PROMPT]
-        if user_provided_description:
-            logger.info(f"[UploadSheet] User provided description: {user_provided_description[:100]}...")
-            prompt.append(USER_PROVIDED_DESCRIPTION_PROMPT.format(user_provided_description=user_provided_description))
-        prompt.append(f"Here is the spreadsheet content:\n{spreadsheet_text}")
-
-        logger.info(f"[UploadSheet] Calling AI with model: {model}...")
-        ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object", model=model)
-        logger.info(f"[UploadSheet] AI call completed with id: {ai_call_id}")
-
-        ai_call = self.ai_call_repository.get(ai_call_id)
-        saved_file.update_ai_info(ai_call)
-        updated_file = self.file_repository.update(saved_file)
-        logger.info(f"[UploadSheet] File updated with AI info")
-
-        logger.info(f"[UploadSheet] Transposing file bills to models...")
-        self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id)
-        logger.info(f"[UploadSheet] Upload completed successfully for file: {updated_file.id}")
-
-        return self.file_serializer.serialize(updated_file)
+        return self.file_serializer.serialize(saved_file)
