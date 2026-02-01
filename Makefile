@@ -67,26 +67,26 @@ prod: prod-build prod-up
 # Build production images
 prod-build:
 	@echo "🔨 Building production images..."
-	docker-compose -f docker-compose.prod.yml build
+	docker compose -f docker-compose.prod.yml build
 
 # Start production containers
 prod-up:
 	@echo "🚀 Starting production..."
-	docker-compose -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml up -d
 
 # Stop production containers
 prod-down:
 	@echo "🛑 Stopping production..."
-	docker-compose -f docker-compose.prod.yml down
+	docker compose -f docker-compose.prod.yml down
 
 # View production logs
 prod-logs:
-	docker-compose -f docker-compose.prod.yml logs -f
+	docker compose -f docker-compose.prod.yml logs -f
 
 # Restart production containers
 prod-restart:
 	@echo "🔄 Restarting production..."
-	docker-compose -f docker-compose.prod.yml restart
+	docker compose -f docker-compose.prod.yml restart
 
 # ===========================================
 # API Only (Backend + Database for CDN frontend)
@@ -100,46 +100,46 @@ api: api-build api-up
 # Build API images
 api-build:
 	@echo "🔨 Building API images..."
-	docker-compose -f docker-compose.api.yml build
+	docker compose -f docker-compose.api.yml build
 
 # Start API containers
 api-up:
 	@echo "🚀 Starting API..."
-	docker-compose -f docker-compose.api.yml up -d
+	docker compose -f docker-compose.api.yml up -d
 
 # Stop API containers
 api-down:
 	@echo "🛑 Stopping API..."
-	docker-compose -f docker-compose.api.yml down
+	docker compose -f docker-compose.api.yml down
 
 # View API logs
 api-logs:
-	docker-compose -f docker-compose.api.yml logs -f
+	docker compose -f docker-compose.api.yml logs -f
 
 # Restart API containers
 api-restart:
 	@echo "🔄 Restarting API..."
-	docker-compose -f docker-compose.api.yml restart
+	docker compose -f docker-compose.api.yml restart
 
 # ===========================================
 # Database
 # ===========================================
 
 db_up:
-	docker-compose up -d db
+	docker compose up -d db
 
 db_down:
-	docker-compose down db
+	docker compose down db
 
 db_logs:
-	docker-compose logs -f db
+	docker compose logs -f db
 
 db_shell:
-	docker-compose exec db psql -U postgres -d poupix
+	docker compose exec db psql -U postgres -d poupix
 
 db_init_pgvector:
-	docker-compose exec db psql -U postgres -d poupix -c "CREATE EXTENSION IF NOT EXISTS vector;"
+	docker compose exec db psql -U postgres -d poupix -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
 db_clean:
-	docker-compose down -v db
+	docker compose down -v db
 	docker volume rm bills-manager_postgres_data 2>/dev/null || true
