@@ -119,6 +119,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8"></TableHead>
+                <TableHead>#</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Identificador</TableHead>
                 <TableHead>Tipo</TableHead>
@@ -145,6 +146,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                               <ChevronRight
                                 className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
                               />
+                            </TableCell>
+                            <TableCell>
+                              {transaction.id}
                             </TableCell>
                             <TableCell>
                               {new Date(transaction.due_date).toLocaleDateString('pt-BR')}
@@ -199,7 +203,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                         </CollapsibleTrigger>
                         <CollapsibleContent asChild>
                           <TableRow className="bg-muted/30 hover:bg-muted/30">
-                            <TableCell colSpan={7} className="p-4">
+                            <TableCell colSpan={8} className="p-4">
                               <div className="rounded-md border bg-background p-4">
                                 <SubTransactionsTable transactionId={transaction.id} />
                               </div>

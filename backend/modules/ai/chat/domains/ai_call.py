@@ -1,3 +1,7 @@
+from modules.ai.types import LlmModels
+from decimal import Decimal
+
+
 class AICallDomain:
     def __init__(
         self,
@@ -9,6 +13,8 @@ class AICallDomain:
         id: int = None,
         created_at: str = None,
         updated_at: str = None,
+        model: str = None,
+        is_error: bool = False,
     ):
         self.response = response
         self.id = id
@@ -18,3 +24,18 @@ class AICallDomain:
         self.total_tokens = total_tokens
         self.input_used_tokens = input_used_tokens 
         self.output_used_tokens = output_used_tokens
+        self.model = model
+        self.input_cost, self.output_cost = self.calculate_costs()
+        self.is_error = is_error
+
+    def calculate_costs(self):
+        if not self.model or self.input_used_tokens == 0 or self.output_used_tokens == 0:
+            return Decimal(0), Decimal(0)
+
+        model = LlmModels.get_model(self.model)
+        dollar_to_brl = Decimal(5.20)
+
+        input_cost = Decimal(self.input_used_tokens) * (Decimal(model.input_cost_per_million_tokens) / Decimal(1000000)) * dollar_to_brl
+        output_cost =  Decimal(self.output_used_tokens) * (Decimal(model.output_cost_per_million_tokens) / Decimal(1000000)) * dollar_to_brl
+
+        return input_cost, output_cost

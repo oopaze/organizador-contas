@@ -41,7 +41,7 @@ class UpdateSubTransactionUseCase:
         sub_transaction.update({
             "actor_id": None,
             "amount": sub_transaction.amount - actor_sub_transaction.amount,
-            "user_provided_description": current_user_provided_description + f"Minha parte",
+            "user_provided_description": current_user_provided_description,
         })
         return sub_transaction
 

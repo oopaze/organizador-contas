@@ -11,25 +11,28 @@ Subtransações:
 
 class GetActorDetailToolUseCase:
     AI_CONFIG = {
-        "name": "get_actor_detail",
-        "description": "Get actor detail. Use this tool to get a resume of the actor spent in a specific period.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "actor_id": {
-                    "type": "string",
-                    "description": "The actor id",
+        "type": "function",
+        "function": {
+            "name": "get_actor_detail",
+            "description": "Get actor detail. Use this tool to get a resume of the actor spent in a specific period.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "actor_id": {
+                        "type": "string",
+                        "description": "The actor id",
+                    },
+                    "due_date_start": {
+                        "type": "string",
+                        "description": "The due date start in YYYY-MM-DD format",
+                    },
+                    "due_date_end": {
+                        "type": "string",
+                        "description": "The due date end in YYYY-MM-DD format",
+                    },
                 },
-                "due_date_start": {
-                    "type": "string",
-                    "description": "The due date start in YYYY-MM-DD format",
-                },
-                "due_date_end": {
-                    "type": "string",
-                    "description": "The due date end in YYYY-MM-DD format",
-                },
+                "required": ["actor_id", "due_date_start", "due_date_end"],
             },
-            "required": ["actor_id", "due_date_start", "due_date_end"],
         },
     }
 

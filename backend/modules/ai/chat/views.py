@@ -20,7 +20,7 @@ class StartConversionView(views.APIView):
 
         return AIChatContainer(
             ask_use_case=ask_use_case, 
-            create_embedding_use_case=create_embedding_use_case, 
+            create_embedding_use_case=create_embedding_use_case,
             tools=tools
         )
 
@@ -74,7 +74,7 @@ class SendConversionMessageView(views.APIView):
 
         return AIChatContainer(
             ask_use_case=ask_use_case, 
-            create_embedding_use_case=create_embedding_use_case, 
+            create_embedding_use_case=create_embedding_use_case,
             tools=tools
         )
 

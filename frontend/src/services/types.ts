@@ -112,6 +112,9 @@ export interface AICall {
   total_tokens: number;
   input_used_tokens: number;
   output_used_tokens: number;
+  input_cost: number;
+  output_cost: number;
+  model: string;
 }
 
 export interface ChatMessage {

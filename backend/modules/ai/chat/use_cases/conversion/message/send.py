@@ -1,13 +1,12 @@
-from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT, MODELS_EXPLANATION_PROMPT
+from modules.ai.types import LlmModels
+from modules.ai.prompts import SCOPE_BOUNDARIES_PROMPT, ASK_USER_MESSAGE_PROMPT, MODELS_EXPLANATION_PROMPT, BOT_DESCRIPTION
 from modules.ai.chat.factories import MessageFactory
 from modules.ai.chat.repositories import AICallRepository, MessageRepository, ConversationRepository, EmbeddingCallRepository
 from modules.ai.chat.serializers import MessageSerializer
-from modules.ai.chat.models import Message
 from modules.ai.use_cases.ask import AskUseCase
 from modules.ai.use_cases.create_embedding import CreateEmbeddingUseCase
-from modules.ai.gateways.gemini import GoogleModels
 from modules.ai.gateways.openai_embedding import EmbeddingModels
-from google.genai.types import ToolListUnion
+from modules.ai.chat.domains import MessageDomain, ConversationDomain
 
 
 class SendConversionMessageUseCase:
@@ -23,7 +22,7 @@ class SendConversionMessageUseCase:
         message_repository: MessageRepository,
         message_factory: MessageFactory,
         message_serializer: MessageSerializer,
-        tools: list[ToolListUnion],
+        tools: list[dict],
     ):
         self.ask_use_case = ask_use_case
         self.create_embedding_use_case = create_embedding_use_case
@@ -35,36 +34,52 @@ class SendConversionMessageUseCase:
         self.message_serializer = message_serializer
         self.tools = tools
 
-    def execute(self, conversation_id: int, content: str, user_id: int, model: str = GoogleModels.GEMINI_2_5_FLASH_LITE) -> dict:
+    def execute(self, conversation_id: int, content: str, user_id: int, model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name) -> dict:
         conversation = self.conversation_repository.get(conversation_id, user_id)
+        return self._forward_user_message_to_ai(conversation, content, model=model)
+    
+    def _forward_user_message_to_ai(
+            self, 
+            conversation: ConversationDomain, 
+            content: str, 
+            model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name
+        ) -> MessageDomain:
+        user_message = self.message_factory.build(content, conversation.id)
+        user_message.update_embedding_id(self._create_embedding_for_message(user_message))
 
-        user_message = self.message_factory.build(content, conversation_id)
-        history = []
-        if user_message.should_create_embedding():
-            embedding_id = self.create_embedding_use_case.execute(user_message.content, model=self.embedding_model)
-            user_message.update_embedding_id(embedding_id)
-
-            embedding = self.embedding_call_repository.get(embedding_id)
-            contextualized_history = self.message_repository.get_contextualized_messages_from_conversation(embedding.embedding, conversation.id)
-            history.extend([self.message_serializer.serialize_only_content_and_role(message) for message in contextualized_history])
- 
-        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, ASK_USER_MESSAGE_PROMPT.format(content=content)]
-
-        ai_call_id = self.ask_use_case.execute(prompts_for_user_message, model=model, history=history, tools=self.tools)
+        prompts_for_user_message = [SCOPE_BOUNDARIES_PROMPT, MODELS_EXPLANATION_PROMPT, BOT_DESCRIPTION, ASK_USER_MESSAGE_PROMPT.format(content=content)]
+        history = self._get_history_from_conversation(conversation.id, user_message.embedding_id)
+        history_as_string = self.message_serializer.serialize_many_for_history(history)
+        ai_call_id = self.ask_use_case.execute(
+            prompts_for_user_message, 
+            model=model, 
+            tools=self.tools, 
+            chat_session_key=conversation.chat_session_key,
+            history=history_as_string
+        )
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         user_message.update_ai_call(ai_call)
         user_message = self.message_repository.create(user_message)
 
-        ai_message = self.message_factory.build(ai_call.response["text"], conversation_id, Message.Role.ASSISTANT)
-        ai_message.update_ai_call(ai_call)
-        if ai_message.should_create_embedding():
-            embedding_id = self.create_embedding_use_case.execute(ai_message.content, model=self.embedding_model)
-            ai_message.update_embedding_id(embedding_id)
-        
+        ai_message = self.message_factory.build_ai_message(ai_call, conversation.id, user_message)
+        ai_message.update_embedding_id(self._create_embedding_for_message(ai_message))
         ai_message = self.message_repository.create(ai_message)
-        
+
         return {
             "user_message": self.message_serializer.serialize(user_message),
             "ai_message": self.message_serializer.serialize(ai_message),
         }
+    
+    def _get_history_from_conversation(self, conversation_id: int, embedding_id: int) -> list[MessageDomain]:
+        history = self.message_repository.get_history_from_conversation(conversation_id, limit=10)
+        if embedding_id:
+            embedding = self.embedding_call_repository.get(embedding_id)
+            history = self.message_repository.get_contextualized_messages_from_conversation(embedding.embedding, conversation_id)
+        return [self.message_factory.build_from_model(message) for message in history]
+    
+    def _create_embedding_for_message(self, message: MessageDomain) -> int:
+        if message.should_create_embedding():
+            embedding_id = self.create_embedding_use_case.execute(message.content, model=self.embedding_model)
+            message.update_embedding_id(embedding_id)
+        return message.embedding_id

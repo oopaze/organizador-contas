@@ -14,11 +14,11 @@ export const Layout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="grid grid-cols-3 items-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Gerenciador de Contas</h1>
+                <h1 className="text-xl font-semibold text-gray-900">Poupix</h1>
                 <p className="text-sm text-gray-500">Bem-vindo, {user?.profile?.first_name}!</p>
               </div>
             </div>

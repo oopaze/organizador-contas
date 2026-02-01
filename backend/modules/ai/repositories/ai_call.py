@@ -11,11 +11,12 @@ class AICallRepository:
     def create(self, ai_response: AIResponseDomain) -> AIResponseDomain:
         ai_call_instance = self.model.objects.create(
             prompt=ai_response.prompt,
-            response=ai_response.response,
+            response=ai_response.response or {},
             total_tokens=ai_response.total_tokens,
             input_used_tokens=ai_response.input_used_tokens if ai_response.input_used_tokens else 0,
             output_used_tokens=ai_response.output_used_tokens if ai_response.output_used_tokens else 0,
-            response_id=ai_response.google_response.response_id,
+            response_id=ai_response.id,
             model=ai_response.model,
+            is_error=ai_response.is_error,
         )
         return self.ai_response_factory.build_from_model(ai_call_instance)

@@ -12,6 +12,9 @@ class AICallSerializer:
             "total_tokens": ai_call.total_tokens,
             "input_used_tokens": ai_call.input_used_tokens,
             "output_used_tokens": ai_call.output_used_tokens,
+            "input_cost": ai_call.input_cost,
+            "output_cost": ai_call.output_cost,
+            "model": ai_call.model,
         }
     
     def serialize_without_prompt_and_response(self, ai_call: "AICallDomain") -> dict:
@@ -22,4 +25,7 @@ class AICallSerializer:
             "total_tokens": ai_call.total_tokens,
             "input_used_tokens": ai_call.input_used_tokens,
             "output_used_tokens": ai_call.output_used_tokens,
+            "input_cost": ai_call.input_cost,
+            "output_cost": ai_call.output_cost,
+            "model": ai_call.model,
         }

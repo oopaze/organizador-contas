@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from modules.ai.chat.domains.ai_call import AICallDomain
+    from modules.ai.chat.domains.message import MessageDomain
 
 
 class MessageDomain:
@@ -17,6 +18,8 @@ class MessageDomain:
         created_at: str = None,
         updated_at: str = None,
         embedding_id: int = None,
+        user_message: "MessageDomain" = None,
+        is_error: bool = False,
     ):
         self.role = role
         self.content = content
@@ -26,6 +29,8 @@ class MessageDomain:
         self.created_at = created_at
         self.updated_at = updated_at
         self.embedding_id = embedding_id
+        self.user_message = user_message
+        self.is_error = is_error
 
     def update_ai_call(self, ai_call: "AICallDomain"):
         self.ai_call = ai_call

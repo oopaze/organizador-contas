@@ -21,6 +21,8 @@ class MessageFactory:
             created_at=model.created_at,
             updated_at=model.updated_at,
             embedding_id=model.embedding_id,
+            user_message=self.build_from_model(model.user_message) if model.user_message else None,
+            is_error=model.is_error,
         )
     
     def build(self, content: str, conversation_id: int, role: str = Message.Role.HUMAN) -> MessageDomain:
@@ -30,10 +32,12 @@ class MessageFactory:
             conversation_id=conversation_id,
         )
     
-    def build_ai_message(self, ai_call: AICallDomain, conversation_id: int) -> MessageDomain:
+    def build_ai_message(self, ai_call: AICallDomain, conversation_id: int, user_message: MessageDomain) -> MessageDomain:
         return MessageDomain(
-            role=Message.Role.AI,
-            content=ai_call.response["text"],
+            role=Message.Role.ASSISTANT,
+            content=ai_call.response,
             conversation_id=conversation_id,
             ai_call=ai_call,
+            user_message=user_message,
+            is_error=ai_call.is_error,
         )

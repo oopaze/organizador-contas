@@ -9,7 +9,14 @@ class ConversationRepository:
         self.conversation_factory = conversation_factory
 
     def create(self, conversation: ConversationDomain, user_id: int) -> ConversationDomain:
-        conversation_instance = self.model.objects.create(title=conversation.title, ai_call_id=conversation.ai_call.id, user_id=user_id)
+        conversation_instance = self.model.objects.create(title=conversation.title, user_id=user_id)
+        return self.conversation_factory.build_from_model(conversation_instance)
+    
+    def update(self, conversation: ConversationDomain, user_id: int) -> ConversationDomain:
+        conversation_instance = self.model.objects.get(id=conversation.id, user_id=user_id)
+        conversation_instance.ai_call_id = conversation.ai_call.id
+        conversation_instance.title = conversation.title
+        conversation_instance.save()
         return self.conversation_factory.build_from_model(conversation_instance)
     
     def get(self, conversation_id: int, user_id: int) -> ConversationDomain:

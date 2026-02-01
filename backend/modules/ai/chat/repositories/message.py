@@ -19,6 +19,8 @@ class MessageRepository:
             conversation_id=message.conversation_id,
             ai_call_id=message.ai_call.id,
             embedding_id=message.embedding_id,
+            user_message_id=message.user_message.id if message.user_message else None,
+            is_error=message.is_error,
         )
         return self.message_factory.build_from_model(message_instance)
     
@@ -29,28 +31,38 @@ class MessageRepository:
         return self.message_factory.build_from_model(message_instance)
 
     def get_all_by_conversation_id(self, conversation_id: int, user_id: int) -> list[MessageDomain]:
-        message_instances = self.model.objects.filter(conversation_id=conversation_id, conversation__user_id=user_id)
+        message_instances = self.model.objects.filter(conversation_id=conversation_id, conversation__user_id=user_id, is_error=False)
+        return [self.message_factory.build_from_model(message) for message in message_instances]
+    
+    def get_history_from_conversation(
+        self, 
+        conversation_id: int, 
+        limit: int = 20,
+    ) -> list[MessageDomain]:
+        message_instances = self.model.objects.filter(conversation_id=conversation_id, is_error=False).order_by("-created_at")[:limit]
         return [self.message_factory.build_from_model(message) for message in message_instances]
     
     def get_contextualized_messages_from_conversation(
         self, 
         embedding: list[float], 
         conversation_id: int, 
-        limit: int = 30,
+        limit: int = 20,
     ) -> list[MessageDomain]:
-        minimum_history_messages = self.model.objects.filter(conversation_id=conversation_id).order_by("-created_at")[:20]
+        minimum_history_messages = self.model.objects.filter(conversation_id=conversation_id, is_error=False).order_by("-created_at")[:10]
         minimum_history_messages_id = [message.id for message in minimum_history_messages]
+
         message_instances = (
             self.model.objects
             .exclude(id__in=minimum_history_messages_id)
             .filter(
                 conversation_id=conversation_id, 
                 embedding__isnull=False,
+                is_error=False,
             ).alias(
                 distance=CosineDistance("embedding__embedding", embedding)
             ).filter(
                 distance__lt=self.HISTORY_THRESHOLD
-            ).order_by("distance")[:limit]
+            ).order_by("distance")[:limit - 10]
         )
 
         context_message = [self.message_factory.build_from_model(message) for message in message_instances]

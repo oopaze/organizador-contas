@@ -130,3 +130,5 @@ Thumbs.db
 /media/
 /staticfiles/
 
+# Uploaded files
+/files/

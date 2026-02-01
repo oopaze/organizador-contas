@@ -4,21 +4,24 @@ from modules.transactions.serializers import ActorSerializer
 
 class GetActorsToolUseCase:
     AI_CONFIG = {
-        "name": "get_actors",
-        "description": "Get actors. Use this tool when you need to list the actors in a specific period.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "due_date_start": {
-                    "type": "string",
-                    "description": "The due date start in YYYY-MM-DD format",
+        "type": "function",
+        "function": {
+            "name": "get_actors",
+            "description": "Get actors. Use this tool when you need to list the actors in a specific period.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "due_date_start": {
+                        "type": "string",
+                        "description": "The due date start in YYYY-MM-DD format",
+                    },
+                    "due_date_end": {
+                        "type": "string",
+                        "description": "The due date end in YYYY-MM-DD format",
+                    },
                 },
-                "due_date_end": {
-                    "type": "string",
-                    "description": "The due date end in YYYY-MM-DD format",
-                },
+                "required": ["due_date_start", "due_date_end"],
             },
-            "required": ["due_date_start", "due_date_end"],
         },
     }
 

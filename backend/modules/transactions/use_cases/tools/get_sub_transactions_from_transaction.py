@@ -5,17 +5,20 @@ from modules.transactions.repositories import SubTransactionRepository, Transact
 
 class GetSubTransactionsFromTransactionToolUseCase:
     AI_CONFIG = {
-        "name": "get_sub_transactions_from_transaction",
-        "description": "Get sub transactions from transaction. Use this tool when you need to understand better a specific transaction.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "transaction_id": {
-                    "type": "string",
-                    "description": "The transaction id",
+        "type": "function",
+        "function": {
+            "name": "get_sub_transactions_from_transaction",
+            "description": "Get sub transactions from transaction. Use this tool when you need to understand better a specific transaction.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "description": "The transaction id",
+                    },
                 },
+                "required": ["transaction_id"],
             },
-            "required": ["transaction_id"],
         },
     }
 

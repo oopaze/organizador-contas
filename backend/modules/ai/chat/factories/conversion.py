@@ -10,10 +10,11 @@ class ConversationFactory:
             id=model.id,
             created_at=model.created_at,
             updated_at=model.updated_at,
+            user_id=model.user_id,
         )
 
-    def build(self, title: str) -> ConversationDomain:
-        return ConversationDomain(title=title)
+    def build(self, title: str = None, user_id: int = None) -> ConversationDomain:
+        return ConversationDomain(title=title, user_id=user_id)
     
     def build_from_ai_call(self, ai_call: AICallDomain) -> ConversationDomain:
         title = ai_call.response or "Sem título"

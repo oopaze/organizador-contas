@@ -18,3 +18,5 @@ class Message(TimedModel):
     conversation = models.ForeignKey(Conversation, on_delete=models.DO_NOTHING, related_name="messages", null=True, blank=True)
     ai_call = models.ForeignKey("ai.AICall", on_delete=models.DO_NOTHING, null=True, blank=True)
     embedding = models.ForeignKey("ai.EmbeddingCall", on_delete=models.DO_NOTHING, null=True, blank=True)
+    user_message = models.ForeignKey("self", on_delete=models.DO_NOTHING, null=True, blank=True)
+    is_error = models.BooleanField(default=False)

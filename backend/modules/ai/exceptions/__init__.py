@@ -1,0 +1,2 @@
+class LLMGatewayException(Exception):
+    pass

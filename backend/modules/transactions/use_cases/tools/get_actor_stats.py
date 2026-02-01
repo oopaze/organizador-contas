@@ -14,22 +14,25 @@ Estatísticas dos atores no perido:
 
 class GetActorStatsToolUseCase:
     AI_CONFIG = {
-        "name": "get_actor_stats",
-        "description": "Get actor stats. Use this tool to get a resume of the actors spent in a specific period.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "due_date_start": {
-                    "type": "string",
-                    "description": "The due date start in YYYY-MM-DD format",
+        "type": "function",
+        "function": {
+            "name": "get_actor_stats",
+            "description": "Get actor stats. Use this tool to get a resume of the actors spent in a specific period.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "due_date_start": {
+                        "type": "string",
+                        "description": "The due date start in YYYY-MM-DD format",
+                    },
+                    "due_date_end": {
+                        "type": "string",
+                        "description": "The due date end in YYYY-MM-DD format",
+                    },
                 },
-                "due_date_end": {
-                    "type": "string",
-                    "description": "The due date end in YYYY-MM-DD format",
-                },
+                "required": ["due_date_start", "due_date_end"],
             },
-            "required": ["due_date_start", "due_date_end"],
-        },
+        }
     }
 
     def __init__(self, actor_stats_use_case: ActorStatsUseCase, user_id: int = None):

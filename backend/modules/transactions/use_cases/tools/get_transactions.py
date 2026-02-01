@@ -5,25 +5,28 @@ from modules.transactions.repositories import TransactionRepository
 
 class GetTransactionsToolUseCase:
     AI_CONFIG = {
-        "name": "get_transactions",
-        "description": "Get transactions. Use this tool when knowing the transactions is relevant to answer the question in a specific period.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "transaction_type": {
-                    "type": "string",
-                    "description": "The transaction type",
+        "type": "function",
+        "function": {
+            "name": "get_transactions",
+            "description": "Get transactions. Use this tool when knowing the transactions is relevant to answer the question in a specific period.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_type": {
+                        "type": "string",
+                        "description": "The transaction type",
+                    },
+                    "due_date_start": {
+                        "type": "string",
+                        "description": "The due date start in YYYY-MM-DD format",
+                    },
+                    "due_date_end": {
+                        "type": "string",
+                        "description": "The due date end in YYYY-MM-DD format",
+                    },
                 },
-                "due_date_start": {
-                    "type": "string",
-                    "description": "The due date start in YYYY-MM-DD format",
-                },
-                "due_date_end": {
-                    "type": "string",
-                    "description": "The due date end in YYYY-MM-DD format",
-                },
+                "required": ["due_date_start", "due_date_end"],
             },
-            "required": ["due_date_start", "due_date_end"],
         },
     }
 

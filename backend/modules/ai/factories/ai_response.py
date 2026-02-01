@@ -1,26 +1,29 @@
 from json import loads
 
-from google.genai.types import GenerateContentResponse
+from openai.types.chat import ChatCompletion
 
 from modules.ai.domains.ai_response import AIResponseDomain
+from modules.ai.domains.ai_request import AIRequestDomain
 from modules.ai.models import AICall
 
 
 class AIResponseFactory:
-    def build_from_llm_response(self, ai_response: GenerateContentResponse, prompt: list[str], model: str) -> AIResponseDomain:
+    def build_from_llm_response(self, ai_response: ChatCompletion, ai_request: AIRequestDomain) -> AIResponseDomain:
+        content = ai_response.choices[0].message.content
         try:
-            response = loads(ai_response.text)
-        except Exception as e:
-            response = {"text": ai_response.text}
+            response = loads(content)
+        except Exception:
+            response = content
             
         return AIResponseDomain(
-            total_tokens=ai_response.usage_metadata.total_token_count,
-            input_used_tokens=ai_response.usage_metadata.prompt_token_count,
-            output_used_tokens=ai_response.usage_metadata.candidates_token_count,
+            total_tokens=ai_response.usage.total_tokens,
+            input_used_tokens=ai_response.usage.prompt_tokens,
+            output_used_tokens=ai_response.usage.completion_tokens,
             response=response,
-            prompt=prompt,
-            google_response=ai_response,
-            model=model,
+            prompt=ai_request.prompt,
+            ai_response=ai_response,
+            model=ai_request.model,
+            id=ai_response.id,
         )
     
     def build_from_model(self, model: AICall) -> AIResponseDomain:
@@ -34,4 +37,5 @@ class AIResponseFactory:
             updated_at=model.updated_at,
             prompt=model.prompt,
             model=model.model,
+            is_error=model.is_error,
         )
