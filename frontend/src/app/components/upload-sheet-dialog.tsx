@@ -3,7 +3,7 @@ import { uploadSheet } from '@/services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
-import { Input } from '@/app/components/ui/input';
+import { Textarea } from '@/app/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { toast } from 'sonner';
 import { Upload, FileSpreadsheet, X } from 'lucide-react';
@@ -199,11 +199,12 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="description">Descrição (opcional)</Label>
-              <Input
+              <Textarea
                 id="description"
                 placeholder="Ex: Planilha de gastos do mês de janeiro, valores em reais"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                rows={3}
               />
               <p className="text-xs text-muted-foreground">
                 Adicione contexto sobre a planilha para ajudar a IA a interpretar os dados
