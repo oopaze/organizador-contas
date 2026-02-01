@@ -12,6 +12,7 @@ from rest_framework.viewsets import ViewSetMixin
 from modules.userdata.authentication import JWTAuthentication
 from modules.file_reader.container import FileReaderContainer
 from modules.ai.container import AIContainer
+from modules.ai.types import LlmModels
 
 logger = logging.getLogger(__name__)
 
@@ -26,37 +27,22 @@ class UploadFileView(APIView):
         self.container = FileReaderContainer(ask_use_case=ask_use_case)
 
     def post(self, request: Request) -> Response:
-        logger.info("UploadFileView.post - Starting file upload for user: %s", request.user.id)
-
         file = request.FILES.get("file")
         if not file:
-            logger.warning("UploadFileView.post - No file provided")
             return Response(
                 {"error": "No file provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        logger.info("UploadFileView.post - File: %s, Size: %s bytes, Content-Type: %s",
-                    file.name, file.size, file.content_type)
-
         password = request.data.get("password")
-        has_password = bool(password)
-        logger.info("UploadFileView.post - Has password: %s", has_password)
-
-        start_time = time.time()
+        model = request.data.get("model", LlmModels.DEEPSEEK_CHAT.name)
         try:
-            result = self.container.upload_file_use_case().execute(file, request.user.id, password)
-            elapsed = time.time() - start_time
-            logger.info("UploadFileView.post - SUCCESS in %.2fs - File: %s", elapsed, file.name)
+            self.container.upload_file_use_case().execute(file, request.user.id, password, model=model)
             return Response(
                 {"message": "File uploaded successfully"},
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
-            elapsed = time.time() - start_time
-            logger.error("UploadFileView.post - ERROR after %.2fs - File: %s, Error: %s",
-                         elapsed, file.name, str(e))
-            logger.error("UploadFileView.post - Traceback:\n%s", traceback.format_exc())
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

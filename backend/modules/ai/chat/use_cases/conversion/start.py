@@ -51,7 +51,7 @@ class StartConversionUseCase:
         self.message_serializer = message_serializer
         self.tools = tools
 
-    def execute(self, data: StartConversionData, model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name) -> dict:
+    def execute(self, data: StartConversionData, model: str = LlmModels.DEEPSEEK_CHAT.name) -> dict:
         user_id = data.get("user")
         
         if not user_id:
@@ -68,7 +68,7 @@ class StartConversionUseCase:
             "ai_message": self.message_serializer.serialize(ai_message),
         }
     
-    def _generate_conversion(self, user_id: int, content: str, model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name) -> dict:
+    def _generate_conversion(self, user_id: int, content: str, model: str = LlmModels.DEEPSEEK_CHAT.name) -> dict:
         conversation = self.conversation_factory.build()
         conversation = self.conversation_repository.create(conversation, user_id)
 

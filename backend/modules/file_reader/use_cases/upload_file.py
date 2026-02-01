@@ -11,6 +11,7 @@ from modules.file_reader.serializers.file import FileSerializer
 from modules.file_reader.use_cases.transpose_file_bill_to_models import TransposeFileBillToModelsUseCase
 from modules.ai.use_cases.ask import AskUseCase
 from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPasswordUseCase
+from modules.ai.types import LlmModels
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +91,7 @@ class UploadFileUseCase:
         self.ask_use_case = ask_use_case
         self.remove_pdf_password_use_case = remove_pdf_password_use_case
 
-    def execute(self, file: UploadedFile, user_id: int, password: str = None):
+    def execute(self, file: UploadedFile, user_id: int, password: str = None, model = LlmModels.DEEPSEEK_CHAT.name):
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
 
@@ -101,7 +102,7 @@ class UploadFileUseCase:
         pdf_text = saved_file.extract_text_from_pdf(file_path)
 
         prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]
-        ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object")
+        ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object", model=model)
 
         ai_call = self.ai_call_repository.get(ai_call_id)
         saved_file.update_ai_info(ai_call)

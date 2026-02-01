@@ -5,8 +5,18 @@ import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
 import { Input } from '@/app/components/ui/input';
 import { Checkbox } from '@/app/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { toast } from 'sonner';
 import { Upload, FileText, X } from 'lucide-react';
+
+const AI_MODELS = {
+  'deepseek-chat': { name: 'DeepSeek Chat', provider: 'DeepSeek' },
+  'deepseek-reasoner': { name: 'DeepSeek Reasoner', provider: 'DeepSeek' },
+  'gemini-2.5-flash-lite': { name: 'Gemini 2.5 Flash Lite', provider: 'Google' },
+  'gemini-2.5-pro': { name: 'Gemini 2.5 Pro', provider: 'Google' },
+} as const;
+
+type AIModelKey = keyof typeof AI_MODELS;
 
 interface UploadBillDialogProps {
   open: boolean;
@@ -24,6 +34,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
   const [pdfPassword, setPdfPassword] = useState('');
+  const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-chat');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -69,10 +80,11 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
     setLoading(true);
     try {
       const password = hasPassword ? pdfPassword : undefined;
-      await uploadBill(selectedFile, password);
+      await uploadBill(selectedFile, password, selectedModel);
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
+      setSelectedModel('deepseek-chat');
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar fatura');
@@ -86,6 +98,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
+      setSelectedModel('deepseek-chat');
     }
     onOpenChange(isOpen);
   };
@@ -182,6 +195,20 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                 />
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label>Modelo de IA</Label>
+              <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as AIModelKey)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o modelo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(AI_MODELS).map(([key, { name }]) => (
+                    <SelectItem key={key} value={key}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>

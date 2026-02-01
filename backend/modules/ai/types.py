@@ -53,14 +53,14 @@ class LlmModels(BaseType):
     DEEPSEEK_CHAT = TypeItem(
         "deepseek-chat", 
         provider=LlmProviders.DEEPSEEK.name,
-        input_cost_per_million_tokens=0.028,
+        input_cost_per_million_tokens=0.27,
         output_cost_per_million_tokens=0.42,
         default=default_kwargs
     )
     DEEPSEEK_REASONER = TypeItem(
         "deepseek-reasoner", 
         provider=LlmProviders.DEEPSEEK.name,
-        input_cost_per_million_tokens=0.028,
+        input_cost_per_million_tokens=0.27,
         output_cost_per_million_tokens=0.42,
         default=default_kwargs
     )

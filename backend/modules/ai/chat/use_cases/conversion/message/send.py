@@ -34,7 +34,7 @@ class SendConversionMessageUseCase:
         self.message_serializer = message_serializer
         self.tools = tools
 
-    def execute(self, conversation_id: int, content: str, user_id: int, model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name) -> dict:
+    def execute(self, conversation_id: int, content: str, user_id: int, model: str = LlmModels.DEEPSEEK_CHAT.name) -> dict:
         conversation = self.conversation_repository.get(conversation_id, user_id)
         return self._forward_user_message_to_ai(conversation, content, model=model)
     
@@ -42,7 +42,7 @@ class SendConversionMessageUseCase:
             self, 
             conversation: ConversationDomain, 
             content: str, 
-            model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name
+            model: str = LlmModels.DEEPSEEK_CHAT.name
         ) -> MessageDomain:
         user_message = self.message_factory.build(content, conversation.id)
         user_message.update_embedding_id(self._create_embedding_for_message(user_message))
