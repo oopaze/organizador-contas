@@ -36,7 +36,7 @@ class AIRequestDomain:
         self.tool_choice = tool_choice
         self.request_type = request_type
         self.history = HISTORY.format(history=history) if history else ""
-        self.response_format = response_format
+        self.response_format = response_format or "text"
 
         model_type = LlmModels.get_model(model)
         self.temperature_enabled = model_type.temperature_enabled
