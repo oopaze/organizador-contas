@@ -27,7 +27,7 @@ class UserRepository:
         return self.user_factory.build_from_model(user)
 
     def authenticate(self, email: str, password: str) -> Optional[UserDomain]:
-        user = self.model.objects.filter(email=email).select_related("profile").first()
+        user = self.model.objects.filter(email=email, is_active=True).select_related("profile").first()
         if not user or not user.check_password(password):
             return None
         return self.user_factory.build_from_model(user)
