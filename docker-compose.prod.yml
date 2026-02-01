@@ -1,17 +1,24 @@
+# ===========================================
+# Poupix - Full Stack Production
+# ===========================================
+# Usage: docker compose -f docker-compose.prod.yml up -d
+
 version: '3.8'
 
 services:
   db:
     image: pgvector/pgvector:pg16
+    env_file:
+      - ./backend/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-poupix}
-      - POSTGRES_USER=${POSTGRES_USER:-poupix}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_DB=${DATABASE_NAME:-poupix}
+      - POSTGRES_USER=${DATABASE_USER:-poupix}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-poupix}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-poupix}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,23 +29,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    env_file:
+      - ./backend/.env
     volumes:
       - backend_files:/app/files
       - backend_static:/app/staticfiles
     environment:
-      - DEBUG=0
-      - DJANGO_SETTINGS_MODULE=infra.settings
-      - DATABASE_NAME=${POSTGRES_DB:-poupix}
-      - DATABASE_USER=${POSTGRES_USER:-poupix}
-      - DATABASE_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
-      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +48,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    env_file:
+      - ./frontend/.env
     ports:
       - "${PORT:-80}:80"
     depends_on:
@@ -66,4 +66,3 @@ volumes:
 networks:
   poupix-network:
     driver: bridge
-
