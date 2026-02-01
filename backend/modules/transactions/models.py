@@ -23,6 +23,13 @@ class Transaction(TimedModel, UserOwnedModel, SoftDeleteModel):
     installment_number = models.IntegerField(null=True, blank=True)
     main_transaction = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="installments")
 
+    class Meta:
+        ordering = ["-due_date"]
+        indexes = [
+            models.Index(fields=["due_date"]),
+            models.Index(fields=["transaction_identifier"]),
+        ]
+
     def __str__(self):
         return f"{self.transaction_identifier} - {self.due_date}"
     
