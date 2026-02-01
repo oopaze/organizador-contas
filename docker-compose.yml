@@ -1,3 +1,8 @@
+# ===========================================
+# Poupix - Development Docker Compose
+# ===========================================
+# For production, use: docker-compose -f docker-compose.prod.yml up
+
 version: '3.8'
 
 services:
@@ -6,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=bills_manager
+      - POSTGRES_DB=poupix
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
@@ -30,7 +35,7 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_SETTINGS_MODULE=infra.settings
-      - DATABASE_NAME=bills_manager
+      - DATABASE_NAME=poupix
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres
       - DATABASE_HOST=db
@@ -39,6 +44,8 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    # Override CMD for development (use runserver instead of gunicorn)
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     build:
@@ -53,4 +60,3 @@ services:
 volumes:
   backend_files:
   postgres_data:
-

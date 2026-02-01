@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-poupix}
+      - POSTGRES_USER=${POSTGRES_USER:-poupix}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-poupix}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - poupix-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - backend_files:/app/files
+      - backend_static:/app/staticfiles
+    environment:
+      - DEBUG=0
+      - DJANGO_SETTINGS_MODULE=infra.settings
+      - DATABASE_NAME=${POSTGRES_DB:-poupix}
+      - DATABASE_USER=${POSTGRES_USER:-poupix}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - poupix-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - poupix-network
+
+volumes:
+  backend_files:
+  backend_static:
+  postgres_data:
+
+networks:
+  poupix-network:
+    driver: bridge
+
