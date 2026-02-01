@@ -30,8 +30,16 @@ class UploadFileView(APIView):
 
         password = request.data.get("password")
         model = request.data.get("model", LlmModels.DEEPSEEK_CHAT.name)
+        user_provided_description = request.data.get("user_provided_description")
+
         try:
-            self.container.upload_file_use_case().execute(file, request.user.id, password, model=model)
+            self.container.upload_file_use_case().execute(
+                file, 
+                request.user.id, 
+                password, 
+                model=model, 
+                user_provided_description=user_provided_description
+            )
             return Response(
                 {"message": "File uploaded successfully"},
                 status=status.HTTP_201_CREATED,

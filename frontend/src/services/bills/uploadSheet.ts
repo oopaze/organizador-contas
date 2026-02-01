@@ -15,16 +15,19 @@ async function uploadSheetMock(file: File): Promise<Bill> {
   return newBill;
 }
 
-async function uploadSheetReal(file: File, model?: string): Promise<Bill> {
+async function uploadSheetReal(file: File, model?: string, description?: string): Promise<Bill> {
   const formData = new FormData();
   formData.append('file', file);
   if (model) {
     formData.append('model', model);
   }
+  if (description) {
+    formData.append('user_provided_description', description);
+  }
   return apiUploadRequest<Bill>('/file_reader/upload-sheet/', formData);
 }
 
-export async function uploadSheet(file: File, model?: string): Promise<Bill> {
-  return USE_MOCK_API ? await uploadSheetMock(file) : await uploadSheetReal(file, model);
+export async function uploadSheet(file: File, model?: string, description?: string): Promise<Bill> {
+  return USE_MOCK_API ? await uploadSheetMock(file) : await uploadSheetReal(file, model, description);
 }
 

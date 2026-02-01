@@ -3,6 +3,7 @@ import { uploadSheet } from '@/services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
+import { Input } from '@/app/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { toast } from 'sonner';
 import { Upload, FileSpreadsheet, X } from 'lucide-react';
@@ -41,6 +42,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-chat');
+  const [description, setDescription] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidFile = (file: File): boolean => {
@@ -90,9 +92,10 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
 
     setLoading(true);
     try {
-      await uploadSheet(selectedFile, selectedModel);
+      await uploadSheet(selectedFile, selectedModel, description || undefined);
       setSelectedFile(null);
       setSelectedModel('deepseek-chat');
+      setDescription('');
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar planilha');
@@ -105,6 +108,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
     if (!isOpen) {
       setSelectedFile(null);
       setSelectedModel('deepseek-chat');
+      setDescription('');
     }
     onOpenChange(isOpen);
   };
@@ -191,6 +195,19 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição (opcional)</Label>
+              <Input
+                id="description"
+                placeholder="Ex: Planilha de gastos do mês de janeiro, valores em reais"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Adicione contexto sobre a planilha para ajudar a IA a interpretar os dados
+              </p>
             </div>
           </div>
 

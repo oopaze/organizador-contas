@@ -183,7 +183,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-4 mb-8">
+      <div className="flex flex-wrap gap-4 mb-8">
         <Button onClick={() => setShowAddTransaction(true)} variant="outline" className="flex-1 sm:flex-none">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Receita
