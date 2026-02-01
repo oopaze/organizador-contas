@@ -20,9 +20,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -37,8 +34,7 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-
-
+    
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
