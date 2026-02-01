@@ -37,7 +37,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
   const [pdfPassword, setPdfPassword] = useState('');
-  const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-chat');
+  const [selectedModel, setSelectedModel] = useState<AIModelKey>('gemini-2.5-flash-lite');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -87,7 +87,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
-      setSelectedModel('deepseek-chat');
+      setSelectedModel('gemini-2.5-flash-lite');
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar fatura');
@@ -101,7 +101,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
-      setSelectedModel('deepseek-chat');
+      setSelectedModel('gemini-2.5-flash-lite');
     }
     onOpenChange(isOpen);
   };
