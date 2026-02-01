@@ -12,19 +12,20 @@ export const Layout: React.FC = () => {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="grid grid-cols-3 items-center">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Logo and Title */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <div>
+              <div className="hidden sm:block">
                 <h1 className="text-xl font-semibold text-gray-900">Poupix</h1>
                 <p className="text-sm text-gray-500">Bem-vindo, {user?.profile?.first_name}!</p>
               </div>
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex items-center justify-center gap-1">
+            <nav className="flex items-center gap-1 sm:order-2 sm:w-auto justify-center">
               <NavLink to="/">
                 {({ isActive }) => (
                   <Button
@@ -60,8 +61,12 @@ export const Layout: React.FC = () => {
               </NavLink>
             </nav>
 
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={logout}>
+            {/* Logout Button */}
+            <div className="flex order-2 sm:order-3">
+              <Button variant="outline" size="icon" onClick={logout} className="sm:hidden" title="Sair">
+                <LogOut className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" onClick={logout} className="hidden sm:flex">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </Button>

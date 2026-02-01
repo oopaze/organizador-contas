@@ -246,19 +246,21 @@ export const ActorsPage: React.FC = () => {
         </Card>
       </div>
 
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Button onClick={() => setAddDialogOpen(true)} variant="outline">
+          <Plus className="h-4 w-4 mr-2" />
+          Adicionar Ator
+        </Button>
+      </div>
+
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <CardTitle>Atores</CardTitle>
-            </div>
-            <CardDescription>Gerencie os atores das suas transações</CardDescription>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            <CardTitle>Atores</CardTitle>
           </div>
-          <Button onClick={() => setAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Ator
-          </Button>
+          <CardDescription>Gerencie os atores das suas transações</CardDescription>
         </CardHeader>
       <CardContent>
         {loading ? (

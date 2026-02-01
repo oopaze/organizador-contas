@@ -20,7 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select';
-import { Send, Bot, User, MessageSquarePlus, Loader2, MessageCircle } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/app/components/ui/sheet';
+import { Send, Bot, User, MessageSquarePlus, Loader2, MessageCircle, Menu } from 'lucide-react';
 import { cn } from '@/app/components/ui/utils';
 import { ProviderIcon } from '@/app/components/icons/provider-icons';
 
@@ -59,6 +65,7 @@ export const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const conversationsEndRef = useRef<HTMLDivElement>(null);
@@ -143,6 +150,12 @@ export const ChatPage: React.FC = () => {
   const createNewConversation = () => {
     setActiveConversation(null);
     setMessages([]);
+    setIsSidebarOpen(false);
+  };
+
+  const handleSelectConversation = (conv: ChatConversation) => {
+    setActiveConversation(conv);
+    setIsSidebarOpen(false);
   };
 
   const handleSendMessage = async (message?: string) => {
@@ -206,89 +219,156 @@ export const ChatPage: React.FC = () => {
     adjustTextareaHeight();
   };
 
-  return (
-    <div className="flex h-[calc(100vh-120px)] gap-2 -mt-3">
-      {/* Sidebar */}
-      <div className="w-80 flex-shrink-0">
-        <Card className="h-full flex flex-col overflow-hidden gap-0">
-          <div className="p-3 border-b">
-            <Button onClick={createNewConversation} className="w-full" variant="outline">
-              <MessageSquarePlus className="w-4 h-4 mr-2" />
-              Nova Conversa
-            </Button>
+  // Sidebar content - reused in desktop and mobile drawer
+  const sidebarContent = (
+    <>
+      <div className="p-3 border-b">
+        <Button onClick={createNewConversation} className="w-full" variant="outline">
+          <MessageSquarePlus className="w-4 h-4 mr-2" />
+          Nova Conversa
+        </Button>
+      </div>
+      <ScrollArea ref={conversationsScrollRef} className="flex-1 min-h-0 p-2">
+        {isLoadingConversations ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
-          <ScrollArea ref={conversationsScrollRef} className="flex-1 min-h-0 p-2">
-            {isLoadingConversations ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 px-4">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                  <MessageCircle className="w-6 h-6 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  Nenhuma conversa ainda
-                </p>
-                <p className="text-xs text-muted-foreground/70 text-center mt-1">
-                  Comece uma nova conversa!
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col-reverse">
-                <div ref={conversationsEndRef} />
-                {[...conversations].reverse().map((conv, index, arr) => {
-                  const isActive = activeConversation?.id === conv.id;
-                  const date = new Date(conv.created_at);
-                  const formattedDate = date.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: 'short',
-                  });
-                  const isLast = index === arr.length - 1;
+        ) : conversations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 px-4">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <MessageCircle className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Nenhuma conversa ainda
+            </p>
+            <p className="text-xs text-muted-foreground/70 text-center mt-1">
+              Comece uma nova conversa!
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col-reverse">
+            <div ref={conversationsEndRef} />
+            {[...conversations].reverse().map((conv, index, arr) => {
+              const isActive = activeConversation?.id === conv.id;
+              const date = new Date(conv.created_at);
+              const formattedDate = date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'short',
+              });
+              const isLast = index === arr.length - 1;
 
-                  return (
-                    <div key={conv.id}>
-                      {!isLast && (
-                        <div className="mx-3 my-1 border-t border-border/50" />
-                      )}
-                      <button
-                        onClick={() => setActiveConversation(conv)}
-                        className={cn(
-                          'w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 group',
-                          isActive
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'hover:bg-muted/80'
-                        )}
-                      >
-                        <div className="flex items-start gap-2">
-                          <MessageCircle className={cn(
-                            'w-4 h-4 mt-0.5 flex-shrink-0 mr-1',
-                            isActive ? 'text-primary-foreground' : 'text-muted-foreground'
-                          )} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[0.8rem] font-medium line-clamp-2" title={conv.title}>
-                              {conv.title}
-                            </p>
-                            <p className={cn(
-                              'text-[0.7rem] mt-0.5',
-                              isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                            )}>
-                              {formattedDate}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
+              return (
+                <div key={conv.id}>
+                  {!isLast && (
+                    <div className="mx-3 my-1 border-t border-border/50" />
+                  )}
+                  <button
+                    onClick={() => handleSelectConversation(conv)}
+                    className={cn(
+                      'w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 group',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'hover:bg-muted/80'
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <MessageCircle className={cn(
+                        'w-4 h-4 mt-0.5 flex-shrink-0 mr-1',
+                        isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[0.8rem] font-medium line-clamp-2" title={conv.title}>
+                          {conv.title}
+                        </p>
+                        <p className={cn(
+                          'text-[0.7rem] mt-0.5',
+                          isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        )}>
+                          {formattedDate}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </ScrollArea>
+    </>
+  );
+
+  return (
+    <div className="flex h-[calc(100vh-120px)] gap-2 -mt-3 overflow-hidden">
+      {/* Mobile Sidebar Drawer */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetContent side="left" className="w-80 p-0 flex flex-col">
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle>Conversas</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {sidebarContent}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="w-80 flex-shrink-0 hidden md:block">
+        <Card className="h-full flex flex-col overflow-hidden gap-0">
+          {sidebarContent}
         </Card>
       </div>
 
       {/* Chat Area */}
-      <Card className="flex-1 flex flex-col gap-0 overflow-hidden">
+      <Card className="flex-1 min-w-0 flex flex-col gap-0 overflow-hidden">
+        {/* Header with model selector */}
+        <div className="flex items-center justify-between gap-3 p-3 border-b">
+          {/* Mobile: menu button + title */}
+          <div className="flex items-center gap-3 min-w-0 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="w-4 h-4" />
+            </Button>
+            <span className="text-sm font-medium text-muted-foreground truncate">
+              {activeConversation?.title || 'Nova conversa'}
+            </span>
+          </div>
+
+          {/* Desktop: just a label */}
+          <div className="hidden md:flex items-center gap-2">
+            <Bot className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">
+              {activeConversation?.title || 'Nova conversa'}
+            </span>
+          </div>
+
+          {/* Model selector - always visible */}
+          <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as AIModelKey)}>
+            <SelectTrigger className="w-auto h-8 gap-2 flex-shrink-0">
+              <SelectValue placeholder="Modelo">
+                <span className="flex items-center gap-2">
+                  <ProviderIcon provider={AI_MODELS[selectedModel].provider} className="w-4 h-4" />
+                  <span className="text-sm">{AI_MODELS[selectedModel].name}</span>
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(AI_MODELS).map(([key, { name, provider }]) => (
+                <SelectItem key={key} value={key}>
+                  <span className="flex items-center gap-2">
+                    <ProviderIcon provider={provider} className="w-4 h-4" />
+                    <span>{name}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Messages */}
         <ScrollArea className="flex-1 min-h-0 p-4">
           {isLoadingMessages ? (
@@ -308,7 +388,7 @@ export const ChatPage: React.FC = () => {
               <p className="text-muted-foreground mb-6 max-w-md">
                 Oi! Sou o Bunny Pix! 🥕 Posso te ajudar com suas finanças, gastos, receitas ou dar dicas de economia. Vamos conversar?
               </p>
-              <div className="grid grid-cols-2 gap-2 max-w-md">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md w-full px-4 sm:px-0">
                 {suggestedQuestions.map((question, index) => (
                   <Button
                     key={index}
@@ -350,7 +430,7 @@ export const ChatPage: React.FC = () => {
                   )}
                   <div
                     className={cn(
-                      'max-w-[70%] rounded-lg px-4 py-2',
+                      'max-w-[85%] sm:max-w-[70%] rounded-lg px-3 sm:px-4 py-2',
                       msg.role === 'human'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
@@ -424,28 +504,8 @@ export const ChatPage: React.FC = () => {
         </ScrollArea>
 
         {/* Input */}
-        <div className="p-4 border-t">
+        <div className="p-2 sm:p-4 border-t">
           <div className="flex gap-2 items-end">
-            <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as AIModelKey)}>
-              <SelectTrigger className="w-[220px] h-10">
-                <SelectValue placeholder="Selecione o modelo">
-                  <span className="flex items-center gap-2">
-                    <ProviderIcon provider={AI_MODELS[selectedModel].provider} className="w-4 h-4" />
-                    <span className="truncate">{AI_MODELS[selectedModel].name}</span>
-                  </span>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(AI_MODELS).map(([key, { name, provider }]) => (
-                  <SelectItem key={key} value={key}>
-                    <span className="flex items-center gap-2">
-                      <ProviderIcon provider={provider} className="w-4 h-4" />
-                      <span>{name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Textarea
               ref={textareaRef}
               value={inputMessage}
@@ -459,7 +519,7 @@ export const ChatPage: React.FC = () => {
             <Button
               onClick={() => handleSendMessage()}
               disabled={isLoading || !inputMessage.trim()}
-              className="h-10"
+              className="h-10 flex-shrink-0"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>

@@ -54,14 +54,14 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-full mb-4">
-            <Wallet className="w-8 h-8 text-white" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-emerald-600 rounded-full mb-3 sm:mb-4">
+            <Wallet className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Poupix</h1>
-          <p className="text-gray-600 mt-2">Controle suas despesas e receitas</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Poupix</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Controle suas despesas e receitas</p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
@@ -118,7 +118,7 @@ export const LoginPage: React.FC = () => {
               </CardHeader>
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="first-name">Nome</Label>
                       <Input
