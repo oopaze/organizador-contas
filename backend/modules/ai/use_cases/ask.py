@@ -29,8 +29,9 @@ class AskUseCase:
         chat_session_key: str = None,
         user_id: int = None,
         temperature: float = 0.1,
-        tool_choice: str = "auto",
+        tool_choice: str = None,
         history: str = "",
+        response_format: str = None,
     ) -> AIResponseDomain:
         ai_request = self.ai_request_factory.build(
             prompt=prompt,
@@ -41,6 +42,7 @@ class AskUseCase:
             temperature=temperature,
             tool_choice=tool_choice,
             history=history,
+            response_format=response_format,
         )
         response = self.ask_ai(ai_request)
         ai_response = self.ai_call_repository.create(response)

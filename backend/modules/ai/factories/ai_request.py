@@ -11,8 +11,9 @@ class AIRequestFactory:
         chat_session_key = None,
         user_id: int = None,
         temperature: float = 0.1,
-        tool_choice: str = "auto",
+        tool_choice: str = None,
         history: str = "",
+        response_format: str = None,
     ) -> AIRequestDomain:
         return AIRequestDomain(
             prompt=AIRequestDomain.format_prompt(prompt, history), 
@@ -24,6 +25,7 @@ class AIRequestFactory:
             tool_choice=tool_choice,
             request_type=AIRequestTypes.COMPLETION,
             history=history,
+            response_format=response_format,
         )
     
     def build_for_tool_request(self, prompt: list[str], ai_request: AIRequestDomain) -> AIRequestDomain:
@@ -37,6 +39,7 @@ class AIRequestFactory:
             tool_choice=ai_request.tool_choice,
             request_type=AIRequestTypes.TOOL_CALL,
             history=ai_request.history,
+            response_format=ai_request.response_format,
         )
     
     def build_empty_response(self, ai_request: AIRequestDomain) -> AIResponseDomain:

@@ -51,14 +51,29 @@ class LLMGateway:
 
         start_time = time.time()
         try:
-            completion = self.client.chat.completions.create(
-                model=ai_request.model,
-                messages=ai_request.prompt,
-                temperature=ai_request.temperature if ai_request.temperature_enabled else None,
-                tools=ai_request.tool_configs,
-                tool_choice=ai_request.tool_choice,
-                user=str(ai_request.user_id),
-            )
+            # Build request params, only include response_format if it's not the default
+            request_params = {
+                "model": ai_request.model,
+                "messages": ai_request.prompt,
+                "temperature": ai_request.temperature if ai_request.temperature_enabled else None,
+                "tools": ai_request.tool_configs,
+                "tool_choice": ai_request.tool_choice,
+                "user": str(ai_request.user_id),
+            }
+
+            # Only add response_format for providers that support it (not Google)
+            # Google's OpenAI compatibility layer doesn't support response_format properly
+            if ai_request.response_format and ai_request.response_format != "text":
+                # Check if it's already a dict or needs to be converted
+                if isinstance(ai_request.response_format, str):
+                    request_params["response_format"] = {"type": ai_request.response_format}
+                else:
+                    request_params["response_format"] = ai_request.response_format
+
+            logger.debug("LLMGateway.ask - Request params: %s",
+                         {k: v for k, v in request_params.items() if k != "messages"})
+
+            completion = self.client.chat.completions.create(**request_params)
 
             elapsed = time.time() - start_time
             logger.info("LLMGateway.ask - SUCCESS in %.2fs - finish_reason: %s",

@@ -21,9 +21,10 @@ class AIRequestDomain:
         chat_session_key = None,
         user_id: int = None,
         temperature: float = 0.1,
-        tool_choice: str = "auto",
+        tool_choice: str = None,
         request_type: AIRequestTypes = AIRequestTypes.COMPLETION,
         history: str = "",
+        response_format: str = "text",
     ):
         self.prompt = prompt
         self.model = model
@@ -35,6 +36,7 @@ class AIRequestDomain:
         self.tool_choice = tool_choice
         self.request_type = request_type
         self.history = HISTORY.format(history=history) if history else ""
+        self.response_format = response_format
 
         model_type = LlmModels.get_model(model)
         self.temperature_enabled = model_type.temperature_enabled

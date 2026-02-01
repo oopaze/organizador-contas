@@ -10,6 +10,7 @@ class BillFactory:
 
     def build_from_file(self, file: FileDomain) -> BillDomain:
         ai_response = file.ai_call.response
+        print("BillFactory.build_from_file", ai_response)
         return BillDomain(
             due_date=ai_response["due_date"],
             total_amount=ai_response["total_amount"],

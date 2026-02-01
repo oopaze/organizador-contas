@@ -91,50 +91,21 @@ class UploadFileUseCase:
         self.remove_pdf_password_use_case = remove_pdf_password_use_case
 
     def execute(self, file: UploadedFile, user_id: int, password: str = None):
-        logger.info("UploadFileUseCase.execute - Starting for user: %s, file: %s", user_id, file.name)
-
-        start_time = time.time()
-
-        # Step 1: Build and save file
-        logger.info("UploadFileUseCase.execute - Step 1: Building and saving file")
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
-        logger.info("UploadFileUseCase.execute - File saved with ID: %s", saved_file.id)
 
-        # Step 2: Remove password if provided
         if password:
-            logger.info("UploadFileUseCase.execute - Step 2: Removing PDF password")
             file_path = self.remove_pdf_password_use_case.execute(saved_file, password)
-            logger.info("UploadFileUseCase.execute - Password removed successfully")
 
-        # Step 3: Extract text from PDF
-        logger.info("UploadFileUseCase.execute - Step 3: Extracting text from PDF")
         file_path = saved_file.uploaded_file.path
-        logger.info("UploadFileUseCase.execute - File path: %s", file_path)
         pdf_text = saved_file.extract_text_from_pdf(file_path)
-        text_length = len(pdf_text) if pdf_text else 0
-        logger.info("UploadFileUseCase.execute - Extracted %d characters from PDF", text_length)
 
-        # Step 4: Call AI to process the text
-        logger.info("UploadFileUseCase.execute - Step 4: Calling AI to process text")
         prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]
-        ai_start = time.time()
-        ai_call_id = self.ask_use_case.execute(prompt)
-        ai_elapsed = time.time() - ai_start
-        logger.info("UploadFileUseCase.execute - AI call completed in %.2fs, AI call ID: %s", ai_elapsed, ai_call_id)
+        ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object")
 
-        # Step 5: Update file with AI info
-        logger.info("UploadFileUseCase.execute - Step 5: Updating file with AI info")
         ai_call = self.ai_call_repository.get(ai_call_id)
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
-        logger.info("UploadFileUseCase.execute - File updated with AI info")
 
-        # Step 6: Transpose to bill models
-        logger.info("UploadFileUseCase.execute - Step 6: Transposing to bill models")
         self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id)
-
-        total_elapsed = time.time() - start_time
-        logger.info("UploadFileUseCase.execute - SUCCESS in %.2fs - File ID: %s", total_elapsed, updated_file.id)
-
         return self.file_serializer.serialize(updated_file)
