@@ -25,3 +25,7 @@ SECRET_KEY = environ.get("SECRET_KEY", "django-insecure-7qxvis$yfe9fhtkns*u80c)i
 ALLOWED_HOSTS = environ.get("ALLOWED_HOSTS", "*").split(",")
 # DEBUG = True
 CORS_ALLOWED_ORIGINS = environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+CSRF_TRUSTED_ORIGINS = environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://api.poupix.connectakit.com.br,https://poupix.connectakit.com.br,http://localhost:5173"
+).split(",")
