@@ -1,5 +1,3 @@
-import logging
-import time
 
 from django.core.files.uploadedfile import UploadedFile
 
@@ -12,8 +10,6 @@ from modules.file_reader.use_cases.transpose_file_bill_to_models import Transpos
 from modules.ai.use_cases.ask import AskUseCase
 from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPasswordUseCase
 from modules.ai.types import LlmModels
-
-logger = logging.getLogger(__name__)
 
 PROMPT = """
 You will receive TEXT extracted from a PDF CREDIT CARD STATEMENT.
@@ -29,8 +25,9 @@ Extract:
 
 1. BASIC STATEMENT INFORMATION
 - bill_identifier: Card name or bank
-- total_amount: Total amount due for the current month (float)
+- total_amount: Total amount due for the current month (ALWAYS POSITIVE float)
 - due_date: Due date in YYYY-MM-DD format
+- transaction_type: "incoming" if this is a credit card bill, "outgoing" otherwise
 
 2. TRANSACTIONS
 Extract ONLY real transactions listed under sections like
@@ -42,8 +39,14 @@ IGNORE sections like:
 For each transaction:
 - date: YYYY-MM-DD (include statement year)
 - description: Exact text
-- amount: Float (negative for payments or credits)
+- amount: ALWAYS POSITIVE float (the value of the transaction)
 - installment_info: "installment X of Y" or "not installment"
+
+IMPORTANT RULES ABOUT AMOUNTS:
+- ALL amounts must be POSITIVE numbers (e.g., 150.00, not -150.00)
+- The amount represents the value of the bill/transaction
+- If the PDF shows negative values, convert them to positive
+- Credit card bills are expenses, so all transactions are outgoing by default
 
 Formatting rules:
 - Output MUST be a single valid JSON object
@@ -56,13 +59,14 @@ If no transactions exist, return an empty array.
 Response format:
 {
   "bill_identifier": "string",
-  "total_amount": 0.00,
+  "total_amount": 150.00,
   "due_date": "YYYY-MM-DD",
+  "transaction_type": "incoming" or "outgoing",
   "transactions": [
     {
       "date": "YYYY-MM-DD",
       "description": "string",
-      "amount": 0.00,
+      "amount": 50.00,
       "installment_info": "string"
     }
   ]

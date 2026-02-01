@@ -23,8 +23,17 @@ class TransposeFileBillToModelsUseCase:
 
     def execute(self, file_id: str, user_id: int):
         file = self.file_repository.get(file_id)
+
+        if response := file.get_response():
+            if isinstance(response, list):
+                for r in response:
+                    bill = self.bill_factory.build_from_file(file, r)
+                    saved_bill = self.bill_repository.create(bill, user_id)
+                    bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, r)
+                    self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
+                return
+
         bill = self.bill_factory.build_from_file(file)
         saved_bill = self.bill_repository.create(bill, user_id)
-
         bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill)
         self.bill_sub_transaction_repository.create_many(bill_sub_transactions)

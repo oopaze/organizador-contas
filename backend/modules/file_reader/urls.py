@@ -1,12 +1,13 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from modules.file_reader.views import BillViewSet, UploadFileView
+from modules.file_reader.views import BillViewSet, UploadFileView, UploadSheetView
 
 router = DefaultRouter()
 router.register(r"bills", BillViewSet, basename="bill")
 
 urlpatterns = [
     path("upload/", UploadFileView.as_view(), name="upload_file"),
+    path("upload-sheet/", UploadSheetView.as_view(), name="upload_sheet"),
     path("", include(router.urls)),
 ]

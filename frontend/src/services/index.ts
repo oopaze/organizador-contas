@@ -38,6 +38,7 @@ export { getActorStats } from './actors/getActorStats';
 export { getBills } from './bills/getBills';
 export { getBill } from './bills/getBill';
 export { uploadBill } from './bills/uploadBill';
+export { uploadSheet } from './bills/uploadSheet';
 
 // Chat services
 export { startChat } from './chat/startChat';

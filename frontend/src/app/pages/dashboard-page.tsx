@@ -10,10 +10,11 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 
-import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users, FileSpreadsheet } from 'lucide-react';
 import { TransactionsList } from '@/app/components/transactions-list';
 import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
+import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
 
 export const DashboardPage: React.FC = () => {
@@ -22,6 +23,7 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showUploadBill, setShowUploadBill] = useState(false);
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   // Month/Year filter
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -70,6 +72,12 @@ export const DashboardPage: React.FC = () => {
     setShowUploadBill(false);
     loadData();
     toast.success('Fatura enviada com sucesso!');
+  };
+
+  const handleSheetUploaded = () => {
+    setShowUploadSheet(false);
+    loadData();
+    toast.success('Planilha enviada com sucesso!');
   };
 
   // Format selected month for display (e.g., "Janeiro 2026")
@@ -185,6 +193,11 @@ export const DashboardPage: React.FC = () => {
           <Upload className="w-4 h-4 mr-2" />
           Upload Fatura
         </Button>
+
+        <Button onClick={() => setShowUploadSheet(true)} variant="outline" className="flex-1 sm:flex-none">
+          <FileSpreadsheet className="w-4 h-4 mr-2" />
+          Upload Planilha
+        </Button>
       </div>
 
       {/* Transactions List */}
@@ -241,6 +254,11 @@ export const DashboardPage: React.FC = () => {
         open={showUploadBill}
         onOpenChange={setShowUploadBill}
         onSuccess={handleBillUploaded}
+      />
+      <UploadSheetDialog
+        open={showUploadSheet}
+        onOpenChange={setShowUploadSheet}
+        onSuccess={handleSheetUploaded}
       />
     </>
   );

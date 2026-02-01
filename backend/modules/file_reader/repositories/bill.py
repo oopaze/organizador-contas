@@ -24,7 +24,7 @@ class BillRepository:
             total_amount=bill.total_amount,
             transaction_identifier=bill.bill_identifier,
             file_id=bill.file.id,
-            transaction_type="outgoing",
+            transaction_type=bill.transaction_type,
             user_id=user_id,
         )
         return self.bill_factory.build_from_model(bill_instance)

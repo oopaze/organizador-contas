@@ -1,6 +1,9 @@
 import re
+import csv
+import io
 
 from pdfplumber import open as pdf_open
+import pandas as pd
 
 from modules.file_reader.domains.ai_call import AICallDomain
 
@@ -45,6 +48,9 @@ class FileDomain:
         self.raw_text = raw_text
         self.ai_call = ai_call
         self.user_id = user_id
+
+    def get_response(self) -> dict | list[dict]:
+        return self.ai_call.response if self.ai_call else None
 
     def update_ai_info(self, ai_call: AICallDomain):
         self.ai_call = ai_call
@@ -116,3 +122,36 @@ class FileDomain:
                 continue
             result.append(line)
         return result
+
+    def extract_text_from_spreadsheet(self) -> str:
+        """Extract text from CSV or Excel files and return as formatted string.
+        For Excel files, reads all sheets and combines them.
+        """
+        if not self.is_saved():
+            raise Exception("File is not saved")
+
+        file_path = self.url
+        file_extension = file_path.lower().split('.')[-1]
+
+        try:
+            if file_extension == 'csv':
+                df = pd.read_csv(file_path)
+                self.raw_text = df.to_csv(index=False)
+            elif file_extension in ['xlsx', 'xls']:
+                # Read all sheets from Excel file
+                excel_file = pd.ExcelFile(file_path)
+                all_sheets_text = []
+
+                for sheet_name in excel_file.sheet_names:
+                    df = pd.read_excel(excel_file, sheet_name=sheet_name)
+                    if not df.empty:
+                        sheet_text = f"=== Sheet: {sheet_name} ===\n{df.to_csv(index=False)}"
+                        all_sheets_text.append(sheet_text)
+
+                self.raw_text = "\n\n".join(all_sheets_text)
+            else:
+                raise Exception(f"Unsupported file format: {file_extension}")
+
+            return self.raw_text
+        except Exception as e:
+            raise Exception(f"Error reading spreadsheet: {str(e)}")

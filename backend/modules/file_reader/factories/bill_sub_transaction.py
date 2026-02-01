@@ -5,15 +5,16 @@ from modules.file_reader.domains.file import FileDomain
 
 
 class BillSubTransactionFactory:
-    def build_many_from_file(self, file: FileDomain, bill: BillDomain) -> BillSubTransactionDomain:
-        ai_response = file.ai_call.response
-        transactions = ai_response["transactions"]
+    def build_many_from_file(self, file: FileDomain, bill: BillDomain, ai_response: dict = None) -> list[BillSubTransactionDomain]:
+        if ai_response is None:
+            ai_response = file.ai_call.response
+        transactions = ai_response.get("transactions", [])
         return [
             BillSubTransactionDomain(
                 date=transaction["date"],
                 description=transaction["description"],
                 amount=transaction["amount"],
-                installment_info=transaction["installment_info"],
+                installment_info=transaction.get("installment_info", "not installment"),
                 bill=bill,
             )
             for transaction in transactions

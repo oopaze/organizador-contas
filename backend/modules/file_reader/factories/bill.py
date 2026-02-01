@@ -8,14 +8,20 @@ class BillFactory:
     def __init__(self, file_factory: FileFactory):
         self.file_factory = file_factory
 
-    def build_from_file(self, file: FileDomain) -> BillDomain:
-        ai_response = file.ai_call.response
-        print("BillFactory.build_from_file", ai_response)
+    def build_from_file(self, file: FileDomain, ai_response: dict = None) -> BillDomain:
+        if ai_response is None:
+            ai_response = file.ai_call.response
+
+        # Determine transaction_type based on is_income flag
+        is_income = ai_response.get("is_income", False)
+        transaction_type = "incoming" if is_income else "outgoing"
+
         return BillDomain(
             due_date=ai_response["due_date"],
             total_amount=ai_response["total_amount"],
             bill_identifier=ai_response["bill_identifier"],
             file=file,
+            transaction_type=transaction_type,
         )
 
     def build_from_model(self, model: Transaction) -> BillDomain:

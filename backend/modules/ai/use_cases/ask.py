@@ -55,4 +55,5 @@ class AskUseCase:
                 ai_request,
             )
         except LLMGatewayException as e:
+            print("AskUseCase.ask_ai.error", e)
             return self.ai_request_factory.build_empty_response(ai_request)

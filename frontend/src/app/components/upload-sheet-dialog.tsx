@@ -1,13 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { uploadBill } from '@/services';
+import { uploadSheet } from '@/services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
-import { Input } from '@/app/components/ui/input';
-import { Checkbox } from '@/app/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { toast } from 'sonner';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, X } from 'lucide-react';
 
 const AI_MODELS = {
   'deepseek-chat': { name: 'DeepSeek Chat', provider: 'DeepSeek' },
@@ -21,13 +19,20 @@ const AI_MODELS = {
 
 type AIModelKey = keyof typeof AI_MODELS;
 
-interface UploadBillDialogProps {
+const ACCEPTED_EXTENSIONS = ['.csv', '.xlsx', '.xls'];
+const ACCEPTED_MIME_TYPES = [
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+
+interface UploadSheetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
+export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
   open,
   onOpenChange,
   onSuccess,
@@ -35,16 +40,19 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [hasPassword, setHasPassword] = useState(false);
-  const [pdfPassword, setPdfPassword] = useState('');
   const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-chat');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isValidFile = (file: File): boolean => {
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+    return ACCEPTED_EXTENSIONS.includes(extension) || ACCEPTED_MIME_TYPES.includes(file.type);
+  };
+
   const handleFileSelect = (file: File) => {
-    if (file.type === 'application/pdf') {
+    if (isValidFile(file)) {
       setSelectedFile(file);
     } else {
-      toast.error('Por favor, selecione um arquivo PDF');
+      toast.error('Por favor, selecione um arquivo CSV ou Excel (.xlsx, .xls)');
     }
   };
 
@@ -82,15 +90,12 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
 
     setLoading(true);
     try {
-      const password = hasPassword ? pdfPassword : undefined;
-      await uploadBill(selectedFile, password, selectedModel);
+      await uploadSheet(selectedFile, selectedModel);
       setSelectedFile(null);
-      setHasPassword(false);
-      setPdfPassword('');
       setSelectedModel('deepseek-chat');
       onSuccess();
     } catch (error) {
-      toast.error('Falha ao enviar fatura');
+      toast.error('Falha ao enviar planilha');
     } finally {
       setLoading(false);
     }
@@ -99,8 +104,6 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const handleClose = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedFile(null);
-      setHasPassword(false);
-      setPdfPassword('');
       setSelectedModel('deepseek-chat');
     }
     onOpenChange(isOpen);
@@ -110,16 +113,16 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Upload de Fatura</DialogTitle>
+          <DialogTitle>Upload de Planilha</DialogTitle>
           <DialogDescription>
-            Faça upload da sua fatura de cartão de crédito em PDF
+            Faça upload de uma planilha CSV ou Excel com suas transações
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Arquivo PDF</Label>
+              <Label>Arquivo (CSV, Excel)</Label>
               <div
                 className={`
                   border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
@@ -136,18 +139,18 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,application/pdf"
+                  accept=".csv,.xlsx,.xls"
                   onChange={handleInputChange}
                   className="hidden"
                 />
                 
                 {selectedFile ? (
                   <div className="flex items-center justify-center gap-2">
-                    <FileText className="w-8 h-8 text-green-600" />
+                    <FileSpreadsheet className="w-8 h-8 text-green-600" />
                     <div className="text-left">
                       <p className="font-medium text-gray-900">{selectedFile.name}</p>
                       <p className="text-sm text-gray-500">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                        {(selectedFile.size / 1024).toFixed(2)} KB
                       </p>
                     </div>
                     <Button
@@ -166,38 +169,15 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                   <div className="flex flex-col items-center gap-2">
                     <Upload className="w-10 h-10 text-gray-400" />
                     <p className="text-gray-600">
-                      Arraste e solte seu arquivo PDF aqui
+                      Arraste e solte seu arquivo aqui
                     </p>
                     <p className="text-sm text-gray-400">
-                      ou clique para selecionar
+                      CSV, Excel (.xlsx, .xls)
                     </p>
                   </div>
                 )}
               </div>
             </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hasPassword"
-                checked={hasPassword}
-                onCheckedChange={(checked) => setHasPassword(checked === true)}
-              />
-              <Label htmlFor="hasPassword" className="cursor-pointer">
-                O PDF tem senha?
-              </Label>
-            </div>
-
-            {hasPassword && (
-              <div className="space-y-2">
-                <Label htmlFor="pdfPassword">Senha do PDF</Label>
-                <Input
-                  id="pdfPassword"
-                  placeholder="Digite a senha do PDF"
-                  value={pdfPassword}
-                  onChange={(e) => setPdfPassword(e.target.value)}
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label>Modelo de IA</Label>
@@ -219,7 +199,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
               Cancelar
             </Button>
             <Button type="submit" disabled={loading || !selectedFile}>
-              {loading ? 'Enviando...' : 'Enviar Fatura'}
+              {loading ? 'Enviando...' : 'Enviar Planilha'}
             </Button>
           </DialogFooter>
         </form>
