@@ -23,5 +23,5 @@ DATABASE_PORT = environ.get("DATABASE_PORT", "5432")
 # Django
 SECRET_KEY = environ.get("SECRET_KEY", "django-insecure-7qxvis$yfe9fhtkns*u80c)ig@652^j7t&@(xa-zjyi8(m!r1e")
 ALLOWED_HOSTS = environ.get("ALLOWED_HOSTS", "*").split(",")
-DEBUG = True
+# DEBUG = True
 CORS_ALLOWED_ORIGINS = environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
