@@ -115,7 +115,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload de Planilha</DialogTitle>
           <DialogDescription>
