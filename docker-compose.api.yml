@@ -1,0 +1,69 @@
+# ===========================================
+# Poupix - API Only (Backend + Database)
+# ===========================================
+# Use this when frontend is deployed to a CDN
+# Usage: docker-compose -f docker-compose.api.yml up -d
+
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME:-poupix}
+      - POSTGRES_USER=${DATABASE_USER:-poupix}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-poupix}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - poupix-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - backend_files:/app/files
+      - backend_static:/app/staticfiles
+    environment:
+      - DEBUG=0
+      - DJANGO_SETTINGS_MODULE=infra.settings
+      - DATABASE_NAME=${DATABASE_NAME:-poupix}
+      - DATABASE_USER=${DATABASE_USER:-poupix}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      # AI API Keys
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY:-}
+      - GOOGLE_AI_BASE_URL=${GOOGLE_AI_BASE_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - poupix-network
+
+volumes:
+  backend_files:
+  backend_static:
+  postgres_data:
+
+networks:
+  poupix-network:
+    driver: bridge
+

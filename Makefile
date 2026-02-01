@@ -13,13 +13,15 @@ help:
 	@echo "    make run_dev          - Run backend only"
 	@echo "    make run_dev_front    - Run frontend only"
 	@echo ""
-	@echo "  Production:"
+	@echo "  Production (Full Stack):"
 	@echo "    make prod             - Build and start production"
-	@echo "    make prod-build       - Build production images"
-	@echo "    make prod-up          - Start production containers"
 	@echo "    make prod-down        - Stop production containers"
 	@echo "    make prod-logs        - View production logs"
-	@echo "    make prod-restart     - Restart production containers"
+	@echo ""
+	@echo "  API Only (for CDN frontend):"
+	@echo "    make api              - Build and start API + Database"
+	@echo "    make api-down         - Stop API containers"
+	@echo "    make api-logs         - View API logs"
 	@echo ""
 	@echo "  Database:"
 	@echo "    make db_up            - Start database container"
@@ -54,7 +56,7 @@ app_shell:
 	cd backend && python manage.py shell
 
 # ===========================================
-# Production
+# Production (Full Stack)
 # ===========================================
 
 # Build and start production
@@ -85,6 +87,39 @@ prod-logs:
 prod-restart:
 	@echo "🔄 Restarting production..."
 	docker-compose -f docker-compose.prod.yml restart
+
+# ===========================================
+# API Only (Backend + Database for CDN frontend)
+# ===========================================
+
+# Build and start API only
+api: api-build api-up
+	@echo "✅ API is running!"
+	@echo "   Access: http://localhost:$${API_PORT:-8000}"
+
+# Build API images
+api-build:
+	@echo "🔨 Building API images..."
+	docker-compose -f docker-compose.api.yml build
+
+# Start API containers
+api-up:
+	@echo "🚀 Starting API..."
+	docker-compose -f docker-compose.api.yml up -d
+
+# Stop API containers
+api-down:
+	@echo "🛑 Stopping API..."
+	docker-compose -f docker-compose.api.yml down
+
+# View API logs
+api-logs:
+	docker-compose -f docker-compose.api.yml logs -f
+
+# Restart API containers
+api-restart:
+	@echo "🔄 Restarting API..."
+	docker-compose -f docker-compose.api.yml restart
 
 # ===========================================
 # Database
