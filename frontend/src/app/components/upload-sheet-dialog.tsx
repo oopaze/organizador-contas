@@ -41,7 +41,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-chat');
+  const [selectedModel, setSelectedModel] = useState<AIModelKey>('gemini-2.5-flash-lite');
   const [description, setDescription] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,7 +94,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
     try {
       await uploadSheet(selectedFile, selectedModel, description || undefined);
       setSelectedFile(null);
-      setSelectedModel('deepseek-chat');
+      setSelectedModel('gemini-2.5-flash-lite');
       setDescription('');
       toast.success('Sua planilha foi recebida e já está sendo processada, aguarde alguns minutos até ver suas transações');
       onSuccess();
@@ -108,7 +108,7 @@ export const UploadSheetDialog: React.FC<UploadSheetDialogProps> = ({
   const handleClose = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedFile(null);
-      setSelectedModel('deepseek-chat');
+      setSelectedModel('gemini-2.5-flash-lite');
       setDescription('');
     }
     onOpenChange(isOpen);
