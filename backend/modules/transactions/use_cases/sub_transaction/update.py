@@ -16,12 +16,13 @@ class UpdateSubTransactionUseCase:
 
     def execute(self, id: int, data: dict, user_id: int) -> dict:
         sub_transaction = self.sub_transaction_repository.get(id, user_id)
-        sub_transaction.update(data)
-
         actor = self.actor_repository.get(data["actor"], user_id) if data.get("actor") else None
-        
+
         if data.get("should_divide_for_actor", False) and actor:
             sub_transaction = self.give_part_to_actor(sub_transaction, data, actor)
+
+        data.update({"actor": actor, "actor_id": actor.id if actor else None})
+        sub_transaction.update(data)
         
         updated_sub_transaction = self.sub_transaction_repository.update(sub_transaction)
         return self.sub_transaction_serializer.serialize(updated_sub_transaction)
