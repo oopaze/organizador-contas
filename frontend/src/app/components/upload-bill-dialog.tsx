@@ -93,7 +93,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setCreateInFutureMonths(false);
       onSuccess();
     }).catch((error) => {
-      toast.error(error?.response?.data?.error || 'Falha ao enviar fatura');
+      toast.error(error?.response?.data?.error || 'Falha ao enviar fatura. Verifique se a senha está correta.');
     }).finally(() => {
       setLoading(false);
     });

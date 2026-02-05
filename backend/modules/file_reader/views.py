@@ -52,6 +52,7 @@ class UploadFileView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         except InvalidPasswordException as e:
+            logger.error(f"[UploadFileView] Invalid password for file: {file.name}")
             return Response(
                 {"error": "Senha inválida para o PDF"},
                 status=status.HTTP_400_BAD_REQUEST,
