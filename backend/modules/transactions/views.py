@@ -94,6 +94,17 @@ class TransactionViewSet(viewsets.ViewSet):
         due_date = request.query_params.get("due_date")
         stats = self.container.transaction_stats_use_case().execute(request.user.id, due_date)
         return Response(stats, status=status.HTTP_200_OK)
+    
+    @decorators.action(detail=True, methods=["POST"])
+    def pay(self, request, pk: str):
+        update_sub_transactions = request.data.get("update_sub_transactions", False)
+        response = self.container.pay_transaction_use_case().execute(pk, request.user.id, update_sub_transactions)
+        return Response(response, status=status.HTTP_200_OK)
+
+    @decorators.action(detail=True, methods=["POST"])
+    def recalculate_amount(self, request, pk: str):
+        response = self.container.recalculate_amount_use_case().execute(pk, request.user.id)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class SubTransactionViewSet(viewsets.ViewSet):
@@ -128,3 +139,8 @@ class SubTransactionViewSet(viewsets.ViewSet):
     def destroy(self, request, pk: str):
         self.container.delete_sub_transaction_use_case().execute(pk, request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @decorators.action(detail=True, methods=["POST"])
+    def pay(self, request, pk: str):
+        response = self.container.pay_sub_transaction_use_case().execute(pk, request.user.id)
+        return Response(response, status=status.HTTP_200_OK)

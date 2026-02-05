@@ -18,6 +18,8 @@ export { createTransaction } from './transactions/createTransaction';
 export { updateTransaction } from './transactions/updateTransaction';
 export { deleteTransaction } from './transactions/deleteTransaction';
 export { getTransactionStats } from './transactions/getTransactionStats';
+export { payTransaction } from './transactions/payTransaction';
+export { recalculateTransactionAmount } from './transactions/recalculateTransactionAmount';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';
@@ -25,6 +27,7 @@ export { getSubTransaction } from './subTransactions/getSubTransaction';
 export { createSubTransaction } from './subTransactions/createSubTransaction';
 export { updateSubTransaction } from './subTransactions/updateSubTransaction';
 export { deleteSubTransaction } from './subTransactions/deleteSubTransaction';
+export { paySubTransaction } from './subTransactions/paySubTransaction';
 
 // Actor services
 export { getActors } from './actors/getActors';

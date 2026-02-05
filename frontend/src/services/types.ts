@@ -53,6 +53,9 @@ export interface Transaction {
   file?: number;
   created_at?: string;
   amount_from_actor?: number;
+  paid_at?: string;
+  subtransactions_paid?: boolean;
+  is_paid?: boolean;
 }
 
 export interface SubTransaction {
@@ -66,12 +69,16 @@ export interface SubTransaction {
   actor_id?: number;
   actor?: Actor | number;
   user_provided_description?: string;
+  paid_at?: string;
 }
 
 export interface TransactionDetail extends Transaction {
   sub_transactions: SubTransaction[];
   installment_number?: number;
   main_transaction?: number | null;
+  paid_at?: string;
+  subtransactions_paid?: boolean;
+  is_paid?: boolean;
 }
 
 export interface Bill {
@@ -90,12 +97,15 @@ export interface TransactionFilters {
 export interface TransactionStats {
   incoming_total: number;
   outgoing_total: number;
+  incoming_total_paid: number;
   balance: number;
   outgoing_from_actors: number;
+  outgoing_from_actors_paid: number;
 }
 
 export interface ActorStats {
   total_spent: number;
+  total_spent_paid: number;
   biggest_spender: string;
   biggest_spender_amount: number;
   smallest_spender: string;

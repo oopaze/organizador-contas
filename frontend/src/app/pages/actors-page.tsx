@@ -86,6 +86,26 @@ export const ActorsPage: React.FC = () => {
     fetchActors();
   }, [fetchActors]);
 
+  const fetchActorDetails = useCallback(async (id: number) => {
+    setLoadingActors(prev => new Set(prev).add(id));
+    setActorErrors(prev => ({ ...prev, [id]: null }));
+
+    try {
+      const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD
+      const detail = await getActor(id, { due_date: dueDate });
+      setActorDetails(prev => ({ ...prev, [id]: detail }));
+    } catch (err) {
+      console.error('Error fetching actor details:', err);
+      setActorErrors(prev => ({ ...prev, [id]: 'Falha ao carregar subtransações' }));
+    } finally {
+      setLoadingActors(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
+  }, [selectedMonth]);
+
   const toggleRow = async (id: number) => {
     const isCurrentlyExpanded = expandedRows.has(id);
 
@@ -101,23 +121,7 @@ export const ActorsPage: React.FC = () => {
 
     // Fetch actor details when expanding (if not already loaded)
     if (!isCurrentlyExpanded && !actorDetails[id]) {
-      setLoadingActors(prev => new Set(prev).add(id));
-      setActorErrors(prev => ({ ...prev, [id]: null }));
-
-      try {
-        const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD
-        const detail = await getActor(id, { due_date: dueDate });
-        setActorDetails(prev => ({ ...prev, [id]: detail }));
-      } catch (err) {
-        console.error('Error fetching actor details:', err);
-        setActorErrors(prev => ({ ...prev, [id]: 'Falha ao carregar subtransações' }));
-      } finally {
-        setLoadingActors(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(id);
-          return newSet;
-        });
-      }
+      await fetchActorDetails(id);
     }
   };
 
@@ -180,7 +184,7 @@ export const ActorsPage: React.FC = () => {
               R$ {(actorStats?.total_spent || 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Soma de todos os atores
+              <span className="text-green-600 font-medium">R$ {(actorStats?.total_spent_paid || 0).toFixed(2)}</span> já pago
             </p>
           </CardContent>
         </Card>
@@ -355,6 +359,7 @@ export const ActorsPage: React.FC = () => {
                                 subTransactions={actorDetails[actor.id]?.sub_transactions}
                                 loading={loadingActors.has(actor.id)}
                                 error={actorErrors[actor.id]}
+                                onUpdate={() => fetchActorDetails(actor.id)}
                               />
                             </div>
                           </TableCell>

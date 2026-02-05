@@ -146,7 +146,7 @@ export const DashboardPage: React.FC = () => {
               R$ {totalIncome.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              No período selecionado
+              <span className="text-green-700 font-medium">R$ {(stats?.incoming_total_paid || 0).toFixed(2)}</span> recebido
             </p>
           </CardContent>
         </Card>
@@ -176,7 +176,7 @@ export const DashboardPage: React.FC = () => {
               R$ {(stats?.outgoing_from_actors || 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Gastos de terceiros no seu cartão
+              <span className="text-green-600 font-medium">R$ {(stats?.outgoing_from_actors_paid || 0).toFixed(2)}</span> já recebido
             </p>
           </CardContent>
         </Card>

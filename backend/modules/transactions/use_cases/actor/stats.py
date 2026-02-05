@@ -39,6 +39,7 @@ class ActorStatsUseCase:
 
         return {
             "total_spent": total_spent,
+            "total_spent_paid": sum([actor.get_total_spent_paid() for actor in actors]) if actors else None,
             "biggest_spender": biggest_spender.name if biggest_spender else None,
             "biggest_spender_amount": biggest_spender.get_total_spent() if biggest_spender else None,
             "smallest_spender": smallest_spender.name if smallest_spender else None,

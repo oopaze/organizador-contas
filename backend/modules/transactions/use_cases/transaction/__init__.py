@@ -4,6 +4,8 @@ from modules.transactions.use_cases.transaction.get import GetTransactionUseCase
 from modules.transactions.use_cases.transaction.list import ListTransactionsUseCase
 from modules.transactions.use_cases.transaction.update import UpdateTransactionUseCase
 from modules.transactions.use_cases.transaction.stats import TransactionStatsUseCase
+from modules.transactions.use_cases.transaction.pay import PayTransactionUseCase
+from modules.transactions.use_cases.transaction.recalculate_amount import RecalculateAmountUseCase
 
 __all__ = [
     "CreateTransactionUseCase",
@@ -12,4 +14,6 @@ __all__ = [
     "ListTransactionsUseCase",
     "UpdateTransactionUseCase",
     "TransactionStatsUseCase",
+    "PayTransactionUseCase",
+    "RecalculateAmountUseCase",
 ]

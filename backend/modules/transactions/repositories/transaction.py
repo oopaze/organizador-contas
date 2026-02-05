@@ -1,8 +1,9 @@
 from django.utils import timezone
+from django.db.models import Case, When, Value, BooleanField, Exists, OuterRef
 
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.factories.transaction import TransactionFactory
-from modules.transactions.models import Transaction
+from modules.transactions.models import Transaction, SubTransaction
 
 
 class TransactionRepository:
@@ -16,10 +17,29 @@ class TransactionRepository:
             self.model.objects
                 .order_by("id")
                 .exclude(deleted_at__isnull=False)
+                .prefetch_related("sub_transactions")
+        )
+
+    def _annotate_subtransactions_paid(self, queryset):
+        has_subtransactions = SubTransaction.objects.filter(transaction=OuterRef('pk'))
+        unpaid_subtransactions = SubTransaction.objects.filter(
+            transaction=OuterRef('pk'),
+            paid_at__isnull=True
+        )
+
+        return queryset.annotate(
+            subtransactions_paid=Case(
+                When(
+                    Exists(has_subtransactions),
+                    then=~Exists(unpaid_subtransactions),
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
         )
 
     def filter(self, filters: dict) -> list["TransactionDomain"]:
-        queryset = self.queryset.filter(**filters)
+        queryset = self._annotate_subtransactions_paid(self.queryset.filter(**filters))
         return [self.transaction_factory.build_from_model(transaction) for transaction in queryset]
 
     def get(self, transaction_id: str, user_id: int) -> "TransactionDomain":
@@ -59,6 +79,9 @@ class TransactionRepository:
         transaction_instance.is_recurrent = transaction.is_recurrent
         transaction_instance.save()
         return self.transaction_factory.build_from_model(transaction_instance)
+    
+    def update_paid_at(self, transaction: "TransactionDomain"):
+        self.queryset.filter(id=transaction.id).update(paid_at=transaction.paid_at)
     
     def update_many(self, transactions: list["TransactionDomain"]) -> list["TransactionDomain"]:
         return [self.update(transaction) for transaction in transactions]

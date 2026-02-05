@@ -14,6 +14,8 @@ from modules.transactions.use_cases.transaction import (
     ListTransactionsUseCase,
     UpdateTransactionUseCase,
     TransactionStatsUseCase,
+    PayTransactionUseCase,
+    RecalculateAmountUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
@@ -21,6 +23,7 @@ from modules.transactions.use_cases.sub_transaction import (
     GetSubTransactionUseCase,
     ListSubTransactionsUseCase,
     UpdateSubTransactionUseCase,
+    PaySubTransactionUseCase,
 )
 from modules.transactions.use_cases.tools import (
     GetActorsToolUseCase,
@@ -45,11 +48,14 @@ __all__ = [
     "ListTransactionsUseCase",
     "UpdateTransactionUseCase",
     "TransactionStatsUseCase",
+    "PayTransactionUseCase",
+    "RecalculateAmountUseCase",
     "CreateSubTransactionUseCase",
     "DeleteSubTransactionUseCase",
     "GetSubTransactionUseCase",
     "ListSubTransactionsUseCase",
     "UpdateSubTransactionUseCase",
+    "PaySubTransactionUseCase",
     "GetActorsToolUseCase",
     "GetActorDetailToolUseCase",
     "GetActorStatsToolUseCase",

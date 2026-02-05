@@ -11,6 +11,7 @@ async function getActorStatsMock(filters?: ActorStatsFilters): Promise<ActorStat
   await new Promise(resolve => setTimeout(resolve, 300));
   return {
     total_spent: 500.00,
+    total_spent_paid: 300.00,
     biggest_spender: 'Mock User',
     biggest_spender_amount: 250.00,
     smallest_spender: 'Mock User 2',

@@ -35,6 +35,9 @@ class TransactionSerializer:
             "installment_number": transaction.installment_number,
             "main_transaction": transaction.main_transaction.id if transaction.main_transaction else None,
             "amount_from_actor": transaction.amount_from_actor if transaction.amount_from_actor else None,
+            "paid_at": transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if transaction.paid_at else None,
+            "subtransactions_paid": transaction.subtransactions_paid,
+            "is_paid": transaction.is_paid,
         }
     
     def serialize_for_tool(self, transaction: "TransactionDomain") -> str:

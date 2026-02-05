@@ -20,11 +20,14 @@ from modules.transactions.use_cases import (
     ListTransactionsUseCase,
     UpdateTransactionUseCase,
     TransactionStatsUseCase,
+    PayTransactionUseCase,
+    RecalculateAmountUseCase,
     CreateSubTransactionUseCase,
     DeleteSubTransactionUseCase,
     GetSubTransactionUseCase,
     ListSubTransactionsUseCase,
     UpdateSubTransactionUseCase,
+    PaySubTransactionUseCase,
     GetActorsToolUseCase,
     GetActorDetailToolUseCase,
     GetActorStatsToolUseCase,
@@ -142,6 +145,18 @@ class TransactionsContainer(containers.DeclarativeContainer):
         sub_transaction_repository=sub_transaction_repository,
     )
 
+    pay_transaction_use_case = providers.Factory(
+        PayTransactionUseCase,
+        transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
+    )
+
+    recalculate_amount_use_case = providers.Factory(
+        RecalculateAmountUseCase,
+        transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
+    )
+
     create_sub_transaction_use_case = providers.Factory(
         CreateSubTransactionUseCase,
         transaction_repository=transaction_repository,
@@ -172,6 +187,11 @@ class TransactionsContainer(containers.DeclarativeContainer):
 
     delete_sub_transaction_use_case = providers.Factory(
         DeleteSubTransactionUseCase,
+        sub_transaction_repository=sub_transaction_repository,
+    )
+
+    pay_sub_transaction_use_case = providers.Factory(
+        PaySubTransactionUseCase,
         sub_transaction_repository=sub_transaction_repository,
     )
 

@@ -34,8 +34,10 @@ async function getTransactionStatsMock(filters?: TransactionStatsFilters): Promi
   return {
     incoming_total,
     outgoing_total,
+    incoming_total_paid: 0,
     balance: incoming_total - outgoing_total,
     outgoing_from_actors,
+    outgoing_from_actors_paid: 0,
   };
 }
 

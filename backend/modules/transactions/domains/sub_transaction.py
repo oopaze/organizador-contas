@@ -1,4 +1,5 @@
 from decimal import Decimal
+from django.utils import timezone
 
 from modules.transactions.domains import ActorDomain, TransactionDomain
 
@@ -16,6 +17,7 @@ class SubTransactionDomain:
         transaction: "TransactionDomain" = None,
         actor: "ActorDomain" = None,
         user_provided_description: str = "",
+        paid_at: str = None,
     ):
         self.date = date if date else transaction.due_date
         self.description = description
@@ -28,6 +30,16 @@ class SubTransactionDomain:
         self.actor_id = actor.id if isinstance(actor, ActorDomain) else actor
         self.user_provided_description = user_provided_description
         self.amount = self.format_money(amount)
+        self.paid_at = paid_at
+
+    def is_paying(self):
+        return self.paid_at is None
+
+    def pay(self):
+        self.paid_at = timezone.now().date()
+
+    def unpay(self):
+        self.paid_at = None
     
     def update(self, data: dict):
         self.date = data.get("date", self.date)

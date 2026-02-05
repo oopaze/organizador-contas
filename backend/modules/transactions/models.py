@@ -22,6 +22,7 @@ class Transaction(TimedModel, UserOwnedModel, SoftDeleteModel):
     recurrence_count = models.IntegerField(null=True, blank=True)
     installment_number = models.IntegerField(null=True, blank=True)
     main_transaction = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="installments")
+    paid_at = models.DateField(null=True, blank=True)
 
     class Meta:
         ordering = ["-due_date"]
@@ -48,6 +49,7 @@ class SubTransaction(TimedModel, SoftDeleteModel):
     installment_info = models.CharField(max_length=255, null=True, blank=True)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="sub_transactions")
     actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True, blank=True)
+    paid_at = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"

@@ -25,6 +25,7 @@ class SubTransactionFactory:
             transaction=self.transaction_factory.build_from_model(model.transaction),
             actor=actor,
             user_provided_description=model.user_provided_description,
+            paid_at=model.paid_at,
         )
     
     def build(self, data: dict, transaction: TransactionDomain, actor: ActorDomain = None) -> SubTransactionDomain:

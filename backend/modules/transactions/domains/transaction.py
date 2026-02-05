@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from django.utils import timezone
 
 if TYPE_CHECKING:
     from modules.transactions.domains.sub_transaction import SubTransactionDomain
@@ -23,6 +24,8 @@ class TransactionDomain:
         recurrence_count: int = None,
         amount_from_actor: float = None,
         file_id: int = None,
+        paid_at: str = None,
+        subtransactions_paid: bool = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -40,6 +43,21 @@ class TransactionDomain:
         self.recurrence_count = recurrence_count
         self.amount_from_actor = amount_from_actor
         self.file_id = file_id
+        self.paid_at = paid_at
+        self.subtransactions_paid = subtransactions_paid
+        self.is_paid = paid_at is not None
+
+    def is_paying(self):
+        return self.paid_at is None
+    
+    def unpay(self):
+        self.paid_at = None
+
+    def pay(self):
+        self.paid_at = timezone.now().date()
+
+    def update_amount(self, total_amount: float):
+        self.total_amount = total_amount
 
     def set_sub_transactions(self, sub_transactions: list["SubTransactionDomain"]):
         self.sub_transactions = sub_transactions

@@ -138,6 +138,9 @@ class SubTransactionRepository:
         sub_transaction_instance.save()
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
+    def update_paid_at(self, sub_transaction: "SubTransactionDomain"):
+        self.queryset.filter(id=sub_transaction.id).update(paid_at=sub_transaction.paid_at)
+    
     def delete(self, sub_transaction_id: str):
         self.queryset.filter(id=sub_transaction_id).update(deleted_at=timezone.now())
 

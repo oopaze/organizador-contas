@@ -30,6 +30,9 @@ class ActorDomain:
     def get_total_spent(self) -> float:
         return sum(sub_transaction.amount for sub_transaction in self.sub_transactions) if self.sub_transactions else 0
 
+    def get_total_spent_paid(self) -> float:
+        return sum(sub_transaction.amount for sub_transaction in self.sub_transactions if sub_transaction.paid_at) if self.sub_transactions else 0
+
     @property
     def total_spent(self) -> float:
         return self.get_total_spent()
