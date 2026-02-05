@@ -89,6 +89,9 @@ class TransposeFileBillToModelsUseCase:
 
         result = []
         for offset in range(max_offset + 1):
+            if offset == 0:
+                continue
+    
             future_date = base_due_date + relativedelta(months=offset)
             formatted_date = future_date.strftime("%Y-%m-%d")
             
