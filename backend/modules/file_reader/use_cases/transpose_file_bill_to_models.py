@@ -63,13 +63,13 @@ class TransposeFileBillToModelsUseCase:
         max_offset = 0
 
         for sub in response.get("transactions", []):
-            info = sub.get("installment_info", "") or ""
+            info = sub.get("installment_info", "")
             
-            if info and ("of" not in info or "not" in info):
+            if not info:
                 continue
 
             try:
-                parts = info.replace("installment ", "").split(" of ")
+                parts = info.replace("installment ", "").split("/")
                 current, total = map(int, parts)
                 remaining = total - current
                 max_offset = max(max_offset, remaining)
@@ -82,7 +82,7 @@ class TransposeFileBillToModelsUseCase:
                         "date": sub["date"],
                         "description": sub["description"],
                         "amount": sub["amount"],
-                        "installment_info": f"installment {current + offset} of {total}",
+                        "installment_info": f"{current + offset}/{total}",
                     })
             except (ValueError, IndexError):
                 continue 
