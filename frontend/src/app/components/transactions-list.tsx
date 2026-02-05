@@ -273,7 +273,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                               R$ {parseFloat(transaction.total_amount).toFixed(2)}
                             </TableCell>
                             <TableCell className={`text-right ${transaction.transaction_type === 'incoming' ? 'text-green-600' : 'text-red-600'}`}>
-                              R$ {transaction.amount_from_actor?.toFixed(2)}
+                              R$ {(transaction.amount_from_actor || 0).toFixed(2)}
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1 relative">
