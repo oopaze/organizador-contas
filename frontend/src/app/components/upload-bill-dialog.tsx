@@ -83,20 +83,20 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
     }
 
     setLoading(true);
-    try {
-      const password = hasPassword ? pdfPassword : undefined;
-      await uploadBill(selectedFile, password, selectedModel, createInFutureMonths);
+    const password = hasPassword ? pdfPassword : undefined;
+    await uploadBill(selectedFile, password, selectedModel, createInFutureMonths).then(() => {
+      toast.success('Fatura enviada com sucesso!');
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
       onSuccess();
-    } catch (error) {
-      toast.error('Falha ao enviar fatura');
-    } finally {
+    }).catch((error) => {
+      toast.error(error?.response?.data?.error || 'Falha ao enviar fatura');
+    }).finally(() => {
       setLoading(false);
-    }
+    });
   };
 
   const handleClose = (isOpen: boolean) => {
