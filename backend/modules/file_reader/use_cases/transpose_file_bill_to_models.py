@@ -9,6 +9,7 @@ from modules.file_reader.repositories.bill import BillRepository
 from modules.file_reader.repositories.bill_sub_transaction import BillSubTransactionRepository
 from modules.file_reader.repositories.file import FileRepository
 from modules.file_reader.serializers.bill import BillSerializer
+from modules.transactions.use_cases.transaction.recalculate_amount import RecalculateAmountUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class TransposeFileBillToModelsUseCase:
         bill_sub_transaction_repository: BillSubTransactionRepository,
         bill_sub_transaction_factory: BillSubTransactionFactory,
         file_repository: FileRepository,
+        recalculate_amount_use_case: RecalculateAmountUseCase,
     ):
         self.bill_repository = bill_repository
         self.bill_factory = bill_factory
@@ -29,6 +31,7 @@ class TransposeFileBillToModelsUseCase:
         self.bill_sub_transaction_repository = bill_sub_transaction_repository
         self.bill_sub_transaction_factory = bill_sub_transaction_factory
         self.file_repository = file_repository
+        self.recalculate_amount_use_case = recalculate_amount_use_case
 
     def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False):
         file = self.file_repository.get(file_id)
@@ -43,13 +46,14 @@ class TransposeFileBillToModelsUseCase:
         saved_bill = self.bill_repository.create(bill, user_id)
         bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, response)
         self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
-        
+
         future_transactions = self._get_future_transactions(response, saved_bill) if create_in_future_months else []
         for future_transaction in future_transactions:
             bill = self.bill_factory.build_from_file(file, future_transaction)
             saved_bill = self.bill_repository.create(bill, user_id)
             bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, ai_response=future_transaction)
             self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
+            self.recalculate_amount_use_case.execute(saved_bill.id, user_id)
 
     def _get_future_transactions(self, response: dict, bill: BillDomain) -> list:
         installment_subtransactions = []

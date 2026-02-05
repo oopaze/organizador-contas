@@ -9,6 +9,7 @@ from modules.userdata.authentication import JWTAuthentication
 from modules.file_reader.container import FileReaderContainer
 from modules.ai.container import AIContainer
 from modules.ai.types import LlmModels
+from modules.transactions.container import TransactionsContainer
 
 
 class UploadFileView(APIView):
@@ -18,7 +19,8 @@ class UploadFileView(APIView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         ask_use_case = AIContainer().ask_use_case()
-        self.container = FileReaderContainer(ask_use_case=ask_use_case)
+        recalculate_amount_use_case = TransactionsContainer().recalculate_amount_use_case()
+        self.container = FileReaderContainer(ask_use_case=ask_use_case, recalculate_amount_use_case=recalculate_amount_use_case)
 
     def post(self, request: Request) -> Response:
         file = request.FILES.get("file")
