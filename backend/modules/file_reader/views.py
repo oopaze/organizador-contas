@@ -30,7 +30,7 @@ class UploadFileView(APIView):
         file = request.FILES.get("file")
         if not file:
             return Response(
-                {"error": "No file provided"},
+                {"error": "Nenhum arquivo foi enviado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -47,14 +47,14 @@ class UploadFileView(APIView):
                 create_in_future_months=create_in_future_months,
             )
             return Response(
-                {"message": "File uploaded successfully"},
+                {"message": "Fatura enviada com sucesso!"},
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
             import traceback
             logger.error(traceback.format_exc())
             return Response(
-                {"error": str(e)},
+                {"error": "Erro ao processar o arquivo."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -71,7 +71,7 @@ class UploadSheetView(APIView):
         file = request.FILES.get("file")
         if not file:
             return Response(
-                {"error": "No file provided"},
+                {"error": "Nenhum arquivo foi enviado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -86,14 +86,14 @@ class UploadSheetView(APIView):
                 user_provided_description=user_provided_description,
             )
             return Response(
-                {"message": "File uploaded and queued for processing", "file_id": result.get("id")},
+                {"message": "Fatura enviada e enfileirada para processamento.", "file_id": result.get("id")},
                 status=status.HTTP_202_ACCEPTED,
             )
         except Exception as e:
             import traceback
             logger.error(traceback.format_exc())
             return Response(
-                {"error": str(e)},
+                {"error": "Erro ao processar o arquivo."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
