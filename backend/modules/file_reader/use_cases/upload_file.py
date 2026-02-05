@@ -12,57 +12,48 @@ from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPassword
 from modules.ai.types import LlmModels
 
 PROMPT = """
-Aja como um extrator de dados financeiros de alta precisão.
-Você receberá o NOME do arquivo e o TEXTO extraído de uma fatura de cartão de crédito em PDF.
+Aja como um extrator de dados financeiros de alta precisão. 
+Você receberá o NOME do arquivo e o TEXTO de uma fatura de cartão de crédito.
 
 ### DADOS RECEBIDOS:
 - FILE NAME: {file_name}
 - PDF TEXT: {pdf_text}
 
+### ⚖️ REGRA CRÍTICA DE SINAIS E NATUREZA (STRICT):
+No meu sistema, a lógica de sinais é mandatória:
+- DESPESAS (Saídas/Gastos): Devem ser SEMPRE números POSITIVOS (ex: 150.00).
+- RECEITAS/DESCONTOS (Entradas/Estornos): Devem ser SEMPRE números NEGATIVOS (ex: -50.00).
+
+Como faturas de cartão são majoritariamente compostas por gastos:
+1. Extraia compras e lançamentos de débito como valores POSITIVOS.
+2. Extraia estornos, créditos de recompensa ou ajustes a seu favor como valores NEGATIVOS.
+3. 'transaction_type' da fatura (bill) deve ser "incoming", pois ela representa um boleto a ser pago.
+
 ### REGRAS DE IDENTIFICAÇÃO (bill_identifier):
-1. Primeiro, busque o nome da Instituição Financeira no TEXTO (ex: Nubank, Itaú, Bradesco, Inter, Santander).
-2. Se o TEXTO for genérico, use o FILE NAME para identificar o banco/cartão.
-3. Limpe o nome: remova extensões (.pdf) e termos como "fatura_", "extrato_".
-4. Se não for possível identificar o banco em nenhum dos dois, retorne "UNKNOWN_BANK".
+- Use o nome da Instituição Financeira no TEXTO.
+- Fallback: Use o FILE NAME (limpando extensões e prefixos como "fatura_").
+- Se não identificar, retorne "UNKNOWN_BANK".
 
 ### REGRAS DE EXTRAÇÃO:
-1. INFORMAÇÕES BÁSICAS
-- bill_identifier: Nome do Banco ou Emissor (conforme regras acima).
-- total_amount: Valor total da fatura do mês atual (Sempre float POSITIVO).
-- due_date: Data de vencimento no formato YYYY-MM-DD.
-- transaction_type: "incoming" para faturas de cartão, "outgoing" caso contrário.
+1. INFORMAÇÕES BÁSICAS: bill_identifier, total_amount (positivo), due_date (YYYY-MM-DD).
+2. TRANSAÇÕES: Extraia date, description, amount (seguindo a regra de sinais acima) e installment_info.
+- IGNORE: Pagamentos de fatura anterior, limites e ofertas.
 
-2. TRANSAÇÕES
-Extraia APENAS movimentos reais sob seções como "Lançamentos", "Transações" ou "Histórico".
-IGNORE: Parcelamentos de fatura, limites, ofertas ou seções de "Próxima Fatura".
-
-Para cada transação:
-- date: YYYY-MM-DD (use o ano da fatura).
-- description: Texto exato da transação.
-- amount: Valor (Sempre float POSITIVO).
-- installment_info: "installment X of Y" ou "not installment".
-
-### REGRAS CRÍTICAS:
-- VALORES: Todos os números no JSON devem ser POSITIVOS. Se o PDF mostrar "-50.00" ou "50.00 CR", converta para "50.00".
-- PAGAMENTOS: Ignore linhas de "Pagamento de Fatura" ou "Pagamento Recebido".
-- NÃO ADIVINHE: Se um dado não estiver explícito, retorne null.
-- FORMATO: Retorne EXCLUSIVAMENTE um objeto JSON válido. Sem explicações ou markdown.
-
-### FORMATO DE RESPOSTA:
-{
+### FORMATO DE RESPOSTA (JSON APENAS):
+{{
   "bill_identifier": "string",
   "total_amount": 150.00,
   "due_date": "YYYY-MM-DD",
   "transaction_type": "incoming",
   "transactions": [
-    {
+    {{
       "date": "YYYY-MM-DD",
       "description": "string",
       "amount": 50.00,
       "installment_info": "string"
-    }
+    }}
   ]
-}
+}}
 """
 
 
