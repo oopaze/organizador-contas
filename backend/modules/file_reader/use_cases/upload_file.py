@@ -12,56 +12,48 @@ from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPassword
 from modules.ai.types import LlmModels
 
 PROMPT = """
-You will receive TEXT extracted from a PDF CREDIT CARD STATEMENT.
+Aja como um extrator de dados financeiros de alta precisão.
+Você receberá o NOME do arquivo e o TEXTO extraído de uma fatura de cartão de crédito em PDF.
 
-Your task is ONLY to extract explicit financial movements and the current bill status.
-Do NOT infer, estimate, or guess any value.
+### DADOS RECEBIDOS:
+- FILE NAME: {file_name}
+- PDF TEXT: {pdf_text}
 
-IGNORE marketing offers, simulations, credit limits, and future statements.
+### REGRAS DE IDENTIFICAÇÃO (bill_identifier):
+1. Primeiro, busque o nome da Instituição Financeira no TEXTO (ex: Nubank, Itaú, Bradesco, Inter, Santander).
+2. Se o TEXTO for genérico, use o FILE NAME para identificar o banco/cartão.
+3. Limpe o nome: remova extensões (.pdf) e termos como "fatura_", "extrato_".
+4. Se não for possível identificar o banco em nenhum dos dois, retorne "UNKNOWN_BANK".
 
-If a field is not explicitly present, return null.
+### REGRAS DE EXTRAÇÃO:
+1. INFORMAÇÕES BÁSICAS
+- bill_identifier: Nome do Banco ou Emissor (conforme regras acima).
+- total_amount: Valor total da fatura do mês atual (Sempre float POSITIVO).
+- due_date: Data de vencimento no formato YYYY-MM-DD.
+- transaction_type: "incoming" para faturas de cartão, "outgoing" caso contrário.
 
-Extract:
+2. TRANSAÇÕES
+Extraia APENAS movimentos reais sob seções como "Lançamentos", "Transações" ou "Histórico".
+IGNORE: Parcelamentos de fatura, limites, ofertas ou seções de "Próxima Fatura".
 
-1. BASIC STATEMENT INFORMATION
-- bill_identifier: Card name or bank
-- total_amount: Total amount due for the current month (ALWAYS POSITIVE float)
-- due_date: Due date in YYYY-MM-DD format
-- transaction_type: "incoming" if this is a credit card bill, "outgoing" otherwise
+Para cada transação:
+- date: YYYY-MM-DD (use o ano da fatura).
+- description: Texto exato da transação.
+- amount: Valor (Sempre float POSITIVO).
+- installment_info: "installment X of Y" ou "not installment".
 
-2. TRANSACTIONS
-Extract ONLY real transactions listed under sections like
-"Lançamentos" or "Transações".
+### REGRAS CRÍTICAS:
+- VALORES: Todos os números no JSON devem ser POSITIVOS. Se o PDF mostrar "-50.00" ou "50.00 CR", converta para "50.00".
+- PAGAMENTOS: Ignore linhas de "Pagamento de Fatura" ou "Pagamento Recebido".
+- NÃO ADIVINHE: Se um dado não estiver explícito, retorne null.
+- FORMATO: Retorne EXCLUSIVAMENTE um objeto JSON válido. Sem explicações ou markdown.
 
-IGNORE sections like:
-"Parcelamento da fatura", "Limites", "Próxima Fatura".
-
-For each transaction:
-- date: YYYY-MM-DD (include statement year)
-- description: Exact text
-- amount: ALWAYS POSITIVE float (the value of the transaction)
-- installment_info: "installment X of Y" or "not installment"
-
-IMPORTANT RULES ABOUT AMOUNTS:
-- ALL amounts must be POSITIVE numbers (e.g., 150.00, not -150.00)
-- The amount represents the value of the bill/transaction
-- If the PDF shows negative values, convert them to positive
-- Credit card bills are expenses, so all transactions are outgoing by default
-
-Formatting rules:
-- Output MUST be a single valid JSON object
-- No extra text or explanations
-- Use "." as decimal separator
-- No currency symbols
-
-If no transactions exist, return an empty array.
-
-Response format:
+### FORMATO DE RESPOSTA:
 {
   "bill_identifier": "string",
   "total_amount": 150.00,
   "due_date": "YYYY-MM-DD",
-  "transaction_type": "incoming" or "outgoing",
+  "transaction_type": "incoming",
   "transactions": [
     {
       "date": "YYYY-MM-DD",
@@ -112,7 +104,7 @@ class UploadFileUseCase:
         file_path = saved_file.uploaded_file.path
         pdf_text = saved_file.extract_text_from_pdf(file_path)
 
-        prompt = [PROMPT, f"Here is the PDF content: {pdf_text}"]
+        prompt = [PROMPT, f"Here is the PDF content: name: {file.name}, text: {pdf_text}"]
         ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object", model=model)
 
         ai_call = self.ai_call_repository.get(ai_call_id)
