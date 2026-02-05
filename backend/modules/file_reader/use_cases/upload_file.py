@@ -1,3 +1,4 @@
+from django.db import transaction
 
 from django.core.files.uploadedfile import UploadedFile
 
@@ -93,6 +94,7 @@ class UploadFileUseCase:
         self.ask_use_case = ask_use_case
         self.remove_pdf_password_use_case = remove_pdf_password_use_case
 
+    @transaction.atomic
     def execute(
       self, 
       file: UploadedFile, 
