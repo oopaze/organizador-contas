@@ -37,8 +37,6 @@ class BillFactory:
         if ai_response is None:
             ai_response = file.ai_call.response
 
-        transaction_type = ai_response.get("transaction_type", "outgoing")
-
         due_date = (
             ai_response.get("due_date") or
             ai_response.get("date") or
@@ -70,7 +68,6 @@ class BillFactory:
             total_amount=total_amount,
             bill_identifier=bill_identifier,
             file=file,
-            transaction_type=transaction_type,
         )
 
     def build_from_model(self, model: Transaction) -> BillDomain:

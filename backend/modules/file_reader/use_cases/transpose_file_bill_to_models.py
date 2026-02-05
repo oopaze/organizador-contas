@@ -63,9 +63,9 @@ class TransposeFileBillToModelsUseCase:
         max_offset = 0
 
         for sub in response.get("transactions", []):
-            info = sub.get("installment_info", "")
+            info = sub.get("installment_info", "") or ""
             
-            if "of" not in info or "not" in info:
+            if info and ("of" not in info or "not" in info):
                 continue
 
             try:

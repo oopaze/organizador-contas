@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.request import Request
@@ -10,6 +12,8 @@ from modules.file_reader.container import FileReaderContainer
 from modules.ai.container import AIContainer
 from modules.ai.types import LlmModels
 from modules.transactions.container import TransactionsContainer
+
+logger = logging.getLogger(__name__)
 
 
 class UploadFileView(APIView):
@@ -47,6 +51,8 @@ class UploadFileView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
+            import traceback
+            logger.error(traceback.format_exc())
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -84,6 +90,8 @@ class UploadSheetView(APIView):
                 status=status.HTTP_202_ACCEPTED,
             )
         except Exception as e:
+            import traceback
+            logger.error(traceback.format_exc())
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
