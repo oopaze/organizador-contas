@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from modules.transactions.repositories import TransactionRepository
 from modules.transactions.serializers import TransactionSerializer
@@ -48,7 +49,6 @@ class UpdateTransactionUseCase:
         return self.transaction_repository.update_many(children_transactions)
     
     def calculate_next_due_date(self, due_date: str, recurrence_count: int) -> str:
-        date = datetime.strptime(due_date, "%Y-%m-%d")
-        days_to_add = 28 * (recurrence_count + 1) if date.month == 1 and date.day > 30 else 30 * (recurrence_count + 1)
-        next_date = date + timedelta(days=days_to_add * (recurrence_count + 1))
+        date_obj = datetime.strptime(due_date, "%Y-%m-%d")
+        next_date = date_obj + relativedelta(months=recurrence_count)
         return next_date.strftime("%Y-%m-%d")

@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from modules.file_reader.domains.bill import BillDomain
 from modules.file_reader.domains.file import FileDomain
@@ -56,40 +57,46 @@ class TransposeFileBillToModelsUseCase:
             self.recalculate_amount_use_case.execute(saved_bill.id, user_id)
 
     def _get_future_transactions(self, response: dict, bill: BillDomain) -> list:
-        installment_subtransactions = []
-        for subtransaction in response.get("transactions", []):
-            installment_info = subtransaction.get("installment_info")
-            if "of" in installment_info and "not" not in installment_info:
-                installment_subtransactions.append(subtransaction)
+        base_due_date = datetime.strptime(bill.due_date, "%Y-%m-%d")
+        
+        future_buckets = {}
+        max_offset = 0
 
-        biggest_installment = 0
-        for subtransaction in installment_subtransactions:
-            installments = subtransaction.get("installment_info").replace("installment ", "")
-            current_installment, total_installments = installments.split(" of ")
-            resting_installments = int(total_installments) - (int(current_installment) - 1)
-            if resting_installments > biggest_installment:
-                biggest_installment = resting_installments        
+        for sub in response.get("transactions", []):
+            info = sub.get("installment_info", "")
+            
+            if "of" not in info or "not" in info:
+                continue
 
-        transactions_by_installment = {}
-        is_next_february = datetime.strptime(bill.due_date, "%Y-%m-%d").month == 1
-        for i in range(0, biggest_installment):
-            month_days = 28 if is_next_february else 30
-            due_date = datetime.strptime(bill.due_date, "%Y-%m-%d") + timedelta(days=month_days * i)
-            transactions_by_installment[i + 1] = self.bill_serializer.serialize_as_file(bill, due_date.strftime("%Y-%m-%d"))
-            is_next_february = due_date.month == 1
+            try:
+                parts = info.replace("installment ", "").split(" of ")
+                current, total = map(int, parts)
+                remaining = total - current
+                max_offset = max(max_offset, remaining)
 
-        for subtransaction in installment_subtransactions:
-            current_installment, total_installments = subtransaction.get("installment_info").replace("installment ", "").split(" of ")
-            resting_installments = int(total_installments) - (int(current_installment) - 1)
-            for i in range(resting_installments):
-                transactions_by_installment[i+1]["transactions"].append({
-                    "date": subtransaction["date"],
-                    "description": subtransaction["description"],
-                    "amount": subtransaction["amount"],
-                    "installment_info": f"installment {int(current_installment) + i} of {total_installments}",
-                })
+                for offset in range(remaining + 1):
+                    if offset not in future_buckets:
+                        future_buckets[offset] = []
+                    
+                    future_buckets[offset].append({
+                        "date": sub["date"],
+                        "description": sub["description"],
+                        "amount": sub["amount"],
+                        "installment_info": f"installment {current + offset} of {total}",
+                    })
+            except (ValueError, IndexError):
+                continue 
 
-        return [transactions_by_installment[i] for i in transactions_by_installment.keys()]
+        result = []
+        for offset in range(max_offset + 1):
+            future_date = base_due_date + relativedelta(months=offset)
+            formatted_date = future_date.strftime("%Y-%m-%d")
+            
+            bill_data = self.bill_serializer.serialize_as_file(bill, formatted_date)
+            bill_data["transactions"] = future_buckets.get(offset, [])
+            result.append(bill_data)
+
+        return result
 
     def _execute_for_many(self, file: FileDomain, response: list, user_id: int):
         if response and "despesas" in response[0]:

@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from modules.transactions.factories import TransactionFactory, SubTransactionFactory
 from modules.transactions.repositories import TransactionRepository, SubTransactionRepository
@@ -54,7 +55,6 @@ class CreateTransactionUseCase:
         return self.sub_transaction_repository.create(sub_transaction)
 
     def calculate_next_due_date(self, due_date: str) -> str:
-        date = datetime.strptime(due_date, "%Y-%m-%d")
-        days_to_add = 28 if date.month == 1 and date.day > 30 else 30
-        next_date = date + timedelta(days=days_to_add)
+        date_obj = datetime.strptime(due_date, "%Y-%m-%d")
+        next_date = date_obj + relativedelta(months=1)
         return next_date.strftime("%Y-%m-%d")
