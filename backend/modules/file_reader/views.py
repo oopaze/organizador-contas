@@ -12,6 +12,7 @@ from modules.file_reader.container import FileReaderContainer
 from modules.ai.container import AIContainer
 from modules.ai.types import LlmModels
 from modules.transactions.container import TransactionsContainer
+from modules.file_reader.exceptions import InvalidPasswordException
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,12 @@ class UploadFileView(APIView):
                 {"message": "Fatura enviada com sucesso!"},
                 status=status.HTTP_201_CREATED,
             )
+        except InvalidPasswordException as e:
+            return Response(
+                {"error": "Senha inválida para o PDF"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         except Exception as e:
             import traceback
             logger.error(traceback.format_exc())
