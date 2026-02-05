@@ -19,25 +19,34 @@ Você receberá o NOME do arquivo e o TEXTO de uma fatura de cartão de crédito
 - FILE NAME: {file_name}
 - PDF TEXT: {pdf_text}
 
-### ⚖️ REGRA CRÍTICA DE SINAIS E NATUREZA (STRICT):
-No meu sistema, a lógica de sinais é mandatória:
-- DESPESAS (Saídas/Gastos): Devem ser SEMPRE números POSITIVOS (ex: 150.00).
-- RECEITAS/DESCONTOS (Entradas/Estornos): Devem ser SEMPRE números NEGATIVOS (ex: -50.00).
+### 🛡️ TRATAMENTO DE ARMADILHAS VISUAIS (CRÍTICO):
+Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separadores visuais.
+- PADRÃO VISUAL: "Loja Exemplo - R$ 50,00" -> O hífen aqui é apenas estética. NÃO é um número negativo.
+- AÇÃO: Ignore hifens que aparecem entre a descrição e o símbolo da moeda.
 
-Como faturas de cartão são majoritariamente compostas por gastos:
-1. Extraia compras e lançamentos de débito como valores POSITIVOS.
-2. Extraia estornos, créditos de recompensa ou ajustes a seu favor como valores NEGATIVOS.
-3. 'transaction_type' da fatura (bill) deve ser "incoming", pois ela representa um boleto a ser pago.
+### ⚖️ REGRA DE SINAIS E NATUREZA:
+1. COMPRAS E GASTOS (Padrão):
+   - Devem ser SEMPRE números POSITIVOS (ex: 150.00).
+   - Assuma que QUALQUER transação é uma despesa (positiva) a menos que contenha palavras-chave explícitas de estorno.
+
+2. RECEITAS E ESTORNOS (Exceção):
+   - Devem ser SEMPRE números NEGATIVOS (ex: -50.00).
+   - Aplique negativo APENAS se a descrição contiver: "Estorno", "Crédito", "Cancelamento", "Devolução" ou "Pagamento Antecipado".
+
+3. TIPO DE TRANSAÇÃO:
+   - 'transaction_type' da fatura (bill) deve ser "incoming" (boleto a pagar).
 
 ### REGRAS DE IDENTIFICAÇÃO (bill_identifier):
-- Use o nome da Instituição Financeira no TEXTO.
-- Fallback: Use o FILE NAME (limpando extensões e prefixos como "fatura_").
+- Use o nome da Instituição Financeira no TEXTO (Ex: Banco Inter, Nubank, C&A Pay).
+- Fallback: Use o FILE NAME (limpando extensões).
 - Se não identificar, retorne "UNKNOWN_BANK".
 
 ### REGRAS DE EXTRAÇÃO:
 1. INFORMAÇÕES BÁSICAS: bill_identifier, total_amount (positivo), due_date (YYYY-MM-DD).
-2. TRANSAÇÕES: Extraia date, description, amount (seguindo a regra de sinais acima) e installment_info.
-- IGNORE: Pagamentos de fatura anterior, limites e ofertas.
+2. TRANSAÇÕES: Extraia date, description, amount e installment_info.
+   - Dica de Valor: Se o texto for "NETFLIX - R$ 55,90", o valor é 55.90 (Positivo).
+   - Dica de Valor: Se o texto for "Estorno Uber - R$ 10,00", o valor é -10.00 (Negativo).
+   - IGNORE: Pagamentos da fatura anterior, Juros de atraso listados no rodapé, limites e saldo total parcelado (pegue apenas as parcelas do mês).
 
 ### FORMATO DE RESPOSTA (JSON APENAS):
 {{
