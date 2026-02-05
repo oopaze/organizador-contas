@@ -43,10 +43,16 @@ Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separad
 
 ### REGRAS DE EXTRAÇÃO:
 1. INFORMAÇÕES BÁSICAS: bill_identifier, total_amount (positivo), due_date (YYYY-MM-DD).
+
 2. TRANSAÇÕES: Extraia date, description, amount e installment_info.
-   - Dica de Valor: Se o texto for "NETFLIX - R$ 55,90", o valor é 55.90 (Positivo).
-   - Dica de Valor: Se o texto for "Estorno Uber - R$ 10,00", o valor é -10.00 (Negativo).
-   - IGNORE: Pagamentos da fatura anterior, Juros de atraso listados no rodapé, limites e saldo total parcelado (pegue apenas as parcelas do mês).
+   - IGNORE: Pagamentos da fatura anterior, Juros de atraso listados no rodapé, limites e saldo total parcelado.
+   
+   ⚠️ REGRA DE PARCELAMENTO (installment_info):
+   - Formato Obrigatório: "X/Y" (Atual/Total).
+   - Limpeza: Remova palavras como "Parcela", "Parc.", "de", "of" e zeros à esquerda.
+   - Exemplo Input: "Parcela 01 de 10"  -> Output: "1/10"
+   - Exemplo Input: "Parc. 05/12"       -> Output: "5/12"
+   - Exemplo Input: (Sem parcelamento)  -> Output: null
 
 ### FORMATO DE RESPOSTA (JSON APENAS):
 {{
@@ -59,7 +65,7 @@ Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separad
       "date": "YYYY-MM-DD",
       "description": "string",
       "amount": 50.00,
-      "installment_info": "string"
+      "installment_info": "1/6" 
     }}
   ]
 }}
