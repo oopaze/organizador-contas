@@ -20,7 +20,9 @@ class LoginUseCase:
         user = self.user_repository.authenticate(email, password)
         if not user:
             return None
-
+        if not user.is_active:
+            return None
+        
         tokens = self.jwt_gateway.generate_tokens(user.id, user.email)
         return {
             "user": self.user_serializer.serialize(user),

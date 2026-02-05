@@ -46,6 +46,7 @@ export const LoginPage: React.FC = () => {
         last_name: lastName,
       });
       toast.success('Conta criada com sucesso!');
+      toast.success('Por favor, contate suporter para ativar sua conta.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao cadastrar');
     } finally {

@@ -19,14 +19,14 @@ class LoginView(APIView):
 
         if not email or not password:
             return Response(
-                {"error": "Email and password are required"},
+                {"error": "Email e senha são obrigatórios"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         result = self.container.login_use_case().execute(email, password)
         if not result:
             return Response(
-                {"error": "Invalid credentials"},
+                {"error": "Credenciais inválidas ou conta inativa"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -46,7 +46,7 @@ class RegisterView(APIView):
 
         if not email or not password:
             return Response(
-                {"error": "Email and password are required"},
+                {"error": "Email e senha são obrigatórios"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -58,7 +58,7 @@ class RegisterView(APIView):
         )
         if not result:
             return Response(
-                {"error": "User with this email already exists"},
+                {"error": "Usuário já cadastrado"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

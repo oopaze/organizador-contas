@@ -37,11 +37,8 @@ class BillFactory:
         if ai_response is None:
             ai_response = file.ai_call.response
 
-        # Determine transaction_type based on is_income flag
-        is_income = ai_response.get("is_income", False)
-        transaction_type = "incoming" if is_income else "outgoing"
+        transaction_type = ai_response.get("transaction_type", "outgoing")
 
-        # Handle different field names that AI might return
         due_date = (
             ai_response.get("due_date") or
             ai_response.get("date") or
@@ -85,4 +82,5 @@ class BillFactory:
             id=model.id,
             created_at=model.created_at,
             updated_at=model.updated_at,
+            transaction_type=model.transaction_type,
         )
