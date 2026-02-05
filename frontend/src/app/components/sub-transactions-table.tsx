@@ -111,7 +111,6 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Data</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Descrição</TableHead>
             <TableHead>Parcela</TableHead>
@@ -163,7 +162,6 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead>#</TableHead>
-            <TableHead>Data</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Descrição</TableHead>
             <TableHead>Parcela</TableHead>
@@ -181,9 +179,6 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
               <TableRow key={subTransaction.id}>
                 <TableCell className="text-sm">
                   {subTransaction.id}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {new Date(subTransaction.date).toLocaleDateString('pt-BR')}
                 </TableCell>
                 <TableCell className="text-sm max-w-[200px] truncate">
                   {subTransaction.description}

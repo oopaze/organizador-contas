@@ -6,6 +6,7 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Checkbox } from '@/app/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
 import { toast } from 'sonner';
 
 interface AddTransactionDialogProps {
@@ -28,6 +29,7 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     is_salary: false,
     is_recurrent: false,
     recurrence_count: '',
+    create_in_future_months: 'current_only' as 'current_only' | 'future_months',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +52,7 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         is_salary: false,
         is_recurrent: false,
         recurrence_count: '',
+        create_in_future_months: 'current_only',
       });
       onSuccess();
     } catch (error) {
@@ -151,18 +154,43 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             </div>
 
             {formData.is_recurrent && (
-              <div className="space-y-2">
-                <Label htmlFor="recurrence_count">Quantidade de Parcelas</Label>
-                <Input
-                  id="recurrence_count"
-                  type="number"
-                  min="1"
-                  placeholder="Ex: 12"
-                  value={formData.recurrence_count}
-                  onChange={(e) => setFormData({ ...formData, recurrence_count: e.target.value })}
-                  required
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="recurrence_count">Quantidade de Parcelas</Label>
+                  <Input
+                    id="recurrence_count"
+                    type="number"
+                    min="1"
+                    placeholder="Ex: 12"
+                    value={formData.recurrence_count}
+                    onChange={(e) => setFormData({ ...formData, recurrence_count: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Criar transações em:</Label>
+                  <RadioGroup
+                    value={formData.create_in_future_months}
+                    onValueChange={(value: 'current_only' | 'future_months') =>
+                      setFormData({ ...formData, create_in_future_months: value })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="current_only" id="current_only" />
+                      <Label htmlFor="current_only" className="cursor-pointer font-normal">
+                        Somente neste mês
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="future_months" id="future_months" />
+                      <Label htmlFor="future_months" className="cursor-pointer font-normal">
+                        Também nos meses futuros
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
             )}
           </div>
 

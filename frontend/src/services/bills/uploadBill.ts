@@ -15,7 +15,7 @@ async function uploadBillMock(file: File): Promise<Bill> {
   return newBill;
 }
 
-async function uploadBillReal(file: File, password?: string, model?: string): Promise<Bill> {
+async function uploadBillReal(file: File, password?: string, model?: string, createInFutureMonths?: boolean): Promise<Bill> {
   const formData = new FormData();
   formData.append('file', file);
   if (password) {
@@ -24,9 +24,12 @@ async function uploadBillReal(file: File, password?: string, model?: string): Pr
   if (model) {
     formData.append('model', model);
   }
+  if (createInFutureMonths) {
+    formData.append('create_in_future_months', 'true');
+  }
   return apiUploadRequest<Bill>('/file_reader/upload/', formData);
 }
 
-export async function uploadBill(file: File, password?: string, model?: string): Promise<Bill> {
-  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file, password, model);
+export async function uploadBill(file: File, password?: string, model?: string, createInFutureMonths?: boolean): Promise<Bill> {
+  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file, password, model, createInFutureMonths);
 }

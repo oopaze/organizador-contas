@@ -24,3 +24,13 @@ class BillSerializer:
             ]
 
         return data
+    
+    def serialize_as_file(self, bill: BillDomain, due_date: str) -> dict:
+        return {
+            "due_date": due_date,
+            "total_amount": bill.total_amount,
+            "bill_identifier": bill.bill_identifier,
+            "transaction_type": bill.transaction_type,
+            "transactions": [],
+            "main_transaction_id": bill.id,
+        }

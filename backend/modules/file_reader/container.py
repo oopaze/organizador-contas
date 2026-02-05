@@ -52,6 +52,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
         TransposeFileBillToModelsUseCase,
         bill_repository=bill_repository,
         bill_factory=bill_factory,
+        bill_serializer=bill_serializer,
         bill_sub_transaction_repository=bill_sub_transaction_repository,
         bill_sub_transaction_factory=bill_sub_transaction_factory,
         file_repository=file_repository,

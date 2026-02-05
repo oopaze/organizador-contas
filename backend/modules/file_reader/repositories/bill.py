@@ -26,5 +26,6 @@ class BillRepository:
             file_id=bill.file.id,
             transaction_type=bill.transaction_type,
             user_id=user_id,
+            main_transaction_id=bill.main_transaction_id if bill.main_transaction_id else None,
         )
         return self.bill_factory.build_from_model(bill_instance)

@@ -30,6 +30,7 @@ class UploadFileView(APIView):
 
         password = request.data.get("password")
         model = request.data.get("model", LlmModels.DEEPSEEK_CHAT.name)
+        create_in_future_months = request.data.get("create_in_future_months", False)
 
         try:
             self.container.upload_file_use_case().execute(
@@ -37,6 +38,7 @@ class UploadFileView(APIView):
                 request.user.id, 
                 password, 
                 model=model, 
+                create_in_future_months=create_in_future_months,
             )
             return Response(
                 {"message": "File uploaded successfully"},

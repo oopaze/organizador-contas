@@ -83,4 +83,14 @@ class BillFactory:
             created_at=model.created_at,
             updated_at=model.updated_at,
             transaction_type=model.transaction_type,
+            main_transaction_id=model.main_transaction.id if model.main_transaction else None,
+        )
+    
+    def build_from_other_bill(self, bill: BillDomain, due_date: str = None) -> BillDomain:
+        return BillDomain(
+            due_date=due_date or bill.due_date,
+            total_amount=bill.total_amount,
+            bill_identifier=bill.bill_identifier,
+            file=bill.file,
+            transaction_type=bill.transaction_type,
         )

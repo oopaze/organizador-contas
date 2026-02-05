@@ -6,6 +6,7 @@ import { Label } from '@/app/components/ui/label';
 import { Input } from '@/app/components/ui/input';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
+
 import { toast } from 'sonner';
 import { Upload, FileText, X } from 'lucide-react';
 
@@ -38,6 +39,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [hasPassword, setHasPassword] = useState(false);
   const [pdfPassword, setPdfPassword] = useState('');
   const [selectedModel, setSelectedModel] = useState<AIModelKey>('gemini-2.5-flash-lite');
+  const [createInFutureMonths, setCreateInFutureMonths] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -83,11 +85,12 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
     setLoading(true);
     try {
       const password = hasPassword ? pdfPassword : undefined;
-      await uploadBill(selectedFile, password, selectedModel);
+      await uploadBill(selectedFile, password, selectedModel, createInFutureMonths);
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
+      setCreateInFutureMonths(false);
       onSuccess();
     } catch (error) {
       toast.error('Falha ao enviar fatura');
@@ -102,6 +105,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setHasPassword(false);
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
+      setCreateInFutureMonths(false);
     }
     onOpenChange(isOpen);
   };
@@ -174,6 +178,17 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="createInFutureMonths"
+                checked={createInFutureMonths}
+                onCheckedChange={(checked) => setCreateInFutureMonths(checked === true)}
+              />
+              <Label htmlFor="createInFutureMonths" className="cursor-pointer">
+                Criar transações também nos meses futuros?
+              </Label>
             </div>
 
             <div className="flex items-center space-x-2">
