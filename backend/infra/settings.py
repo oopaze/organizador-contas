@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "storages",
     "modules.ai",
     "modules.ai.chat",
     "modules.file_reader",
@@ -142,15 +143,40 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# WhiteNoise configuration for serving static files in production
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
+# Wasabi S3 Storage Configuration
+AWS_ACCESS_KEY_ID = WASABI_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = WASABI_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = WASABI_BUCKET_NAME
+AWS_S3_REGION_NAME = WASABI_REGION
+AWS_S3_ENDPOINT_URL = f"https://s3.{WASABI_REGION}.wasabisys.com"
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
 }
+AWS_DEFAULT_ACL = "public-read"
+AWS_QUERYSTRING_AUTH = False  # Public URLs without query string auth
+
+# Storage configuration
+if WASABI_ACCESS_KEY and WASABI_SECRET_KEY:
+    # Use Wasabi S3 for media files in production
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f"https://s3.{WASABI_REGION}.wasabisys.com/{WASABI_BUCKET_NAME}/"
+else:
+    # Use local filesystem for development
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = "userdata.User"

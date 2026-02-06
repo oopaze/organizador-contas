@@ -250,17 +250,17 @@ export const AIInsightsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header with Filters */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <Brain className="h-8 w-8 text-purple-600" />
-          <div>
+          <div className="text-center sm:text-left">
             <h1 className="text-2xl font-semibold">AI Insights</h1>
             <p className="text-muted-foreground">Estatísticas de uso de IA</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
           {/* Month Navigation */}
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={goToPreviousMonth}>
@@ -285,7 +285,7 @@ export const AIInsightsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="hidden sm:block h-6 w-px bg-border" />
 
           {/* Model Filter */}
           <Select value={selectedModel} onValueChange={setSelectedModel}>
