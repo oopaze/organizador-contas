@@ -16,6 +16,12 @@ class SubTransactionSerializer:
     def __init__(self, actor_serializer: ActorSerializer):
         self.actor_serializer = actor_serializer
 
+    def _get_category_value(self, category: str) -> str:
+        try:
+            return TransactionCategory.get_by_name(category).value
+        except ValueError:
+            return category  # Return raw value if not found in enum
+
     def serialize(self, sub_transaction: "SubTransactionDomain", include_actor: bool = True) -> dict:
         return {
             "id": sub_transaction.id,
@@ -30,7 +36,7 @@ class SubTransactionSerializer:
             "updated_at": sub_transaction.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "user_provided_description": sub_transaction.user_provided_description,
             "paid_at": sub_transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if sub_transaction.paid_at else None,
-            "category": getattr(TransactionCategory.get_by_name(sub_transaction.category), "value", None),
+            "category": self._get_category_value(sub_transaction.category),
         }
 
     def serialize_many(self, sub_transactions: list["SubTransactionDomain"], include_actor: bool = True) -> list[dict]:
