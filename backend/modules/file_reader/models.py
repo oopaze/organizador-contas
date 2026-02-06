@@ -7,7 +7,7 @@ class File(TimedModel, UserOwnedModel):
     raw_file = models.FileField("Link to File", upload_to="files/")
     raw_text = models.TextField(null=True, blank=True)
 
-    ai_call = models.ForeignKey("ai.AICall", on_delete=models.CASCADE, null=True, blank=True)
+    ai_call = models.ForeignKey("ai.AICall", on_delete=models.CASCADE, null=True, blank=True, related_name="files")
 
     def __str__(self):
         return self.raw_file.name

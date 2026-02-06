@@ -15,4 +15,9 @@ class AICallFactory:
             updated_at=model.updated_at,
             model=model.model,
             is_error=model.is_error,
+            related_to=getattr(model, "related_to", None),
+            file_url=model.files.first().raw_file.url if model.files.first() else None,
+            conversation_title=model.conversations.first().title if model.conversations.first() else None,
+            user_message_content=model.messages.first().content if model.messages.first() else None,
+            ai_message_content=model.messages.last().content if model.messages.last() else None,
         )

@@ -40,14 +40,16 @@ class StatsAICallUseCase:
                 models_stats[ai_call.model]["total_tokens"] += ai_call.total_tokens
                 models_stats[ai_call.model]["total_input_tokens"] += ai_call.input_used_tokens
                 models_stats[ai_call.model]["total_output_tokens"] += ai_call.output_used_tokens
+                models_stats[ai_call.model]["total_spent"] += prices["total"]
             else:
                 models_stats[ai_call.model] = { 
                     "count": 1,
                     "total_tokens": ai_call.total_tokens,
                     "total_input_tokens": ai_call.input_used_tokens,
                     "total_output_tokens": ai_call.output_used_tokens,
+                    "total_spent": prices["total"],
                 }
-        
+
         return {
             "total_calls": len(ai_calls),
             "total_tokens": total_tokens,

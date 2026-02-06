@@ -156,3 +156,76 @@ export interface SendMessageResponse {
   user_message: ChatMessage;
   ai_message: ChatMessage;
 }
+
+// AI Insights types
+export interface ModelStats {
+  count: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_spent: number;
+}
+
+export interface EmbeddingModelStats {
+  count: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+}
+
+export interface AmountSpent {
+  input: number;
+  output: number;
+  total: number;
+}
+
+export interface AICallsStats {
+  total_calls: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_errors: number;
+  models_stats: Record<string, ModelStats>;
+  amount_spent: AmountSpent;
+}
+
+export interface AICallItem {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  prompt: string;
+  response: unknown;
+  total_tokens: number;
+  input_used_tokens: number;
+  output_used_tokens: number;
+  model: string;
+  is_error: boolean;
+  related_to: 'file' | 'message' | 'conversation' | 'unknown';
+  model_prices: {
+    input: number;
+    output: number;
+    total: number;
+  };
+  file_url: string | null;
+  conversation_title: string | null;
+  user_message_content: string | null;
+  ai_message_content: string | null;
+}
+
+export interface EmbeddingsStats {
+  total_embeddings: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+  total_errors: number;
+  models_stats: Record<string, EmbeddingModelStats>;
+  amount_spent: number;
+}
+
+export interface EmbeddingItem {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  model: string;
+  total_tokens: number;
+  prompt_used_tokens: number;
+  price: number;
+}

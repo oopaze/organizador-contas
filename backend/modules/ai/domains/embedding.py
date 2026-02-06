@@ -1,4 +1,6 @@
 from decimal import Decimal
+from modules.base.constants import DOLAR_TO_BRL
+from modules.ai.types import LlmModels
 
 
 class EmbeddingDomain:
@@ -25,7 +27,5 @@ class EmbeddingDomain:
         self.embedding = embedding
 
     def get_price(self) -> Decimal:
-        from modules.ai.types import LlmModels
-
         model_info = LlmModels.get_model(self.model)
-        return Decimal(str(model_info.input_cost_per_million_tokens)) * Decimal(str(self.prompt_used_tokens)) / Decimal('1000000')
+        return Decimal(str(model_info.input_cost_per_million_tokens)) * Decimal(str(self.prompt_used_tokens)) / Decimal('1000000') * DOLAR_TO_BRL

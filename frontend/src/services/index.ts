@@ -49,3 +49,9 @@ export { startChat } from './chat/startChat';
 export { listConversations } from './chat/listConversations';
 export { getConversationMessages } from './chat/getConversationMessages';
 export { sendMessageToConversation } from './chat/sendMessageToConversation';
+
+// AI services
+export { getAICallsStats, type AIDateFilters } from './ai/getAICallsStats';
+export { getAICalls } from './ai/getAICalls';
+export { getEmbeddingsStats } from './ai/getEmbeddingsStats';
+export { getEmbeddings } from './ai/getEmbeddings';
