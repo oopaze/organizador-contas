@@ -1,6 +1,7 @@
 from modules.transactions.domains import SubTransactionDomain, ActorDomain, TransactionDomain
 from modules.transactions.factories import ActorFactory, TransactionFactory
 from modules.transactions.models import SubTransaction
+from modules.transactions.types import TransactionCategory
 
 
 class SubTransactionFactory:
@@ -37,7 +38,7 @@ class SubTransactionFactory:
             transaction=transaction,
             actor=actor,
             user_provided_description=data.get("user_provided_description", None),
-            category=data.get("category", None),
+            category=data.get("category", TransactionCategory.OTHER.name),
         )
     
     def build_from_transaction(self, transaction: TransactionDomain, installment = "1/1") -> SubTransactionDomain:

@@ -40,7 +40,7 @@ class TransactionSerializer:
             "paid_at": transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if transaction.paid_at else None,
             "subtransactions_paid": transaction.subtransactions_paid,
             "is_paid": transaction.is_paid,
-            "category": TransactionCategory.get_by_name(transaction.category).value,
+            "category": getattr(TransactionCategory.get_by_name(transaction.category), "value", None),
         }
     
     def serialize_for_tool(self, transaction: "TransactionDomain") -> str:

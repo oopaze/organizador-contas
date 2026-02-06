@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from django.utils import timezone
+from modules.transactions.types import TransactionCategory
 
 if TYPE_CHECKING:
     from modules.transactions.domains.sub_transaction import SubTransactionDomain
@@ -26,7 +27,7 @@ class TransactionDomain:
         file_id: int = None,
         paid_at: str = None,
         subtransactions_paid: bool = None,
-        category: str = None,
+        category: str = TransactionCategory.OTHER.name,
     ):
         self.due_date = due_date
         self.total_amount = total_amount

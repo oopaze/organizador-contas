@@ -36,14 +36,14 @@ class BaseType(metaclass=ABCMeta):
         for item in cls.get_all():
             if item.name == name:
                 return item
-        raise ValueError(f"{name} not found in {cls.__name__}")
+        return None
 
     @classmethod
     def get_by_attribute_value(cls, value: str, attribute: str):
         for item in cls.get_all():
             if getattr(item, attribute) == value:
                 return item
-        raise ValueError(f"{value} not found in {cls.__name__}")
+        return None
 
     @classmethod
     def get_all_as_options(cls):

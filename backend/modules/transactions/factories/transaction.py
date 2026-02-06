@@ -1,5 +1,6 @@
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.models import Transaction
+from modules.transactions.types import TransactionCategory
 
 
 class TransactionFactory:
@@ -56,5 +57,5 @@ class TransactionFactory:
             installment_number=data.get("installment_number", None),
             main_transaction=data.get("main_transaction", None),
             recurrence_count=data.get("recurrence_count", None),
-            category=data.get("category", None),
+            category=data.get("category", TransactionCategory.OTHER.name),
         )

@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.utils import timezone
 
 from modules.transactions.domains import ActorDomain, TransactionDomain
+from modules.transactions.types import TransactionCategory
 
 
 class SubTransactionDomain:
@@ -18,7 +19,7 @@ class SubTransactionDomain:
         actor: "ActorDomain" = None,
         user_provided_description: str = "",
         paid_at: str = None,
-        category: str = None,
+        category: str = TransactionCategory.OTHER.name,
     ):
         self.date = date if date else transaction.due_date
         self.description = description
