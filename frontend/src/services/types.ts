@@ -199,7 +199,7 @@ export interface AICallItem {
   output_used_tokens: number;
   model: string;
   is_error: boolean;
-  related_to: 'file' | 'message' | 'conversation' | 'unknown';
+  related_to: 'file' | 'message' | 'conversation' | 'guessing_categories' | 'unknown';
   model_prices: {
     input: number;
     output: number;

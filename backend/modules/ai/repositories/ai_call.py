@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from django.db.models import Case, When, Value, CharField, Exists, OuterRef
+from django.db.models import Case, When, Value, CharField, Exists, OuterRef, Q
 
 from modules.ai.chat.models import Conversation, Message
 from modules.file_reader.models import File
@@ -22,7 +22,7 @@ class AICallRepository:
     def queryset(self):
         return self.model.objects.all().order_by("-created_at")
 
-    def create(self, ai_response: "AIResponseDomain") -> "AIResponseDomain":
+    def create(self, ai_response: "AIResponseDomain", user_id: int) -> "AIResponseDomain":
         ai_call_instance = self.model.objects.create(
             prompt=ai_response.prompt,
             response=ai_response.response or {},
@@ -32,6 +32,7 @@ class AICallRepository:
             response_id=ai_response.id,
             model=ai_response.model,
             is_error=ai_response.is_error,
+            user_id=user_id,
         )
         return self.ai_response_factory.build_from_model(ai_call_instance)
 
@@ -45,7 +46,11 @@ class AICallRepository:
         files_from_user = File.objects.filter(user_id=user_id, ai_call__isnull=False).values_list("ai_call_id", flat=True)
 
         ai_call_ids = set(list(conversations_from_user) + list(messages_from_user) + list(files_from_user))
-        ai_call_instances = self.queryset.filter(id__in=ai_call_ids).prefetch_related("conversations", "messages", "files")
+        ai_call_instances = (
+            self.queryset
+                .filter(Q(id__in=ai_call_ids) | Q(user_id=user_id))
+                .prefetch_related("conversations", "messages", "files")
+        )
 
         if filter_by_model:
             ai_call_instances = ai_call_instances.filter(model=filter_by_model)
@@ -59,7 +64,7 @@ class AICallRepository:
                 When(Exists(Conversation.objects.filter(ai_call_id=OuterRef("pk"))), then=Value("conversation")),
                 When(Exists(Message.objects.filter(ai_call_id=OuterRef("pk"))), then=Value("message")),
                 When(Exists(File.objects.filter(ai_call_id=OuterRef("pk"))), then=Value("file")),
-                default=Value("unknown"),
+                default=Value("guessing_categories"),
                 output_field=CharField(),
             )
         )

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from modules.transactions.models import SubTransaction
 from modules.transactions.types import TransactionCategory
 from modules.transactions.repositories import SubTransactionRepository
 from modules.transactions.serializers import SubTransactionSerializer
@@ -54,15 +55,18 @@ class GuessSubTransactionsCategoryUseCase:
         sub_transactions_for_tool = self.sub_transaction_serializer.serialize_many_for_tool(sub_transactions)
         categories = [category.name for category in TransactionCategory.get_all()]
         prompt = PROMPT.format(sub_transactions=sub_transactions_for_tool, categories=categories)
-        ai_call_id = self.ask_use_case.execute([BOT_DESCRIPTION, MODELS_EXPLANATION_PROMPT, prompt], response_format="json_object")
+        ai_call_id = self.ask_use_case.execute([BOT_DESCRIPTION, MODELS_EXPLANATION_PROMPT, prompt], user_id, response_format="json_object")
         ai_call = self.ai_call_repository.get(ai_call_id)
 
         updated_sub_transactions = []
         for sub_transaction in ai_call.response:
-            sub_transaction_instance = self.sub_transaction_repository.get(sub_transaction["sub_transaction_id"], user_id)
-            sub_transaction_instance.category = sub_transaction["category"]
-            self.sub_transaction_repository.update(sub_transaction_instance)
-            updated_sub_transactions.append(sub_transaction_instance)
+            try:
+                sub_transaction_instance = self.sub_transaction_repository.get(sub_transaction["sub_transaction_id"], user_id)
+                sub_transaction_instance.category = sub_transaction["category"]
+                self.sub_transaction_repository.update(sub_transaction_instance)
+                updated_sub_transactions.append(sub_transaction_instance)
+            except SubTransaction.DoesNotExist:
+                continue
 
         return {
             "message": f"{len(updated_sub_transactions)} sub transações atualizadas com sucesso",

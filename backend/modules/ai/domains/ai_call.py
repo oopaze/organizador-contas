@@ -16,6 +16,7 @@ class AICallDomain:
         updated_at: str = None,
         model: str = None,
         is_error: bool = False,
+        user_id: int = None,
         related_to: str = None,
         file_url: str = None,
         conversation_title: str = None,
@@ -32,6 +33,7 @@ class AICallDomain:
         self.updated_at = updated_at
         self.model = model
         self.is_error = is_error
+        self.user_id = user_id
         self.related_to = related_to
         self.file_url = file_url
         self.conversation_title = conversation_title

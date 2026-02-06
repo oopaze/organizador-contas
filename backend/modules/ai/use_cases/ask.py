@@ -28,10 +28,10 @@ class AskUseCase:
     def execute(
         self,
         prompt: list[str],
+        user_id: int,
         model: str = LlmModels.GOOGLE_GEMINI_2_5_FLASH_LITE.name,
         tools: list = [],
         chat_session_key: str = None,
-        user_id: int = None,
         temperature: float = 0.1,
         tool_choice: str = None,
         history: str = "",
@@ -45,8 +45,8 @@ class AskUseCase:
             model=model,
             tools=tools,
             chat_session_key=chat_session_key,
-            user_id=user_id,
             temperature=temperature,
+            user_id=user_id,
             tool_choice=tool_choice,
             history=history,
             response_format=response_format,
@@ -54,7 +54,7 @@ class AskUseCase:
         logger.info(f"[AskUseCase] AI request built, calling LLM...")
         response = self.ask_ai(ai_request)
         logger.info(f"[AskUseCase] LLM response received, saving to repository...")
-        ai_response = self.ai_call_repository.create(response)
+        ai_response = self.ai_call_repository.create(response, user_id)
         logger.info(f"[AskUseCase] Response saved with id: {ai_response.id}")
         return ai_response.id
 

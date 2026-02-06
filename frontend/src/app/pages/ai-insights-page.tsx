@@ -7,7 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/app/components/ui/chart';
 import { Bar, BarChart, XAxis, YAxis, Pie, PieChart, Cell } from 'recharts';
-import { Brain, Zap, DollarSign, AlertTriangle, Hash, Cpu, Download, FileText, MessageSquare, MessagesSquare, HelpCircle, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Brain, Zap, DollarSign, AlertTriangle, Hash, Cpu, Download, FileText, MessageSquare, MessagesSquare, HelpCircle, ExternalLink, ChevronLeft, ChevronRight, X, WandSparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -198,6 +198,8 @@ export const AIInsightsPage: React.FC = () => {
         return { icon: MessageSquare, label: 'Mensagem', color: 'text-green-600' };
       case 'conversation':
         return { icon: MessagesSquare, label: 'Conversa', color: 'text-purple-600' };
+      case 'guessing_categories':
+        return { icon: WandSparkles, label: 'Adivinhação de Categorias', color: 'text-orange-600' };
       default:
         return { icon: HelpCircle, label: 'Desconhecido', color: 'text-muted-foreground' };
     }

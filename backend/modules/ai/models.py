@@ -17,6 +17,8 @@ class AICall(TimedModel):
     output_used_tokens = models.IntegerField()
 
     is_error = models.BooleanField(default=False)
+    user = models.ForeignKey("userdata.User", on_delete=models.CASCADE, null=True, blank=True)
+
 
     def __str__(self):
         return f"AICall {self.id} - {self.total_tokens} tokens"

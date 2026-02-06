@@ -55,7 +55,8 @@ class SendConversionMessageUseCase:
             model=model, 
             tools=self.tools, 
             chat_session_key=conversation.chat_session_key,
-            history=history_as_string
+            history=history_as_string,
+            user_id=conversation.user_id,
         )
         ai_call = self.ai_call_repository.get(ai_call_id)
 

@@ -140,6 +140,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
     delete_transaction_use_case = providers.Factory(
         DeleteTransactionUseCase,
         transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     transaction_stats_use_case = providers.Factory(

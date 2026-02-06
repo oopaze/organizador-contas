@@ -102,7 +102,8 @@ class StartConversionUseCase:
             prompts_for_user_message, 
             model=model, 
             tools=self.tools, 
-            chat_session_key=conversation.chat_session_key
+            chat_session_key=conversation.chat_session_key,
+            user_id=conversation.user_id,
         )
         ai_call = self.ai_call_repository.get(ai_call_id)
 

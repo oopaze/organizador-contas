@@ -137,7 +137,7 @@ class UploadFileUseCase:
         pdf_text = saved_file.extract_text_from_pdf(file_path)
 
         prompt = [PROMPT, f"Here is the PDF content: name: {file.name}, text: {pdf_text}"]
-        ai_call_id = self.ask_use_case.execute(prompt, response_format="json_object", model=model)
+        ai_call_id = self.ask_use_case.execute(prompt, user_id, response_format="json_object", model=model)
 
         ai_call = self.ai_call_repository.get(ai_call_id)
         saved_file.update_ai_info(ai_call)

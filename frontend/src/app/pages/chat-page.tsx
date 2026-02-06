@@ -482,9 +482,6 @@ export const ChatPage: React.FC = () => {
                             <span className="text-[10px] text-muted-foreground/50" title={`Input: ${msg.ai_call.input_used_tokens.toLocaleString()} tokens - Output: ${msg.ai_call.output_used_tokens.toLocaleString()} tokens`}>
                               ({msg.ai_call.input_used_tokens.toLocaleString()}↓ {msg.ai_call.output_used_tokens.toLocaleString()}↑)
                             </span>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                              R$ {((msg.ai_call.input_cost || 0) + (msg.ai_call.output_cost || 0)).toFixed(6)}
-                            </span>
                           </div>
                         )}
                       </>

@@ -66,7 +66,7 @@ def process_sheet_upload(
         
         # Call AI
         logger.info(f"[Task:UploadSheet] Calling AI with model: {model}...")
-        ai_call_id = ask_use_case.execute(prompt, response_format="json_object", model=model)
+        ai_call_id = ask_use_case.execute(prompt, user_id, response_format="json_object", model=model)
         logger.info(f"[Task:UploadSheet] AI call completed with id: {ai_call_id}")
 
         # Update file with AI info
