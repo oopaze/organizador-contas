@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from modules.userdata.authentication import JWTAuthentication
 from modules.transactions.container import TransactionsContainer
+from modules.ai.container import AIContainer
 
 
 class ActorViewSet(viewsets.ViewSet):
@@ -52,7 +53,10 @@ class TransactionViewSet(viewsets.ViewSet):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.container = TransactionsContainer()
+        ai_container = AIContainer()
+        ask_use_case = ai_container.ask_use_case()
+        ai_call_repository = ai_container.ai_call_repository()
+        self.container = TransactionsContainer(ask_use_case=ask_use_case, ai_call_repository=ai_call_repository)
 
     def list(self, request):
         filters = {"user_id": request.user.id}
@@ -104,6 +108,11 @@ class TransactionViewSet(viewsets.ViewSet):
     @decorators.action(detail=True, methods=["POST"])
     def recalculate_amount(self, request, pk: str):
         response = self.container.recalculate_amount_use_case().execute(pk, request.user.id)
+        return Response(response, status=status.HTTP_200_OK)
+    
+    @decorators.action(detail=True, methods=["POST"])
+    def guess_sub_transactions_category(self, request, pk: str):
+        response = self.container.guess_sub_transactions_category_use_case().execute(pk, request.user.id)
         return Response(response, status=status.HTTP_200_OK)
 
 

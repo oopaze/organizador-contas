@@ -20,6 +20,7 @@ export { deleteTransaction } from './transactions/deleteTransaction';
 export { getTransactionStats } from './transactions/getTransactionStats';
 export { payTransaction } from './transactions/payTransaction';
 export { recalculateTransactionAmount } from './transactions/recalculateTransactionAmount';
+export { guessSubTransactionsCategory } from './transactions/guessSubTransactionsCategory';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';

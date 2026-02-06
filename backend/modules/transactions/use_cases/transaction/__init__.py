@@ -6,6 +6,7 @@ from modules.transactions.use_cases.transaction.update import UpdateTransactionU
 from modules.transactions.use_cases.transaction.stats import TransactionStatsUseCase
 from modules.transactions.use_cases.transaction.pay import PayTransactionUseCase
 from modules.transactions.use_cases.transaction.recalculate_amount import RecalculateAmountUseCase
+from modules.transactions.use_cases.transaction.guess_sub_transactions_category import GuessSubTransactionsCategoryUseCase
 
 __all__ = [
     "CreateTransactionUseCase",
@@ -16,4 +17,5 @@ __all__ = [
     "TransactionStatsUseCase",
     "PayTransactionUseCase",
     "RecalculateAmountUseCase",
+    "GuessSubTransactionsCategoryUseCase",
 ]

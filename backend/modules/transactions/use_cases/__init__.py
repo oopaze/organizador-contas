@@ -16,6 +16,7 @@ from modules.transactions.use_cases.transaction import (
     TransactionStatsUseCase,
     PayTransactionUseCase,
     RecalculateAmountUseCase,
+    GuessSubTransactionsCategoryUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
@@ -50,6 +51,7 @@ __all__ = [
     "TransactionStatsUseCase",
     "PayTransactionUseCase",
     "RecalculateAmountUseCase",
+    "GuessSubTransactionsCategoryUseCase",
     "CreateSubTransactionUseCase",
     "DeleteSubTransactionUseCase",
     "GetSubTransactionUseCase",

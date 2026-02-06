@@ -22,6 +22,7 @@ from modules.transactions.use_cases import (
     TransactionStatsUseCase,
     PayTransactionUseCase,
     RecalculateAmountUseCase,
+    GuessSubTransactionsCategoryUseCase,
     CreateSubTransactionUseCase,
     DeleteSubTransactionUseCase,
     GetSubTransactionUseCase,
@@ -40,6 +41,8 @@ from modules.transactions.use_cases import (
 class TransactionsContainer(containers.DeclarativeContainer):
     # DEPENDENCIES
     user_id = providers.Dependency()
+    ask_use_case = providers.Dependency()
+    ai_call_repository = providers.Dependency()
 
     # SERIALIZERS
     actor_serializer = providers.Factory(ActorSerializer)
@@ -155,6 +158,14 @@ class TransactionsContainer(containers.DeclarativeContainer):
         RecalculateAmountUseCase,
         transaction_repository=transaction_repository,
         sub_transaction_repository=sub_transaction_repository,
+    )
+
+    guess_sub_transactions_category_use_case = providers.Factory(
+        GuessSubTransactionsCategoryUseCase,
+        sub_transaction_repository=sub_transaction_repository,
+        sub_transaction_serializer=sub_transaction_serializer,
+        ai_call_repository=ai_call_repository,
+        ask_use_case=ask_use_case,
     )
 
     create_sub_transaction_use_case = providers.Factory(

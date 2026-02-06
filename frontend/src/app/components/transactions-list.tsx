@@ -5,6 +5,7 @@ import {
   deleteTransaction,
   payTransaction,
   recalculateTransactionAmount,
+  guessSubTransactionsCategory,
 } from '@/services';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Button } from '@/app/components/ui/button';
@@ -20,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
-import { Trash2, ChevronRight, Pencil, Plus, MoreVertical, CheckCircle, Calculator, AlertTriangle } from 'lucide-react';
+import { Trash2, ChevronRight, Pencil, Plus, MoreVertical, CheckCircle, Calculator, AlertTriangle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SubTransactionsTable } from './sub-transactions-table';
 import { EditTransactionDialog } from './edit-transaction-dialog';
@@ -91,6 +92,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   const [recalculateDialogOpen, setRecalculateDialogOpen] = useState(false);
   const [transactionToRecalculate, setTransactionToRecalculate] = useState<Transaction | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [guessCategoryDialogOpen, setGuessCategoryDialogOpen] = useState(false);
+  const [transactionToGuessCategory, setTransactionToGuessCategory] = useState<Transaction | null>(null);
+  const [isGuessingCategory, setIsGuessingCategory] = useState(false);
 
   const handleEditClick = (transaction: Transaction, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -191,6 +195,30 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
       toast.error('Falha ao recalcular valor');
     } finally {
       setIsRecalculating(false);
+    }
+  };
+
+  const handleGuessCategoryClick = (transaction: Transaction, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTransactionToGuessCategory(transaction);
+    setGuessCategoryDialogOpen(true);
+    setOpenPopoverId(null);
+  };
+
+  const handleConfirmGuessCategory = async () => {
+    if (!transactionToGuessCategory) return;
+
+    setIsGuessingCategory(true);
+    try {
+      const response = await guessSubTransactionsCategory(transactionToGuessCategory.id);
+      toast.success(response.message);
+      setGuessCategoryDialogOpen(false);
+      setTransactionToGuessCategory(null);
+      onUpdate();
+    } catch (error) {
+      toast.error('Falha ao adivinhar categorias');
+    } finally {
+      setIsGuessingCategory(false);
     }
   };
 
@@ -333,7 +361,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                                             const rect = wrapper.getBoundingClientRect();
                                             setPopoverPosition({
                                               top: rect.bottom + 4,
-                                              left: rect.right - 160,
+                                              left: rect.right - 208,
                                             });
                                           }
                                           setOpenPopoverId(transaction.id);
@@ -378,7 +406,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         <Portal>
           <div
             data-popover-menu
-            className="fixed z-[9999] w-40 rounded-md border bg-popover p-1 shadow-md"
+            className="fixed z-[9999] w-52 rounded-md border bg-popover p-1 shadow-md"
             style={{
               top: popoverPosition.top,
               left: popoverPosition.left,
@@ -409,6 +437,18 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
               >
                 <Calculator className="w-4 h-4 mr-2" />
                 Recalcular
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start w-full"
+                onClick={(e) => {
+                  const transaction = transactions.find(t => t.id === openPopoverId);
+                  if (transaction) handleGuessCategoryClick(transaction, e);
+                }}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Adivinhar Categorias
               </Button>
             </div>
           </div>
@@ -514,6 +554,19 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         variant="warning"
         icon={Calculator}
         isLoading={isRecalculating}
+      />
+
+      <ConfirmationDialog
+        open={guessCategoryDialogOpen}
+        onOpenChange={setGuessCategoryDialogOpen}
+        onConfirm={handleConfirmGuessCategory}
+        title="Adivinhar Categorias"
+        description={`Tem certeza que deseja usar IA para adivinhar as categorias das subtransações da transação "${transactionToGuessCategory?.transaction_identifier}"?`}
+        confirmText="Adivinhar"
+        cancelText="Cancelar"
+        variant="warning"
+        icon={Sparkles}
+        isLoading={isGuessingCategory}
       />
     </div>
   );
