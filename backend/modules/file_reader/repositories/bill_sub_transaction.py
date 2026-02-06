@@ -22,6 +22,7 @@ class BillSubTransactionRepository:
             amount=bill_sub_transaction.amount,
             installment_info=bill_sub_transaction.installment_info,
             transaction_id=bill_sub_transaction.bill.id,
+            category=bill_sub_transaction.category,
         )
         return self.bill_sub_transaction_factory.build_from_model(bill_sub_transaction_instance)
     

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/app/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
 
 interface AddSubTransactionDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
     amount: '',
     installment_info: '',
     actor_id: '',
+    category: '',
   });
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
         amount: '',
         installment_info: '',
         actor_id: '',
+        category: '',
       });
     }
   }, [open]);
@@ -71,6 +74,7 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
         installment_info: formData.installment_info || undefined,
         transaction_id: transactionId,
         actor_id: formData.actor_id ? parseInt(formData.actor_id, 10) : undefined,
+        category: formData.category || undefined,
       });
       toast.success('Subtransação adicionada com sucesso');
       onSuccess();
@@ -137,6 +141,26 @@ export const AddSubTransactionDialog: React.FC<AddSubTransactionDialogProps> = (
                 onChange={(e) => setFormData({ ...formData, installment_info: e.target.value })}
                 placeholder="Ex: 1/12"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria (opcional)</Label>
+              <Select
+                value={formData.category || 'none'}
+                onValueChange={(value) => setFormData({ ...formData, category: value === 'none' ? '' : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  {TRANSACTION_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

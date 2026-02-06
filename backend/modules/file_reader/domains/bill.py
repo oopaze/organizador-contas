@@ -15,6 +15,7 @@ class BillDomain:
         bill_sub_transactions: list[BillSubTransactionDomain] = [],
         transaction_type: str = "outgoing",
         main_transaction_id: int = None,
+        category: str = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -26,6 +27,7 @@ class BillDomain:
         self.bill_sub_transactions = bill_sub_transactions
         self.transaction_type = transaction_type
         self.main_transaction_id = main_transaction_id
+        self.category = category
 
     def set_bill_sub_transactions(self, bill_sub_transactions: list[BillSubTransactionDomain]):
         self.bill_sub_transactions = bill_sub_transactions

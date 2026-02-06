@@ -56,6 +56,7 @@ export interface Transaction {
   paid_at?: string;
   subtransactions_paid?: boolean;
   is_paid?: boolean;
+  category?: string;
 }
 
 export interface SubTransaction {
@@ -70,6 +71,7 @@ export interface SubTransaction {
   actor?: Actor | number;
   user_provided_description?: string;
   paid_at?: string;
+  category?: string;
 }
 
 export interface TransactionDetail extends Transaction {

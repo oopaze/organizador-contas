@@ -9,6 +9,7 @@ class BillSubTransactionDomain:
         created_at: str = None,
         updated_at: str = None,
         bill: "BillDomain" = None,
+        category: str = None,
     ):
         self.date = date
         self.description = description
@@ -18,3 +19,4 @@ class BillSubTransactionDomain:
         self.created_at = created_at
         self.updated_at = updated_at
         self.bill = bill
+        self.category = category

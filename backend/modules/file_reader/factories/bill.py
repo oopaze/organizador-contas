@@ -2,6 +2,7 @@ from modules.file_reader.domains.bill import BillDomain
 from modules.file_reader.domains.file import FileDomain
 from modules.file_reader.factories.file import FileFactory
 from modules.transactions.models import Transaction
+from modules.transactions.types import TransactionCategory
 
 # Month name to number mapping (Portuguese)
 MONTH_MAP = {
@@ -68,6 +69,7 @@ class BillFactory:
             total_amount=total_amount,
             bill_identifier=bill_identifier,
             file=file,
+            category=ai_response.get("category", TransactionCategory.CREDIT_CARD.name),
         )
 
     def build_from_model(self, model: Transaction) -> BillDomain:
@@ -81,6 +83,7 @@ class BillFactory:
             updated_at=model.updated_at,
             transaction_type=model.transaction_type,
             main_transaction_id=model.main_transaction.id if model.main_transaction else None,
+            category=model.category,
         )
     
     def build_from_other_bill(self, bill: BillDomain, due_date: str = None) -> BillDomain:
@@ -90,4 +93,5 @@ class BillFactory:
             bill_identifier=bill.bill_identifier,
             file=bill.file,
             transaction_type=bill.transaction_type,
+            category=bill.category,
         )

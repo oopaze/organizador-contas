@@ -15,6 +15,7 @@ class BillSerializer:
             "file": bill.file.url if bill.file else None,
             "created_at": bill.created_at,
             "updated_at": bill.updated_at,
+            "category": bill.category,
         }
 
         if include_transactions:
@@ -33,4 +34,5 @@ class BillSerializer:
             "transaction_type": bill.transaction_type,
             "transactions": [],
             "main_transaction_id": bill.id,
+            "category": bill.category,
         }

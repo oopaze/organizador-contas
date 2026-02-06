@@ -118,6 +118,7 @@ class SubTransactionRepository:
             transaction_id=sub_transaction.transaction.id,
             actor_id=actor_id,
             user_provided_description=sub_transaction.user_provided_description,
+            category=sub_transaction.category,
         )
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
@@ -135,6 +136,7 @@ class SubTransactionRepository:
         sub_transaction_instance.transaction_id = sub_transaction.transaction.id
         sub_transaction_instance.actor_id = sub_transaction.actor_id 
         sub_transaction_instance.user_provided_description = sub_transaction.user_provided_description
+        sub_transaction_instance.category = sub_transaction.category
         sub_transaction_instance.save()
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     

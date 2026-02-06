@@ -1,6 +1,7 @@
 from django.db import models
 
 from modules.base.models import TimedModel, UserOwnedModel, SoftDeleteModel
+from modules.transactions.types import TransactionCategory
 
 
 class Actor(TimedModel, UserOwnedModel, SoftDeleteModel):
@@ -23,6 +24,7 @@ class Transaction(TimedModel, UserOwnedModel, SoftDeleteModel):
     installment_number = models.IntegerField(null=True, blank=True)
     main_transaction = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="installments")
     paid_at = models.DateField(null=True, blank=True)
+    category = models.CharField(choices=TransactionCategory.get_all_as_options(), default=TransactionCategory.OTHER.name)
 
     class Meta:
         ordering = ["-due_date"]
@@ -50,6 +52,7 @@ class SubTransaction(TimedModel, SoftDeleteModel):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="sub_transactions")
     actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True, blank=True)
     paid_at = models.DateField(null=True, blank=True)
+    category = models.CharField(choices=TransactionCategory.get_all_as_options(), default=TransactionCategory.OTHER.name)
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"

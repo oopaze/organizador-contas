@@ -20,6 +20,28 @@ Você receberá o NOME do arquivo e o TEXTO de uma fatura de cartão de crédito
 - FILE NAME: {file_name}
 - PDF TEXT: {pdf_text}
 
+### TAXONOMIA DE CATEGORIAS (Obrigatório para Transações):
+Utilize EXATAMENTE as chaves abaixo para o campo category dentro da lista de transações. Escolha a mais específica possível.
+- FOOD: food, food_grocery, food_restaurant, food_delivery
+- HOUSING: housing, housing_rent, housing_condo, housing_maintenance
+- BILL: bill, bill_water, bill_electricity, bill_gas, bill_internet, bill_phone
+- TRANSPORT: transport, transport_fuel, transport_public, transport_apps, transport_maintenance
+- HEALTH: health, health_pharmacy, health_appointments, health_exams, health_insurance
+- EDUCATION: education, education_tuition, education_courses, education_books
+- FINANCIAL: financial, credit_card, loans, taxes, insurance, subscriptions
+- LIFESTYLE: lifestyle, leisure, travel, personal_shopping, gifts_donations
+- INCOME: income, earnings, refunds
+- OTHER: other
+
+### REGRAS DE CATEGORIZAÇÃO:
+1. Fatura (Nível Superior): O campo category principal para a fatura global deve ser SEMPRE credit_card. Não tente inferir outra categoria para o cabeçalho.
+2. Transações (Subtransações): Analise o nome do estabelecimento (descrição) de cada item e atribua a categoria da taxonomia acima que seja mais provável.
+  2.1 Ex: "Uber/99" -> transport_apps
+  2.2 Ex: "iFood/Rappi" -> food_delivery
+  2.3 Ex: "Farmácia/CVS/Droga Raia" -> health_pharmacy
+  2.4 Ex: "Netflix/Spotify/Amazon Prime" -> subscriptions
+3. Incerteza nas Transações: Se não houver uma subcategoria clara para o item, utilize a categoria pai (ex: utilize food se não conseguir distinguir entre supermercado ou restaurante).
+
 ### 🛡️ TRATAMENTO DE ARMADILHAS VISUAIS (CRÍTICO):
 Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separadores visuais.
 - PADRÃO VISUAL: "Loja Exemplo - R$ 50,00" -> O hífen aqui é apenas estética. NÃO é um número negativo.
@@ -61,12 +83,14 @@ Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separad
   "total_amount": 150.00,
   "due_date": "YYYY-MM-DD",
   "transaction_type": "incoming",
+  "category": "credit_card",
   "transactions": [
     {{
       "date": "YYYY-MM-DD",
       "description": "string",
       "amount": 50.00,
-      "installment_info": "1/6" 
+      "installment_info": "1/6",
+      "category": "string"
     }}
   ]
 }}

@@ -1,6 +1,12 @@
 from abc import ABCMeta
 
 
+class OptionType:
+    def __init__(self, label: str, value: str):
+        self.label = label
+        self.value = value
+
+
 class TypeItem(metaclass=ABCMeta):
     def __init__(self, name: str, default: dict = {}, **kwargs):
         self.name = name
@@ -12,6 +18,12 @@ class TypeItem(metaclass=ABCMeta):
             for key, value in default.items():
                 if not hasattr(self, key):
                     setattr(self, key, value)
+
+    def get_as_django_choice(self):
+        return (self.name, getattr(self, "value", self.name))
+
+    def get_as_option(self):
+        return OptionType(self.name, getattr(self, "value", self.name))
 
 
 class BaseType(metaclass=ABCMeta):
@@ -32,3 +44,7 @@ class BaseType(metaclass=ABCMeta):
             if getattr(item, attribute) == value:
                 return item
         raise ValueError(f"{value} not found in {cls.__name__}")
+
+    @classmethod
+    def get_all_as_options(cls):
+        return [item.get_as_django_choice() for item in cls.get_all()]

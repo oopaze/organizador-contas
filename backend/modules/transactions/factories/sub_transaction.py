@@ -26,6 +26,7 @@ class SubTransactionFactory:
             actor=actor,
             user_provided_description=model.user_provided_description,
             paid_at=model.paid_at,
+            category=model.category,
         )
     
     def build(self, data: dict, transaction: TransactionDomain, actor: ActorDomain = None) -> SubTransactionDomain:
@@ -36,6 +37,7 @@ class SubTransactionFactory:
             transaction=transaction,
             actor=actor,
             user_provided_description=data.get("user_provided_description", None),
+            category=data.get("category", None),
         )
     
     def build_from_transaction(self, transaction: TransactionDomain, installment = "1/1") -> SubTransactionDomain:
@@ -45,4 +47,5 @@ class SubTransactionFactory:
             transaction=transaction,
             description=transaction.transaction_identifier,
             installment_info=installment,
+            category=transaction.category,
         )

@@ -11,4 +11,5 @@ class BillSubTransactionSerializer:
             "installment_info": bill_sub_transaction.installment_info,
             "created_at": bill_sub_transaction.created_at,
             "updated_at": bill_sub_transaction.updated_at,
+            "category": bill_sub_transaction.category,
         }

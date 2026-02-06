@@ -7,6 +7,19 @@ import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { toast } from 'sonner';
+import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
+
+// Helper to find category key from either key or value
+const findCategoryKey = (category: string | undefined): string => {
+  if (!category) return 'none';
+  // First try to find by key
+  const byKey = TRANSACTION_CATEGORIES.find(c => c.key === category);
+  if (byKey) return byKey.key;
+  // Then try to find by value (display name)
+  const byValue = TRANSACTION_CATEGORIES.find(c => c.value === category);
+  if (byValue) return byValue.key;
+  return 'none';
+};
 
 interface EditTransactionDialogProps {
   open: boolean;
@@ -23,32 +36,24 @@ export const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    transaction_identifier: '',
-    total_amount: '',
-    due_date: '',
-    transaction_type: 'outgoing' as TransactionType,
-    is_salary: false,
+    transaction_identifier: transaction?.transaction_identifier ?? '',
+    total_amount: transaction?.total_amount ?? '',
+    due_date: transaction?.due_date ?? '',
+    transaction_type: transaction?.transaction_type ?? 'outgoing' as TransactionType,
+    is_salary: transaction?.is_salary ?? false,
+    category: findCategoryKey(transaction?.category),
   });
-
-  useEffect(() => {
-    if (transaction) {
-      setFormData({
-        transaction_identifier: transaction.transaction_identifier,
-        total_amount: transaction.total_amount,
-        due_date: transaction.due_date,
-        transaction_type: transaction.transaction_type,
-        is_salary: transaction.is_salary,
-      });
-    }
-  }, [transaction]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transaction) return;
-    
+
     setLoading(true);
     try {
-      await updateTransaction(transaction.id, formData);
+      await updateTransaction(transaction.id, {
+        ...formData,
+        category: formData.category || undefined,
+      });
       toast.success('Transação atualizada com sucesso!');
       onSuccess();
     } catch (error) {
@@ -123,11 +128,33 @@ export const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="edit-category">Categoria</Label>
+              <Select
+                value={formData.category || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category: value === 'none' ? '' : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  {TRANSACTION_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edit-is_salary"
                 checked={formData.is_salary}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, is_salary: checked as boolean })
                 }
               />

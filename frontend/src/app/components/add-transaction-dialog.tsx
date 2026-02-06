@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
 import { toast } from 'sonner';
+import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
 
 interface AddTransactionDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     is_salary: false,
     is_recurrent: false,
     recurrence_count: '',
+    category: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +43,7 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         recurrence_count: formData.is_recurrent && formData.recurrence_count
           ? parseInt(formData.recurrence_count, 10)
           : undefined,
+        category: formData.category || undefined,
       };
       await createTransaction(dataToSubmit);
       setFormData({
@@ -51,6 +54,7 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         is_salary: false,
         is_recurrent: false,
         recurrence_count: '',
+        category: '',
       });
       onSuccess();
     } catch (error) {
@@ -125,11 +129,33 @@ export const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria (opcional)</Label>
+              <Select
+                value={formData.category || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category: value === 'none' ? '' : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  {TRANSACTION_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="is_salary"
                 checked={formData.is_salary}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, is_salary: checked as boolean })
                 }
               />

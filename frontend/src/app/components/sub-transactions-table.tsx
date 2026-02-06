@@ -9,6 +9,7 @@ import { EditSubTransactionDialog } from './edit-sub-transaction-dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { toast } from 'sonner';
 import { useUser } from '@/contexts/user-context';
+import { getCategoryClassName } from '@/lib/category-colors';
 
 interface SubTransactionsTableProps {
   transactionId: number;
@@ -164,6 +165,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
             <TableHead>#</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Descrição</TableHead>
+            <TableHead>Categoria</TableHead>
             <TableHead>Parcela</TableHead>
             <TableHead>Ator</TableHead>
             <TableHead>Status</TableHead>
@@ -185,6 +187,15 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                 </TableCell>
                 <TableCell className="text-sm max-w-[200px] truncate">
                   {subTransaction.user_provided_description || (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {subTransaction.category ? (
+                    <Badge variant="outline" className={`text-xs ${getCategoryClassName(subTransaction.category)}`}>
+                      {subTransaction.category}
+                    </Badge>
+                  ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>

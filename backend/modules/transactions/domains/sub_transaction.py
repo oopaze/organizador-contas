@@ -18,6 +18,7 @@ class SubTransactionDomain:
         actor: "ActorDomain" = None,
         user_provided_description: str = "",
         paid_at: str = None,
+        category: str = None,
     ):
         self.date = date if date else transaction.due_date
         self.description = description
@@ -31,6 +32,7 @@ class SubTransactionDomain:
         self.user_provided_description = user_provided_description
         self.amount = self.format_money(amount)
         self.paid_at = paid_at
+        self.category = category
 
     def is_paying(self):
         return self.paid_at is None
@@ -50,6 +52,7 @@ class SubTransactionDomain:
         self.actor = data.get("actor", self.actor)
         self.actor_id = data.get("actor_id", self.actor_id)
         self.user_provided_description = data.get("user_provided_description", self.user_provided_description)
+        self.category = data.get("category", self.category)
 
     def format_money(self, value):
         if isinstance(value, (float, int)):

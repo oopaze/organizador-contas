@@ -1,4 +1,5 @@
 from modules.transactions.domains import TransactionDomain
+from modules.transactions.types import TransactionCategory
 from modules.transactions.serializers.sub_transaction import SubTransactionSerializer
 
 
@@ -12,6 +13,7 @@ Transaction {transaction_identifier}:
 - Installment Number: {installment_number}
 - Main Transaction: {main_transaction}
 - Is Credit Card: {is_credit_card}
+- Category: {category}
 """
 
 
@@ -38,6 +40,7 @@ class TransactionSerializer:
             "paid_at": transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if transaction.paid_at else None,
             "subtransactions_paid": transaction.subtransactions_paid,
             "is_paid": transaction.is_paid,
+            "category": TransactionCategory.get_by_name(transaction.category).value,
         }
     
     def serialize_for_tool(self, transaction: "TransactionDomain") -> str:
@@ -51,6 +54,7 @@ class TransactionSerializer:
             installment_number=transaction.installment_number,
             main_transaction=transaction.main_transaction.id if transaction.main_transaction else None,
             is_credit_card=transaction.file_id is not None,
+            category=transaction.category,
         )
     
     def serialize_many_for_tool(self, transactions: list["TransactionDomain"]) -> str:

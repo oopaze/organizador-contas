@@ -26,6 +26,7 @@ class TransactionDomain:
         file_id: int = None,
         paid_at: str = None,
         subtransactions_paid: bool = None,
+        category: str = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -46,6 +47,7 @@ class TransactionDomain:
         self.paid_at = paid_at
         self.subtransactions_paid = subtransactions_paid
         self.is_paid = paid_at is not None
+        self.category = category
 
     def is_paying(self):
         return self.paid_at is None
@@ -68,5 +70,5 @@ class TransactionDomain:
         self.transaction_identifier = data.get("transaction_identifier", self.transaction_identifier)
         self.transaction_type = data.get("transaction_type", self.transaction_type)
         self.is_salary = data.get("is_salary", self.is_salary)
-
+        self.category = data.get("category", self.category)
 

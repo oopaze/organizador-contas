@@ -66,6 +66,7 @@ class TransactionRepository:
             installment_number=transaction.installment_number,
             main_transaction_id=transaction.main_transaction,
             recurrence_count=transaction.recurrence_count,
+            category=transaction.category,
         )
         return self.transaction_factory.build_from_model(transaction_instance)
     
@@ -77,6 +78,7 @@ class TransactionRepository:
         transaction_instance.transaction_type = transaction.transaction_type
         transaction_instance.is_salary = transaction.is_salary
         transaction_instance.is_recurrent = transaction.is_recurrent
+        transaction_instance.category = transaction.category
         transaction_instance.save()
         return self.transaction_factory.build_from_model(transaction_instance)
     

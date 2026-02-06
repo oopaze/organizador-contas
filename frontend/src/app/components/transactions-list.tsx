@@ -26,6 +26,7 @@ import { SubTransactionsTable } from './sub-transactions-table';
 import { EditTransactionDialog } from './edit-transaction-dialog';
 import { AddSubTransactionDialog } from './add-sub-transaction-dialog';
 import { ConfirmationDialog } from './confirmation-dialog';
+import { getCategoryClassName } from '@/lib/category-colors';
 
 interface TransactionsListProps {
   type: 'expenses' | 'income' | 'all';
@@ -214,6 +215,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                 <TableHead>#</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Identificador</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
@@ -247,6 +249,15 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                               {new Date(transaction.due_date).toLocaleDateString('pt-BR')}
                             </TableCell>
                             <TableCell>{transaction.transaction_identifier}</TableCell>
+                            <TableCell>
+                              {transaction.category ? (
+                                <Badge variant="outline" className={`text-xs ${getCategoryClassName(transaction.category)}`}>
+                                  {transaction.category}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
                             <TableCell>
                               {transaction.is_salary && (
                                 <Badge className="bg-green-100 text-green-800">Salário</Badge>
@@ -341,7 +352,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                         </CollapsibleTrigger>
                         <CollapsibleContent asChild>
                           <TableRow className="bg-muted/30 hover:bg-muted/30">
-                            <TableCell colSpan={9} className="p-4">
+                            <TableCell colSpan={10} className="p-4">
                               <div className="rounded-md border bg-background p-4">
                                 <SubTransactionsTable transactionId={transaction.id} />
                               </div>
@@ -404,18 +415,22 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         </Portal>
       )}
 
-      <EditTransactionDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        onSuccess={() => {
-          setEditDialogOpen(false);
-          onUpdate();
-        }}
-        transaction={transactionToEdit}
-      />
+      {transactionToEdit && (
+        <EditTransactionDialog
+          key={transactionToEdit?.id}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            setEditDialogOpen(false);
+            onUpdate();
+          }}
+          transaction={transactionToEdit}
+        />
+      )}
 
       {transactionIdForSub && (
         <AddSubTransactionDialog
+          key={transactionIdForSub}
           open={addSubDialogOpen}
           onOpenChange={setAddSubDialogOpen}
           transactionId={transactionIdForSub}

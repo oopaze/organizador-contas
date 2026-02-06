@@ -8,6 +8,19 @@ import { Label } from '@/app/components/ui/label';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
+
+// Helper to find category key from either key or value
+const findCategoryKey = (category: string | undefined): string => {
+  if (!category) return 'none';
+  // First try to find by key
+  const byKey = TRANSACTION_CATEGORIES.find(c => c.key === category);
+  if (byKey) return byKey.key;
+  // Then try to find by value (display name)
+  const byValue = TRANSACTION_CATEGORIES.find(c => c.value === category);
+  if (byValue) return byValue.key;
+  return 'none';
+};
 
 interface EditSubTransactionDialogProps {
   open: boolean;
@@ -29,6 +42,7 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
   const [description, setDescription] = useState<string>(subTransaction?.description ?? '');
   const [amount, setAmount] = useState<string>(subTransaction?.amount ?? '');
   const [installmentInfo, setInstallmentInfo] = useState<string>(subTransaction?.installment_info ?? '');
+  const [category, setCategory] = useState<string>(findCategoryKey(subTransaction?.category));
   const [shouldDivideForActor, setShouldDivideForActor] = useState(false);
   const [actorAmount, setActorAmount] = useState<string>('');
   const [loadingActors, setLoadingActors] = useState(false);
@@ -78,6 +92,7 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
         user_provided_description: userProvidedDescription.trim() ?? undefined,
         amount: String(amount).trim() ?? undefined,
         installment_info: installmentInfo.trim() ?? undefined,
+        category: category || undefined,
         actor: selectedActorId ? parseInt(selectedActorId, 10) : undefined,
         should_divide_for_actor: shouldDivideForActor ?? undefined,
         actor_amount: shouldDivideForActor && actorAmount ? parseFloat(actorAmount) : undefined,
@@ -175,6 +190,26 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
                 onChange={(e) => setInstallmentInfo(e.target.value)}
                 placeholder="Ex: 1/12"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Select
+                value={category || 'none'}
+                onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  {TRANSACTION_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

@@ -16,6 +16,7 @@ class BillSubTransactionFactory:
                 amount=transaction["amount"],
                 installment_info=transaction.get("installment_info", "not installment"),
                 bill=bill,
+                category=transaction.get("category", bill.category),
             )
             for transaction in transactions
         ]
@@ -30,4 +31,5 @@ class BillSubTransactionFactory:
             created_at=model.created_at,
             updated_at=model.updated_at,
             bill=model.transaction,
+            category=model.category,
         )

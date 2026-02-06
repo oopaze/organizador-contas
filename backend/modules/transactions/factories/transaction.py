@@ -22,6 +22,7 @@ class TransactionFactory:
             file_id=model.file.id if model.file else None,
             paid_at=model.paid_at,
             subtransactions_paid=getattr(model, "subtransactions_paid", None),
+            category=model.category,
         )
     
     def build_from_serialized(self, serialized_transaction: dict) -> TransactionDomain:
@@ -40,6 +41,7 @@ class TransactionFactory:
             recurrence_count=serialized_transaction["recurrence_count"],
             paid_at=serialized_transaction["paid_at"],
             subtransactions_paid=serialized_transaction["subtransactions_paid"],
+            category=serialized_transaction["category"],
         )
     
     def build(self, data: dict) -> TransactionDomain:
@@ -54,4 +56,5 @@ class TransactionFactory:
             installment_number=data.get("installment_number", None),
             main_transaction=data.get("main_transaction", None),
             recurrence_count=data.get("recurrence_count", None),
+            category=data.get("category", None),
         )

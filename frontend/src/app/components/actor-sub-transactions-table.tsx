@@ -8,6 +8,7 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { MoreVertical, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { getCategoryClassName } from '@/lib/category-colors';
 
 interface ActorSubTransactionsTableProps {
   subTransactions?: SubTransaction[];
@@ -147,6 +148,7 @@ export const ActorSubTransactionsTable: React.FC<ActorSubTransactionsTableProps>
             <TableHead>Nome</TableHead>
             <TableHead>Fonte</TableHead>
             <TableHead>Descrição</TableHead>
+            <TableHead>Categoria</TableHead>
             <TableHead>Parcela</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Valor</TableHead>
@@ -170,6 +172,15 @@ export const ActorSubTransactionsTable: React.FC<ActorSubTransactionsTableProps>
                 </TableCell>
                 <TableCell className="text-sm max-w-[300px] truncate">
                   {subTransaction.user_provided_description || (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {subTransaction.category ? (
+                    <Badge variant="outline" className={`text-xs ${getCategoryClassName(subTransaction.category)}`}>
+                      {subTransaction.category}
+                    </Badge>
+                  ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
