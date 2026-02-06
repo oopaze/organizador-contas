@@ -1,5 +1,5 @@
 from decimal import Decimal
-from modules.base.constants import DOLAR_TO_BRL
+from modules.base.constants import MULTIPLIER
 from modules.ai.types import LlmModels
 
 
@@ -43,7 +43,7 @@ class AICallDomain:
         input_price = Decimal(str(model_info.input_cost_per_million_tokens)) * Decimal(str(self.input_used_tokens)) / Decimal('1000000')
         output_price = Decimal(str(model_info.output_cost_per_million_tokens)) * Decimal(str(self.output_used_tokens)) / Decimal('1000000')
         return {
-            "input": input_price * DOLAR_TO_BRL,
-            "output": output_price * DOLAR_TO_BRL,
-            "total": (input_price + output_price) * DOLAR_TO_BRL,
+            "input": input_price * MULTIPLIER,
+            "output": output_price * MULTIPLIER,
+            "total": (input_price + output_price) * MULTIPLIER,
         }
