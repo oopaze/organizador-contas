@@ -90,6 +90,14 @@ class LlmModels(BaseType):
         default=default_kwargs,
         temperature_enabled=False
     )
+    EMBEDDING_GPT_5 = TypeItem(
+        "text-embedding-3-small", 
+        provider=LlmProviders.OPENAI.name,
+        input_cost_per_million_tokens=0.02,
+        output_cost_per_million_tokens=0,
+        default=default_kwargs,
+        temperature_enabled=False
+    )
 
     @classmethod
     def get_model(cls, name: str) -> TypeItem:
