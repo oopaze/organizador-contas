@@ -229,9 +229,9 @@ export const AIInsightsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3 sm:flex-col">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           <Brain className="h-8 w-8 text-purple-600" />
-          <div>
+          <div className="text-center sm:text-left">
             <h1 className="text-2xl font-semibold">AI Insights</h1>
             <p className="text-muted-foreground">Estatísticas de uso de IA</p>
           </div>
@@ -249,7 +249,7 @@ export const AIInsightsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header with Filters */}
       <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 sm:flex-col">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           <Brain className="h-8 w-8 text-purple-600" />
           <div className="text-center sm:text-left">
             <h1 className="text-2xl font-semibold">AI Insights</h1>
