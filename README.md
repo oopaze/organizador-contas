@@ -1,125 +1,143 @@
-# Bills Manager
+# Poupix
 
-A full-stack application for managing bills and transactions with PDF parsing capabilities.
+A personal finance application with AI-powered bill parsing and transaction management.
+
+## Features
+
+- 📄 **File Upload & Parsing**: Upload PDF/Excel files and extract transactions using AI
+- 🤖 **AI-Powered Analysis**: Uses Google AI, OpenAI, or DeepSeek for intelligent data extraction
+- 💬 **AI Chat**: Chat with your financial data
+- 📊 **AI Insights**: Track AI usage, costs, and performance metrics
+- 💰 **Transaction Management**: Organize and categorize your transactions
+- ☁️ **Cloud Storage**: Files stored in Wasabi S3-compatible storage
 
 ## Tech Stack
 
 ### Backend
 - **Python 3.12+** with Django 6.0
 - **Django REST Framework** for API endpoints
-- **PostgreSQL 16** with **pgvector** extension
-- PDF parsing for bill extraction
+- **PostgreSQL 16** with **pgvector** extension for vector search
+- **Celery** with **Redis** for background task processing
+- **Wasabi S3** for file storage
 
 ### Frontend
-- **React 19** with TypeScript
+- **React 18** with TypeScript
 - **Vite** for build tooling
 - **Tailwind CSS 4** for styling
-- **Material UI** and **Radix UI** components
+- **Radix UI** and **shadcn/ui** components
+- **Recharts** for data visualization
 
 ## Project Structure
 
 ```
-bills-manager/
-├── backend/          # Django REST API
-│   ├── infra/        # Django settings and configuration
-│   ├── modules/      # Application modules
-│   │   ├── base/
-│   │   ├── pdf_reader/
-│   │   ├── transactions/
-│   │   └── userdata/
+poupix/
+├── backend/              # Django REST API
+│   ├── infra/            # Django settings and configuration
+│   ├── modules/          # Application modules
+│   │   ├── ai/           # AI integrations and chat
+│   │   ├── base/         # Base models and utilities
+│   │   ├── file_reader/  # File upload and parsing
+│   │   ├── transactions/ # Transaction management
+│   │   └── userdata/     # User authentication
 │   └── manage.py
-├── frontend/         # React + Vite application
+├── frontend/             # React + Vite application
 │   └── src/
-├── docker-compose.yml
+├── docs/                 # Documentation
+│   ├── SETUP.md          # Local development setup
+│   └── DEPLOY.md         # Production deployment guide
+├── docker-compose.api.yml
 ├── Dockerfile.backend
-└── Dockerfile.frontend
+└── Makefile
 ```
 
-## Getting Started
+## Documentation
+
+- **[Setup Guide](docs/SETUP.md)** - Local development setup instructions
+- **[Deploy Guide](docs/DEPLOY.md)** - Production deployment instructions
+
+## Quick Start
 
 ### Prerequisites
 - Python 3.12+
-- Node.js 20+
-- Yarn
+- Node.js 18+
+- Docker and Docker Compose
 
 ### Local Development
 
-#### Database (PostgreSQL with pgvector)
-
-Start only the database container for local development:
+1. **Start database and Redis:**
 ```bash
-make db_up
+docker compose -f docker-compose.api.yml up -d db redis
 ```
 
-This starts PostgreSQL on `localhost:5432` with:
-- Database: `bills_manager`
-- User: `postgres`
-- Password: `postgres`
-
-To enable the pgvector extension (run once):
-```bash
-make db_init_pgvector
-```
-
-Available database commands:
-| Command | Description |
-|---------|-------------|
-| `make db_up` | Start the PostgreSQL container |
-| `make db_down` | Stop the PostgreSQL container |
-| `make db_logs` | Follow database logs |
-| `make db_shell` | Open a psql shell to the database |
-| `make db_init_pgvector` | Enable the pgvector extension |
-
-#### Backend
+2. **Setup backend:**
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env  # Edit with your API keys
 python manage.py migrate
 python manage.py runserver
 ```
 
-#### Frontend
+3. **Setup frontend:**
 ```bash
 cd frontend
-yarn install
-yarn dev
+npm install
+npm run dev
 ```
+
+4. **Start Celery worker** (for background tasks):
+```bash
+cd backend
+celery -A infra worker --loglevel=info
+```
+
+See [docs/SETUP.md](docs/SETUP.md) for detailed instructions.
 
 ### Using Docker
 
-Build and run all services (db, backend, frontend):
 ```bash
-docker-compose up --build
+# Start all services
+docker compose -f docker-compose.api.yml up -d
+
+# View logs
+docker compose -f docker-compose.api.yml logs -f
 ```
 
-Run only specific services:
-```bash
-# Database only (for local development)
-docker-compose up -d db
+## Makefile Commands
 
-# Database + Backend
-docker-compose up -d db backend
+| Command | Description |
+|---------|-------------|
+| `make dev` | Run frontend and backend in dev mode |
+| `make api` | Build and start API with Docker |
+| `make api-logs` | View API logs |
+| `make db_up` | Start database container |
+| `make db_shell` | Open database shell |
+| `make migrate` | Run Django migrations |
 
-# Frontend only
-docker build -f Dockerfile.frontend -t bills-manager-frontend .
-docker run -p 3000:80 bills-manager-frontend
-```
-
-## API Endpoints
-
-The backend runs on `http://localhost:8000` by default.
+Run `make help` for all available commands.
 
 ## Environment Variables
 
-### Backend
-Create a `backend/infra/secrets.py` file for sensitive configuration.
+Copy `backend/.env.example` to `backend/.env` and configure:
 
-### Frontend
-Create a `.env` file in the frontend directory:
 ```env
-VITE_API_URL=http://localhost:8000
+# AI API Keys (at least one required)
+GOOGLE_AI_API_KEY=
+OPENAI_API_KEY=
+DEEPSEEK_API_KEY=
+
+# Database
+DATABASE_PASSWORD=
+
+# Django
+SECRET_KEY=
+DEBUG=1
+
+# Wasabi S3 (optional for local dev)
+WASABI_ACCESS_KEY=
+WASABI_SECRET_KEY=
 ```
 
 ## License
