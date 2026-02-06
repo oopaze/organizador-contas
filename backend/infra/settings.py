@@ -152,8 +152,9 @@ AWS_S3_ENDPOINT_URL = f"https://s3.{WASABI_REGION}.wasabisys.com"
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
-AWS_DEFAULT_ACL = "public-read"
-AWS_QUERYSTRING_AUTH = False  # Public URLs without query string auth
+AWS_DEFAULT_ACL = None  # Private by default
+AWS_QUERYSTRING_AUTH = True  # Generate pre-signed URLs with temporary access
+AWS_QUERYSTRING_EXPIRE = 3600  # URLs expire in 1 hour (3600 seconds)
 
 # Storage configuration
 if WASABI_ACCESS_KEY and WASABI_SECRET_KEY:
