@@ -66,22 +66,25 @@ class Command(BaseCommand):
 
                 file_name = file_field.name
 
-                # Check if file is already on S3 (URL starts with http)
-                if hasattr(file_field, "url") and file_field.url.startswith("http"):
-                    self.stdout.write(f"  [{file_obj.id}] {file_name} - already on S3, skipping")
-                    skipped += 1
-                    continue
+                # Build local file path - check multiple possible locations
+                local_path = None
+                possible_paths = [
+                    os.path.join(settings.BASE_DIR, file_name),
+                    os.path.join(settings.MEDIA_ROOT, file_name),
+                    os.path.join(settings.BASE_DIR, "media", file_name),
+                    os.path.join("/app", file_name),
+                    os.path.join("/app/media", file_name),
+                ]
 
-                # Build local file path
-                local_path = os.path.join(settings.BASE_DIR, file_name)
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        local_path = path
+                        break
 
-                if not os.path.exists(local_path):
-                    # Try with media root
-                    local_path = os.path.join(settings.MEDIA_ROOT, file_name)
-
-                if not os.path.exists(local_path):
+                if not local_path:
+                    # No local file found - either already migrated or missing
                     self.stdout.write(
-                        self.style.WARNING(f"  [{file_obj.id}] {file_name} - local file not found, skipping")
+                        self.style.WARNING(f"  [{file_obj.id}] {file_name} - no local file found (may already be on S3)")
                     )
                     skipped += 1
                     continue

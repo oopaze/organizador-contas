@@ -10,7 +10,6 @@ import { Bar, BarChart, XAxis, YAxis, Pie, PieChart, Cell } from 'recharts';
 import { Brain, Zap, DollarSign, AlertTriangle, Hash, Cpu, Download, FileText, MessageSquare, MessagesSquare, HelpCircle, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
 import {
   AICallsStats,
   EmbeddingsStats,
@@ -223,8 +222,7 @@ export const AIInsightsPage: React.FC = () => {
 
   const handleDownloadFile = (call: AICallItem) => {
     if (call.file_url) {
-      const fullUrl = `${API_BASE_URL}${call.file_url}`;
-      window.open(fullUrl, '_blank');
+      window.open(call.file_url, '_blank');
     }
   };
 
