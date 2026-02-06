@@ -28,6 +28,7 @@ class TransactionCategory(BaseType):
     TRANSPORT_PUBLIC = TypeItem("transport_public", value="Transporte - Transporte Público")
     TRANSPORT_APPS = TypeItem("transport_apps", value="Transporte - Aplicativos")
     TRANSPORT_MAINTENANCE = TypeItem("transport_maintenance", value="Transporte - Manutenção")
+    TRANSPORT_PARKING = TypeItem("transport_parking", value="Transporte - Estacionamento")
 
     # Saúde
     HEALTH = TypeItem("health", value="Saúde")
