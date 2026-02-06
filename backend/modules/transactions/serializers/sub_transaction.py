@@ -30,7 +30,7 @@ class SubTransactionSerializer:
             "updated_at": sub_transaction.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "user_provided_description": sub_transaction.user_provided_description,
             "paid_at": sub_transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if sub_transaction.paid_at else None,
-            "category": TransactionCategory.get_by_name(sub_transaction.category).value,
+            "category": getattr(TransactionCategory.get_by_name(sub_transaction.category), "value", None),
         }
 
     def serialize_many(self, sub_transactions: list["SubTransactionDomain"], include_actor: bool = True) -> list[dict]:
