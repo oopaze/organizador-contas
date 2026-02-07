@@ -47,7 +47,7 @@ const AI_MODELS = {
 
 type AIModelKey = keyof typeof AI_MODELS;
 
-const DEFAULT_MODEL: AIModelKey = 'deepseek-reasoner';
+const DEFAULT_MODEL: AIModelKey = 'deepseek-chat';
 
 const suggestedQuestions = [
   'Quanto gastei esse mês?',
