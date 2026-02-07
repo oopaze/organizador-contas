@@ -13,8 +13,6 @@ class AIResponseFactory:
         try:
             response = loads(content)
         except Exception as e:
-            import traceback
-            print(f"Error loading JSON: {e}\n{traceback.format_exc()}")
             response = content
             
         return AIResponseDomain(

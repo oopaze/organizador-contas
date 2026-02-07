@@ -66,4 +66,6 @@ class AskUseCase:
             return self.ai_response_factory.build_from_llm_response(llm_response, ai_request)
         except LLMGatewayException as e:
             logger.error(f"[AskUseCase.ask_ai] LLMGatewayException: {e}")
+            import traceback
+            logger.error(f"[AskUseCase.ask_ai] Traceback: {traceback.format_exc()}")
             return self.ai_request_factory.build_empty_response(ai_request)
