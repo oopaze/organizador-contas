@@ -12,7 +12,9 @@ class AIResponseFactory:
         content = ai_response.choices[0].message.content
         try:
             response = loads(content)
-        except Exception:
+        except Exception as e:
+            import traceback
+            print(f"Error loading JSON: {e}\n{traceback.format_exc()}")
             response = content
             
         return AIResponseDomain(
