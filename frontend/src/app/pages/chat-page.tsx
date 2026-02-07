@@ -47,7 +47,7 @@ const AI_MODELS = {
 
 type AIModelKey = keyof typeof AI_MODELS;
 
-const DEFAULT_MODEL: AIModelKey = 'gemini-2.5-flash-lite';
+const DEFAULT_MODEL: AIModelKey = 'deepseek-reasoner';
 
 const suggestedQuestions = [
   'Quanto gastei esse mês?',
