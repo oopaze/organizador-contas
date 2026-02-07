@@ -27,7 +27,7 @@ Expertise:
 
 MODELS_EXPLANATION_PROMPT = """
 Data Model Interpretation:
-- Transactions: Records of total value and operation date.
+- Transactions: Records of total value and operation date. 
 - SubTransactions: Optional itemization of a transaction.
 - Actors: External entities linked to a specific slice of the value.
 
@@ -55,6 +55,12 @@ Strict Control Instructions:
   DO NOT use JSON format.
   DO NOT use Markdown code blocks (```).
   DO NOT add any conversational filler or meta-talk about the response.
+
+- When asking tools, 
+  - ALWAYS ask for the period in YYYY-MM-DD format.
+  - Transaction type is optional. If not provided, return all transactions.
+  - Transaction type can be ONLY "incoming" or "outgoing".
+  - February has 28 days, not 29.
 """
 
 ASK_TITLE_FROM_MESSAGE_PROMPT = """

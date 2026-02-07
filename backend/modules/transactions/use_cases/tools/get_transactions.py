@@ -19,6 +19,7 @@ class GetTransactionsToolUseCase:
                     "transaction_type": {
                         "type": "string",
                         "description": "The transaction type",
+                        "enum": ["incoming", "outgoing"],
                     },
                     "due_date_start": {
                         "type": "string",
