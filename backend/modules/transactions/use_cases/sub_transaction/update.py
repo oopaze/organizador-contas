@@ -20,7 +20,11 @@ class UpdateSubTransactionUseCase:
 
         if data.get("should_divide_for_actor", False) and actor:
             sub_transaction = self.give_part_to_actor(sub_transaction, data, actor)
-            data.update({"actor": None, "actor_id": None, "amount": sub_transaction.amount})
+            data.update({
+                "amount": sub_transaction.amount, 
+                "actor": sub_transaction.actor, 
+                "actor_id": sub_transaction.actor_id
+            })
 
         sub_transaction.update(data)
         
@@ -40,7 +44,6 @@ class UpdateSubTransactionUseCase:
         )
 
         sub_transaction.update({
-            "actor_id": None,
             "amount": sub_transaction.amount - actor_sub_transaction.amount,
             "user_provided_description": current_user_provided_description,
         })
