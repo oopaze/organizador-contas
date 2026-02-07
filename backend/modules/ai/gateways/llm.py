@@ -48,5 +48,6 @@ class LLMGateway:
             function_args = json.loads(tool_call.function.arguments)
             ai_request.add_tool_output(tool_call, assistant_prompt, tool.execute(**function_args))
             tool_ai_request = self.ai_request_factory.build_for_tool_request(ai_request.prompt, ai_request)
+            logger.info(f"[LLMGateway] Tool call: {tool_call.function.name}, args: {function_args}")
             return self.ask(tool_ai_request)
         return completion
