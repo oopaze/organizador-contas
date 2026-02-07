@@ -131,10 +131,10 @@ class UploadFileUseCase:
         saved_file = self.file_repository.create(uploaded_file, user_id)
 
         if password:
-            file_path = self.remove_pdf_password_use_case.execute(saved_file, password)
+            self.remove_pdf_password_use_case.execute(saved_file, password)
 
-        file_path = saved_file.uploaded_file.path
-        pdf_text = saved_file.extract_text_from_pdf(file_path)
+        # Extract text from PDF - works with both local and S3 storage
+        pdf_text = saved_file.extract_text_from_pdf(password)
 
         prompt = [PROMPT, f"Here is the PDF content: name: {file.name}, text: {pdf_text}"]
         ai_call_id = self.ask_use_case.execute(prompt, user_id, response_format="json_object", model=model)

@@ -1,0 +1,2 @@
+# AI chat module tests
+

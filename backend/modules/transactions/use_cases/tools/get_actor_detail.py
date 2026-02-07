@@ -1,5 +1,9 @@
+import logging
+
 from modules.transactions.repositories import ActorRepository, SubTransactionRepository
 from modules.transactions.serializers import ActorSerializer, SubTransactionSerializer
+
+logging = logging.getLogger(__name__)
 
 SUB_TRANSACTIONS_FOR_TOOL_PROMPT = """
 {actor}
@@ -62,7 +66,7 @@ class GetActorDetailToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
-        print("GetActorDetailToolUseCase.execute", actor_id, due_date_start, due_date_end)
+        logging.info(f"GetActorDetailToolUseCase.execute {actor_id=}, {due_date_start=}, {due_date_end=}")
         actor = self.actor_repository.get(actor_id, self.user_id)
         filters = {
             "transaction__due_date__gte": due_date_start, 

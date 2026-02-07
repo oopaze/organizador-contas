@@ -1,7 +1,10 @@
+import logging
+
 from modules.transactions.serializers import SubTransactionSerializer
 from modules.transactions.factories import SubTransactionFactory
 from modules.transactions.repositories import SubTransactionRepository, TransactionRepository
 
+logging = logging.getLogger(__name__)
 
 class GetSubTransactionsFromTransactionToolUseCase:
     AI_CONFIG = {
@@ -46,7 +49,7 @@ class GetSubTransactionsFromTransactionToolUseCase:
         Args:
             transaction_id: The transaction id.
         """
-        print("GetSubTransactionsFromTransactionToolUseCase.execute", transaction_id)
+        logging.info(f"GetSubTransactionsFromTransactionToolUseCase.execute {transaction_id=}")
         transaction = self.transaction_repository.get(transaction_id, self.user_id)
         transaction.set_sub_transactions(
             self.sub_transaction_repository.get_all_by_transaction_id(transaction_id, self.user_id)

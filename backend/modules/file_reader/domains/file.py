@@ -68,13 +68,20 @@ class FileDomain:
         return self.url or self.uploaded_file
     
     def extract_text_from_pdf(self, password: str = None):
+        """
+        Extract text from PDF file.
+        Works with both local filesystem and S3 storage.
+        """
         if not self.is_saved():
             raise Exception("File is not saved")
 
-        with pdf_open(self.url, password=password) as pdf:
-            text = ""
-            for page in pdf.pages:
-                text += page.extract_text()
+        # Open the file - works with both local path and S3 file object
+        # The uploaded_file is a FieldFile that can be opened directly
+        with self.uploaded_file.open('rb') as file_obj:
+            with pdf_open(file_obj, password=password) as pdf:
+                text = ""
+                for page in pdf.pages:
+                    text += page.extract_text()
 
         self.raw_text = self._clean_text(text)
         self.raw_text = self._keep_financial_lines(self.raw_text)
@@ -124,33 +131,38 @@ class FileDomain:
         return result
 
     def extract_text_from_spreadsheet(self) -> str:
-        """Extract text from CSV or Excel files and return as formatted string.
+        """
+        Extract text from CSV or Excel files and return as formatted string.
         For Excel files, reads all sheets and combines them.
+        Works with both local filesystem and S3 storage.
         """
         if not self.is_saved():
             raise Exception("File is not saved")
 
-        file_path = self.url
-        file_extension = file_path.lower().split('.')[-1]
+        # Get file extension from the uploaded_file name
+        file_name = self.uploaded_file.name
+        file_extension = file_name.lower().split('.')[-1]
 
         try:
-            if file_extension == 'csv':
-                df = pd.read_csv(file_path)
-                self.raw_text = df.to_csv(index=False)
-            elif file_extension in ['xlsx', 'xls']:
-                # Read all sheets from Excel file
-                excel_file = pd.ExcelFile(file_path)
-                all_sheets_text = []
+            # Open file - works with both local and S3 storage
+            with self.uploaded_file.open('rb') as file_obj:
+                if file_extension == 'csv':
+                    df = pd.read_csv(file_obj)
+                    self.raw_text = df.to_csv(index=False)
+                elif file_extension in ['xlsx', 'xls']:
+                    # Read all sheets from Excel file
+                    excel_file = pd.ExcelFile(file_obj)
+                    all_sheets_text = []
 
-                for sheet_name in excel_file.sheet_names:
-                    df = pd.read_excel(excel_file, sheet_name=sheet_name)
-                    if not df.empty:
-                        sheet_text = f"=== Sheet: {sheet_name} ===\n{df.to_csv(index=False)}"
-                        all_sheets_text.append(sheet_text)
+                    for sheet_name in excel_file.sheet_names:
+                        df = pd.read_excel(excel_file, sheet_name=sheet_name)
+                        if not df.empty:
+                            sheet_text = f"=== Sheet: {sheet_name} ===\n{df.to_csv(index=False)}"
+                            all_sheets_text.append(sheet_text)
 
-                self.raw_text = "\n\n".join(all_sheets_text)
-            else:
-                raise Exception(f"Unsupported file format: {file_extension}")
+                    self.raw_text = "\n\n".join(all_sheets_text)
+                else:
+                    raise Exception(f"Unsupported file format: {file_extension}")
 
             return self.raw_text
         except Exception as e:

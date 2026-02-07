@@ -1,4 +1,8 @@
+import logging
+
 from modules.transactions.use_cases.transaction.stats import TransactionStatsUseCase
+
+logging = logging.getLogger(__name__)
 
 
 TRANSACTION_STATS_FOR_TOOL_PROMPT = """
@@ -53,6 +57,6 @@ class GetUserGeneralStatsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
-        print("GetUserGeneralStatsToolUseCase.execute", due_date_start, due_date_end)
+        logging.info(f"GetUserGeneralStatsToolUseCase.execute {due_date_start=}, {due_date_end=}")
         stats = self.transaction_stats_use_case.execute(self.user_id, due_date_start=due_date_start, due_date_end=due_date_end)
         return TRANSACTION_STATS_FOR_TOOL_PROMPT.format(**stats)

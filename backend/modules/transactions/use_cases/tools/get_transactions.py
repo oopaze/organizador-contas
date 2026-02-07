@@ -1,6 +1,10 @@
+import logging
+
 from modules.transactions.serializers import TransactionSerializer
 from modules.transactions.factories import TransactionFactory
 from modules.transactions.repositories import TransactionRepository
+
+logging = logging.getLogger(__name__)
 
 
 class GetTransactionsToolUseCase:
@@ -54,7 +58,7 @@ class GetTransactionsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
-        print("GetTransactionsToolUseCase.execute", transaction_type, due_date_start, due_date_end)
+        logging.info(f"GetTransactionsToolUseCase.execute {transaction_type=}, {due_date_start=}, {due_date_end=}")
         filters = {"user_id": self.user_id, "due_date__gte": due_date_start, "due_date__lte": due_date_end}
         if transaction_type:
             filters["transaction_type"] = transaction_type

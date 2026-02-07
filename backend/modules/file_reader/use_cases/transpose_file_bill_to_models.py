@@ -101,7 +101,7 @@ class TransposeFileBillToModelsUseCase:
 
         return result
 
-    def _execute_for_many(self, file: FileDomain, response: list, user_id: int):
+    def _execute_for_many(self, file: FileDomain, response: list, user_id: int, create_in_future_months: bool = False):
         if response and "despesas" in response[0]:
             logger.info(f"[Transpose] Detected monthly format, flattening {len(response)} months")
             response = self._flatten_monthly_response(response)

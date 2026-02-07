@@ -1,5 +1,9 @@
+import logging
+
 from modules.transactions.repositories import ActorRepository, SubTransactionRepository
 from modules.transactions.serializers import ActorSerializer
+
+logging = logging.getLogger(__name__)
 
 
 class GetActorsToolUseCase:
@@ -48,7 +52,7 @@ class GetActorsToolUseCase:
             due_date_start: The due date start in YYYY-MM-DD format.
             due_date_end: The due date end in YYYY-MM-DD format.
         """
-        print("GetActorsToolUseCase.execute", due_date_start, due_date_end)
+        logging.info(f"GetActorsToolUseCase.execute {due_date_start=}, {due_date_end=}")
         actors = self.actor_repository.get_all(self.user_id)
         filters = {
             "transaction__due_date__gte": due_date_start, 

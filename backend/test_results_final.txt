@@ -1,0 +1,495 @@
+DEBUG 2026-02-07 15:04:04,176 celery.utils.functional 
+def chord(self, header, body, partial_args=0, interval=1, countdown=2, max_retries=3, eager=4, **kwargs):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,177 celery.utils.functional 
+def chunks(task, it, n):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,177 celery.utils.functional 
+def unlock_chord(self, group_id, callback, interval=0, max_retries=1, result=2, Result=3, GroupResult=4, result_from_tuple=5, **kwargs):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def group(self, tasks, result, group_id, partial_args, add_to_parent=0):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def xmap(task, it):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def backend_cleanup():
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def process_sheet_upload(self, file_id, user_id, model=0, user_provided_description=1):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def chain(*args, **kwargs):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def xstarmap(task, it):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def accumulate(self, *args, **kwargs):
+    return 1
+
+DEBUG 2026-02-07 15:04:04,178 celery.utils.functional 
+def debug_task(self):
+    return 1
+
+Creating test database for alias 'default' ('test_bills_manager')...
+Found 154 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, staticfiles, storages
+  Apply all migrations: admin, ai, auth, chat, contenttypes, file_reader, sessions, transactions, userdata
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying userdata.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying ai.0001_initial... OK
+  Applying ai.0002_aicall_response_id... OK
+  Applying ai.0003_embeddingcall_aicall_model... OK
+  Applying ai.0004_aicall_is_error... OK
+  Applying ai.0005_aicall_user... OK
+  Applying chat.0001_initial... OK
+  Applying chat.0002_messageembedding... OK
+  Applying chat.0003_message_embedding_delete_messageembedding... OK
+  Applying chat.0004_conversation_deleted_at... OK
+  Applying chat.0005_message_user_message_alter_message_conversation... OK
+  Applying chat.0006_message_is_error... OK
+  Applying chat.0007_alter_conversation_ai_call_alter_message_ai_call... OK
+  Applying file_reader.0001_initial... OK
+  Applying file_reader.0002_remove_billsubtransaction_bill_delete_bill_and_more... OK
+  Applying file_reader.0003_alter_file_ai_call_delete_aicall... OK
+  Applying file_reader.0004_file_user... OK
+  Applying file_reader.0005_alter_file_ai_call... OK
+  Applying sessions.0001_initial... OK
+  Applying transactions.0001_initial... OK
+  Applying transactions.0002_transaction_is_salary_transaction_transaction_type... OK
+  Applying transactions.0003_actor_user_transaction_user... OK
+  Applying transactions.0004_transaction_is_recurrent... OK
+  Applying transactions.0005_transaction_installment_number_and_more... OK
+  Applying transactions.0006_subtransaction_user_provided_description... OK
+  Applying transactions.0007_alter_subtransaction_actor... OK
+  Applying transactions.0008_actor_deleted_at_subtransaction_deleted_at_and_more... OK
+  Applying transactions.0009_alter_subtransaction_installment_info_and_more... OK
+  Applying transactions.0010_alter_transaction_options_and_more... OK
+  Applying transactions.0011_subtransaction_paid_at_transaction_paid_at... OK
+  Applying transactions.0012_subtransaction_category_transaction_category... OK
+  Applying transactions.0013_remove_subtransaction_category_and_more... OK
+  Applying transactions.0014_subtransaction_category_transaction_category... OK
+  Applying userdata.0002_alter_user_is_active...test_execute_calls_ask_use_case_with_correct_prompt (modules.file_reader.tests.test_upload_file_use_case.TestUploadFileUseCase.test_execute_calls_ask_use_case_with_correct_prompt)
+Test that execute calls AI with the correct prompt format. ... ok
+test_execute_uploads_and_processes_file (modules.file_reader.tests.test_upload_file_use_case.TestUploadFileUseCase.test_execute_uploads_and_processes_file)
+Test that execute uploads a file and processes it with AI. ... ok
+test_execute_with_create_in_future_months (modules.file_reader.tests.test_upload_file_use_case.TestUploadFileUseCase.test_execute_with_create_in_future_months)
+Test that execute passes create_in_future_months flag to transpose use case. ... ok
+test_execute_with_password_removes_password_first (modules.file_reader.tests.test_upload_file_use_case.TestUploadFileUseCase.test_execute_with_password_removes_password_first)
+Test that execute removes password before processing if provided. ... ok
+test_execute_without_password_skips_password_removal (modules.file_reader.tests.test_upload_file_use_case.TestUploadFileUseCase.test_execute_without_password_skips_password_removal)
+Test that execute skips password removal when no password is provided. ... ok
+test_create_actor (modules.transactions.tests.test_create_actor_use_case.TestCreateActorUseCase.test_create_actor)
+Test creating an actor. ... ok
+test_create_actor_with_different_user (modules.transactions.tests.test_create_actor_use_case.TestCreateActorUseCase.test_create_actor_with_different_user)
+Test creating an actor for a different user. ... ok
+test_create_sub_transaction_with_actor (modules.transactions.tests.test_create_sub_transaction_use_case.TestCreateSubTransactionUseCase.test_create_sub_transaction_with_actor)
+Test creating a sub-transaction with an actor. ... ok
+test_create_sub_transaction_without_actor (modules.transactions.tests.test_create_sub_transaction_use_case.TestCreateSubTransactionUseCase.test_create_sub_transaction_without_actor)
+Test creating a sub-transaction without an actor. ... ok
+test_calculate_next_due_date (modules.transactions.tests.test_create_transaction_use_case.TestCreateTransactionUseCase.test_calculate_next_due_date)
+Test date calculation for recurrent transactions. ... ok
+test_create_non_recurrent_transaction (modules.transactions.tests.test_create_transaction_use_case.TestCreateTransactionUseCase.test_create_non_recurrent_transaction)
+Test creating a non-recurrent transaction. ... ok
+test_create_recurrent_transaction (modules.transactions.tests.test_create_transaction_use_case.TestCreateTransactionUseCase.test_create_recurrent_transaction)
+Test creating a recurrent transaction creates multiple installments. ... ok
+test_create_salary_transaction_no_sub_transaction (modules.transactions.tests.test_create_transaction_use_case.TestCreateTransactionUseCase.test_create_salary_transaction_no_sub_transaction)
+Test creating a salary transaction does not create sub-transaction. ... ok
+test_delete_actor (modules.transactions.tests.test_delete_actor_use_case.TestDeleteActorUseCase.test_delete_actor)
+Test deleting an actor. ... ok
+test_delete_actor_different_user (modules.transactions.tests.test_delete_actor_use_case.TestDeleteActorUseCase.test_delete_actor_different_user)
+Test deleting an actor for a different user. ... ok
+test_delete_sub_transaction (modules.transactions.tests.test_delete_sub_transaction_use_case.TestDeleteSubTransactionUseCase.test_delete_sub_transaction)
+Test deleting a sub-transaction. ... ok
+test_delete_sub_transaction_different_user (modules.transactions.tests.test_delete_sub_transaction_use_case.TestDeleteSubTransactionUseCase.test_delete_sub_transaction_different_user)
+Test deleting a sub-transaction for a different user. ... ok
+test_delete_recurrent_transaction_with_children (modules.transactions.tests.test_delete_transaction_use_case.TestDeleteTransactionUseCase.test_delete_recurrent_transaction_with_children)
+Test deleting a recurrent transaction deletes all children. ... ok
+test_delete_simple_transaction (modules.transactions.tests.test_delete_transaction_use_case.TestDeleteTransactionUseCase.test_delete_simple_transaction)
+Test deleting a simple non-recurrent transaction. ... ok
+test_delete_transaction_without_sub_transactions (modules.transactions.tests.test_delete_transaction_use_case.TestDeleteTransactionUseCase.test_delete_transaction_without_sub_transactions)
+Test deleting a transaction that has no sub-transactions. ... ok
+test_get_actor_serializes_without_actor_in_sub_transactions (modules.transactions.tests.test_get_actor_use_case.TestGetActorUseCase.test_get_actor_serializes_without_actor_in_sub_transactions)
+Test that sub-transactions are serialized with include_actor=False. ... ok
+test_get_actor_with_sub_transactions (modules.transactions.tests.test_get_actor_use_case.TestGetActorUseCase.test_get_actor_with_sub_transactions)
+Test getting an actor with sub-transactions. ... ok
+test_get_actor_without_due_date (modules.transactions.tests.test_get_actor_use_case.TestGetActorUseCase.test_get_actor_without_due_date)
+Test getting an actor without due date filter. ... ok
+test_get_actors_filters_actors_without_sub_transactions (modules.transactions.tests.test_get_actors_tool_use_case.TestGetActorsToolUseCase.test_get_actors_filters_actors_without_sub_transactions)
+Test that actors without sub-transactions in period are filtered out. ... INFO 2026-02-07 15:04:04,908 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_actors_groups_sub_transactions_by_actor (modules.transactions.tests.test_get_actors_tool_use_case.TestGetActorsToolUseCase.test_get_actors_groups_sub_transactions_by_actor)
+Test that sub-transactions are correctly grouped by actor. ... INFO 2026-02-07 15:04:04,910 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_actors_method_alias (modules.transactions.tests.test_get_actors_tool_use_case.TestGetActorsToolUseCase.test_get_actors_method_alias)
+Test that get_actors method works as an alias to execute. ... INFO 2026-02-07 15:04:04,912 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_actors_with_sub_transactions_in_period (modules.transactions.tests.test_get_actors_tool_use_case.TestGetActorsToolUseCase.test_get_actors_with_sub_transactions_in_period)
+Test getting actors with sub-transactions in a specific period. ... INFO 2026-02-07 15:04:04,913 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transaction_sets_sub_transactions_on_domain (modules.transactions.tests.test_get_transaction_use_case.TestGetTransactionUseCase.test_get_transaction_sets_sub_transactions_on_domain)
+Test that sub-transactions are set on the transaction domain object. ... ok
+test_get_transaction_with_sub_transactions (modules.transactions.tests.test_get_transaction_use_case.TestGetTransactionUseCase.test_get_transaction_with_sub_transactions)
+Test getting a transaction with its sub-transactions. ... ok
+test_get_transaction_without_sub_transactions (modules.transactions.tests.test_get_transaction_use_case.TestGetTransactionUseCase.test_get_transaction_without_sub_transactions)
+Test getting a transaction without sub-transactions. ... ok
+test_get_transactions_empty_result (modules.transactions.tests.test_get_transactions_tool_use_case.TestGetTransactionsToolUseCase.test_get_transactions_empty_result)
+Test getting transactions when no results are found. ... INFO 2026-02-07 15:04:04,931 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transactions_incoming_type (modules.transactions.tests.test_get_transactions_tool_use_case.TestGetTransactionsToolUseCase.test_get_transactions_incoming_type)
+Test getting incoming transactions. ... INFO 2026-02-07 15:04:04,932 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type='incoming', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transactions_method_alias (modules.transactions.tests.test_get_transactions_tool_use_case.TestGetTransactionsToolUseCase.test_get_transactions_method_alias)
+Test that get_transactions method works as an alias to execute. ... INFO 2026-02-07 15:04:04,934 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type='outgoing', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transactions_with_all_filters (modules.transactions.tests.test_get_transactions_tool_use_case.TestGetTransactionsToolUseCase.test_get_transactions_with_all_filters)
+Test getting transactions with all filters. ... INFO 2026-02-07 15:04:04,936 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type='outgoing', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transactions_without_transaction_type (modules.transactions.tests.test_get_transactions_tool_use_case.TestGetTransactionsToolUseCase.test_get_transactions_without_transaction_type)
+Test getting transactions without transaction type filter. ... INFO 2026-02-07 15:04:04,937 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_user_general_stats (modules.transactions.tests.test_get_user_general_stats_tool_use_case.TestGetUserGeneralStatsToolUseCase.test_get_user_general_stats)
+Test getting user general stats. ... INFO 2026-02-07 15:04:04,944 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_user_general_stats_different_period (modules.transactions.tests.test_get_user_general_stats_tool_use_case.TestGetUserGeneralStatsToolUseCase.test_get_user_general_stats_different_period)
+Test getting user general stats for a different period. ... INFO 2026-02-07 15:04:04,946 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-12-31'
+ok
+test_get_user_general_stats_method_alias (modules.transactions.tests.test_get_user_general_stats_tool_use_case.TestGetUserGeneralStatsToolUseCase.test_get_user_general_stats_method_alias)
+Test that get_user_general_stats method works as an alias to execute. ... INFO 2026-02-07 15:04:04,947 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_user_general_stats_with_negative_balance (modules.transactions.tests.test_get_user_general_stats_tool_use_case.TestGetUserGeneralStatsToolUseCase.test_get_user_general_stats_with_negative_balance)
+Test getting user general stats with negative balance. ... INFO 2026-02-07 15:04:04,948 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_user_general_stats_with_zero_values (modules.transactions.tests.test_get_user_general_stats_tool_use_case.TestGetUserGeneralStatsToolUseCase.test_get_user_general_stats_with_zero_values)
+Test getting user general stats with zero values. ... INFO 2026-02-07 15:04:04,950 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_list_actors_filters_actors_without_sub_transactions (modules.transactions.tests.test_list_actors_use_case.TestListActorsUseCase.test_list_actors_filters_actors_without_sub_transactions)
+Test that actors without sub-transactions in the period are not included. ... ok
+test_list_actors_with_sub_transactions (modules.transactions.tests.test_list_actors_use_case.TestListActorsUseCase.test_list_actors_with_sub_transactions)
+Test listing actors with their sub-transactions. ... ok
+test_list_actors_without_due_date (modules.transactions.tests.test_list_actors_use_case.TestListActorsUseCase.test_list_actors_without_due_date)
+Test listing actors without due date filter. ... ok
+test_separe_sub_transactions_by_actor (modules.transactions.tests.test_list_actors_use_case.TestListActorsUseCase.test_separe_sub_transactions_by_actor)
+Test separating sub-transactions by actor. ... ok
+test_list_all_transactions_no_filters (modules.transactions.tests.test_list_transaction_use_case.TestListTransactionsUseCase.test_list_all_transactions_no_filters)
+Test listing all transactions without filters. ... ok
+test_list_transactions_empty_result (modules.transactions.tests.test_list_transaction_use_case.TestListTransactionsUseCase.test_list_transactions_empty_result)
+Test listing transactions when no results are found. ... ok
+test_list_transactions_with_date_filter (modules.transactions.tests.test_list_transaction_use_case.TestListTransactionsUseCase.test_list_transactions_with_date_filter)
+Test listing transactions filtered by due date. ... ok
+test_list_transactions_with_multiple_filters (modules.transactions.tests.test_list_transaction_use_case.TestListTransactionsUseCase.test_list_transactions_with_multiple_filters)
+Test listing transactions with multiple filters. ... ok
+test_list_transactions_with_type_filter (modules.transactions.tests.test_list_transaction_use_case.TestListTransactionsUseCase.test_list_transactions_with_type_filter)
+Test listing transactions filtered by type. ... ok
+test_pay_sub_transaction (modules.transactions.tests.test_pay_sub_transaction_use_case.TestPaySubTransactionUseCase.test_pay_sub_transaction)
+Test paying a sub-transaction. ... ok
+test_pay_sub_transaction_different_user (modules.transactions.tests.test_pay_sub_transaction_use_case.TestPaySubTransactionUseCase.test_pay_sub_transaction_different_user)
+Test paying a sub-transaction for a different user. ... ok
+test_unpay_sub_transaction (modules.transactions.tests.test_pay_sub_transaction_use_case.TestPaySubTransactionUseCase.test_unpay_sub_transaction)
+Test unpaying a sub-transaction. ... ok
+test_pay_transaction_marks_as_paid (modules.transactions.tests.test_pay_transaction_use_case.TestPayTransactionUseCase.test_pay_transaction_marks_as_paid)
+Test paying a transaction marks it as paid. ... ok
+test_pay_transaction_with_sub_transactions (modules.transactions.tests.test_pay_transaction_use_case.TestPayTransactionUseCase.test_pay_transaction_with_sub_transactions)
+Test paying a transaction also pays all sub-transactions. ... ok
+test_pay_transaction_without_updating_sub_transactions (modules.transactions.tests.test_pay_transaction_use_case.TestPayTransactionUseCase.test_pay_transaction_without_updating_sub_transactions)
+Test paying a transaction without updating sub-transactions. ... ok
+test_unpay_transaction_marks_as_unpaid (modules.transactions.tests.test_pay_transaction_use_case.TestPayTransactionUseCase.test_unpay_transaction_marks_as_unpaid)
+Test unpaying a transaction marks it as unpaid. ... ok
+test_unpay_transaction_with_sub_transactions (modules.transactions.tests.test_pay_transaction_use_case.TestPayTransactionUseCase.test_unpay_transaction_with_sub_transactions)
+Test unpaying a transaction also unpays all sub-transactions. ... ok
+test_update_actor (modules.transactions.tests.test_update_actor_use_case.TestUpdateActorUseCase.test_update_actor)
+Test updating an actor's name. ... ok
+test_update_actor_different_user (modules.transactions.tests.test_update_actor_use_case.TestUpdateActorUseCase.test_update_actor_different_user)
+Test updating an actor for a different user. ... ok
+test_give_part_to_actor (modules.transactions.tests.test_update_sub_transaction_use_case.TestUpdateSubTransactionUseCase.test_give_part_to_actor)
+Test the give_part_to_actor method. ... ok
+test_update_sub_transaction_divide_for_actor (modules.transactions.tests.test_update_sub_transaction_use_case.TestUpdateSubTransactionUseCase.test_update_sub_transaction_divide_for_actor)
+Test updating a sub-transaction and dividing amount for actor. ... ok
+test_update_sub_transaction_simple (modules.transactions.tests.test_update_sub_transaction_use_case.TestUpdateSubTransactionUseCase.test_update_sub_transaction_simple)
+Test updating a sub-transaction without dividing for actor. ... ok
+test_update_sub_transaction_with_actor (modules.transactions.tests.test_update_sub_transaction_use_case.TestUpdateSubTransactionUseCase.test_update_sub_transaction_with_actor)
+Test updating a sub-transaction with an actor. ... ok
+test_calculate_next_due_date (modules.transactions.tests.test_update_transaction_use_case.TestUpdateTransactionUseCase.test_calculate_next_due_date)
+Test date calculation for updating recurrent transactions. ... ok
+test_update_recurrent_transaction_with_children (modules.transactions.tests.test_update_transaction_use_case.TestUpdateTransactionUseCase.test_update_recurrent_transaction_with_children)
+Test updating a recurrent transaction updates all children. ... ok
+test_update_simple_transaction (modules.transactions.tests.test_update_transaction_use_case.TestUpdateTransactionUseCase.test_update_simple_transaction)
+Test updating a simple non-recurrent transaction. ... ok
+test_update_transaction_with_single_sub_transaction (modules.transactions.tests.test_update_transaction_use_case.TestUpdateTransactionUseCase.test_update_transaction_with_single_sub_transaction)
+Test updating a transaction that has a single sub-transaction. ... ok
+test_get_actor_detail_empty_period (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetActorDetailToolIntegration.test_get_actor_detail_empty_period)
+Test getting actor detail when period has no data. ... INFO 2026-02-07 15:04:05,183 modules.transactions.use_cases.tools.get_actor_detail GetActorDetailToolUseCase.execute actor_id='1', due_date_start='2026-04-01', due_date_end='2026-04-30'
+ok
+test_get_actor_detail_with_sub_transactions (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetActorDetailToolIntegration.test_get_actor_detail_with_sub_transactions)
+Test getting actor detail with sub-transactions. ... INFO 2026-02-07 15:04:05,319 modules.transactions.use_cases.tools.get_actor_detail GetActorDetailToolUseCase.execute actor_id='2', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_actors_empty_period (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetActorsToolIntegration.test_get_actors_empty_period)
+Test getting actors when period has no data. ... INFO 2026-02-07 15:04:05,465 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-04-01', due_date_end='2026-04-30'
+ok
+test_get_actors_with_sub_transactions (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetActorsToolIntegration.test_get_actors_with_sub_transactions)
+Test getting actors with their sub-transactions in a period. ... INFO 2026-02-07 15:04:05,598 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_sub_transactions_from_transaction (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetSubTransactionsFromTransactionToolIntegration.test_get_sub_transactions_from_transaction)
+Test getting sub-transactions from a transaction. ... INFO 2026-02-07 15:04:05,745 modules.transactions.use_cases.tools.get_sub_transactions_from_transaction GetSubTransactionsFromTransactionToolUseCase.execute transaction_id=7
+ok
+test_get_all_transactions_in_period (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetTransactionsToolIntegration.test_get_all_transactions_in_period)
+Test getting all transactions in a specific period. ... INFO 2026-02-07 15:04:05,905 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_incoming_transactions_only (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetTransactionsToolIntegration.test_get_incoming_transactions_only)
+Test filtering by incoming transaction type. ... INFO 2026-02-07 15:04:06,078 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type='incoming', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_outgoing_transactions_only (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetTransactionsToolIntegration.test_get_outgoing_transactions_only)
+Test filtering by outgoing transaction type. ... INFO 2026-02-07 15:04:06,219 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type='outgoing', due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_get_transactions_empty_period (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetTransactionsToolIntegration.test_get_transactions_empty_period)
+Test getting transactions when period has no data. ... INFO 2026-02-07 15:04:06,351 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-04-01', due_date_end='2026-04-30'
+ok
+test_get_user_general_stats (modules.transactions.use_cases.tools.tests.test_tools_integration.TestGetUserGeneralStatsToolIntegration.test_get_user_general_stats)
+Test getting user general stats. ... INFO 2026-02-07 15:04:06,504 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-03-01', due_date_end='2026-03-31'
+ok
+test_execute_returns_serialized_conversations (modules.ai.chat.tests.test_list_conversations_use_case.TestListConversationsUseCase.test_execute_returns_serialized_conversations)
+Test that execute returns a list of serialized conversations. ... ok
+test_execute_serializes_all_conversations (modules.ai.chat.tests.test_list_conversations_use_case.TestListConversationsUseCase.test_execute_serializes_all_conversations)
+Test that execute serializes all conversations from repository. ... ok
+test_execute_with_empty_results (modules.ai.chat.tests.test_list_conversations_use_case.TestListConversationsUseCase.test_execute_with_empty_results)
+Test that execute handles empty conversation list. ... ok
+test_execute_passes_correct_parameters (modules.ai.chat.tests.test_list_messages_use_case.TestListMessagesUseCase.test_execute_passes_correct_parameters)
+Test that execute passes correct parameters to repository. ... ok
+test_execute_returns_serialized_messages (modules.ai.chat.tests.test_list_messages_use_case.TestListMessagesUseCase.test_execute_returns_serialized_messages)
+Test that execute returns a list of serialized messages. ... ok
+test_execute_serializes_all_messages (modules.ai.chat.tests.test_list_messages_use_case.TestListMessagesUseCase.test_execute_serializes_all_messages)
+Test that execute serializes all messages from repository. ... ok
+test_execute_with_empty_results (modules.ai.chat.tests.test_list_messages_use_case.TestListMessagesUseCase.test_execute_with_empty_results)
+Test that execute handles empty message list. ... ok
+test_execute_includes_conversation_history (modules.ai.chat.tests.test_send_conversion_message_use_case.TestSendConversionMessageUseCase.test_execute_includes_conversation_history)
+Test that execute includes conversation history in AI request. ... ok
+test_execute_sends_message_and_gets_ai_response (modules.ai.chat.tests.test_send_conversion_message_use_case.TestSendConversionMessageUseCase.test_execute_sends_message_and_gets_ai_response)
+Test that execute sends a message and gets AI response. ... ok
+test_execute_uses_contextualized_messages_with_embedding (modules.ai.chat.tests.test_send_conversion_message_use_case.TestSendConversionMessageUseCase.test_execute_uses_contextualized_messages_with_embedding)
+Test that execute uses contextualized messages when embedding is available. ... ok
+test_execute_with_custom_model (modules.ai.chat.tests.test_send_conversion_message_use_case.TestSendConversionMessageUseCase.test_execute_with_custom_model)
+Test that execute uses custom model when provided. ... ok
+test_execute_creates_conversation_and_messages (modules.ai.chat.tests.test_start_conversion_use_case.TestStartConversionUseCase.test_execute_creates_conversation_and_messages)
+Test that execute creates a conversation and exchanges messages. ... ok
+test_execute_creates_embeddings_when_needed (modules.ai.chat.tests.test_start_conversion_use_case.TestStartConversionUseCase.test_execute_creates_embeddings_when_needed)
+Test that execute creates embeddings for messages when needed. ... ok
+test_execute_raises_error_without_user_id (modules.ai.chat.tests.test_start_conversion_use_case.TestStartConversionUseCase.test_execute_raises_error_without_user_id)
+Test that execute raises ValueError when user_id is missing. ... ok
+test_execute_with_custom_model (modules.ai.chat.tests.test_start_conversion_use_case.TestStartConversionUseCase.test_execute_with_custom_model)
+Test that execute uses custom model when provided. ... ok
+test_ask_ai_handles_llm_gateway_exception (modules.ai.tests.test_ask_use_case.TestAskUseCase.test_ask_ai_handles_llm_gateway_exception)
+Test that ask_ai handles LLMGatewayException and returns empty response. ... INFO 2026-02-07 15:04:06,529 modules.ai.use_cases.ask [AskUseCase.ask_ai] Calling LLM service...
+ERROR 2026-02-07 15:04:06,529 modules.ai.use_cases.ask [AskUseCase.ask_ai] LLMGatewayException: API Error
+ok
+test_ask_ai_returns_response_on_success (modules.ai.tests.test_ask_use_case.TestAskUseCase.test_ask_ai_returns_response_on_success)
+Test that ask_ai returns AI response on successful LLM call. ... INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase.ask_ai] Calling LLM service...
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase.ask_ai] LLM service returned successfully
+ok
+test_execute_creates_ai_request_and_calls_llm (modules.ai.tests.test_ask_use_case.TestAskUseCase.test_execute_creates_ai_request_and_calls_llm)
+Test that execute creates an AI request and calls the LLM service. ... INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase] Starting execute with model: test-model, user_id: 1
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase] Prompt length: 1 parts, response_format: None
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase] AI request built, calling LLM...
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase.ask_ai] Calling LLM service...
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase.ask_ai] LLM service returned successfully
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase] LLM response received, saving to repository...
+INFO 2026-02-07 15:04:06,530 modules.ai.use_cases.ask [AskUseCase] Response saved with id: response_123
+ok
+test_execute_with_all_parameters (modules.ai.tests.test_ask_use_case.TestAskUseCase.test_execute_with_all_parameters)
+Test that execute handles all optional parameters correctly. ... INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase] Starting execute with model: test-model, user_id: 1
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase] Prompt length: 1 parts, response_format: json_object
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase] AI request built, calling LLM...
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase.ask_ai] Calling LLM service...
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase.ask_ai] LLM service returned successfully
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase] LLM response received, saving to repository...
+INFO 2026-02-07 15:04:06,531 modules.ai.use_cases.ask [AskUseCase] Response saved with id: response_123
+ok
+test_execute_calls_dependencies_in_correct_order (modules.ai.tests.test_create_embedding_use_case.TestCreateEmbeddingUseCase.test_execute_calls_dependencies_in_correct_order)
+Test that execute calls dependencies in the correct order. ... ok
+test_execute_creates_embedding (modules.ai.tests.test_create_embedding_use_case.TestCreateEmbeddingUseCase.test_execute_creates_embedding)
+Test that execute creates an embedding from text. ... ok
+test_execute_returns_embedding_id (modules.ai.tests.test_create_embedding_use_case.TestCreateEmbeddingUseCase.test_execute_returns_embedding_id)
+Test that execute returns the embedding ID. ... ok
+test_execute_with_default_model (modules.ai.tests.test_create_embedding_use_case.TestCreateEmbeddingUseCase.test_execute_with_default_model)
+Test that execute uses default model when not specified. ... ok
+test_execute_returns_serialized_ai_calls (modules.ai.tests.test_list_ai_calls_use_case.TestListAICallsUseCase.test_execute_returns_serialized_ai_calls)
+Test that execute returns a list of serialized AI calls. ... ok
+test_execute_with_all_filters (modules.ai.tests.test_list_ai_calls_use_case.TestListAICallsUseCase.test_execute_with_all_filters)
+Test that execute handles all filters together. ... ok
+test_execute_with_date_range (modules.ai.tests.test_list_ai_calls_use_case.TestListAICallsUseCase.test_execute_with_date_range)
+Test that execute filters AI calls by date range. ... ok
+test_execute_with_empty_results (modules.ai.tests.test_list_ai_calls_use_case.TestListAICallsUseCase.test_execute_with_empty_results)
+Test that execute handles empty AI call list. ... ok
+test_execute_with_filter_by_model (modules.ai.tests.test_list_ai_calls_use_case.TestListAICallsUseCase.test_execute_with_filter_by_model)
+Test that execute filters AI calls by model. ... ok
+test_execute_returns_serialized_embeddings (modules.ai.tests.test_list_embeddings_use_case.TestListEmbeddingsUseCase.test_execute_returns_serialized_embeddings)
+Test that execute returns a list of serialized embeddings. ... ok
+test_execute_serializes_all_embeddings (modules.ai.tests.test_list_embeddings_use_case.TestListEmbeddingsUseCase.test_execute_serializes_all_embeddings)
+Test that execute serializes all embeddings from repository. ... ok
+test_execute_with_date_range (modules.ai.tests.test_list_embeddings_use_case.TestListEmbeddingsUseCase.test_execute_with_date_range)
+Test that execute filters embeddings by date range. ... ok
+test_execute_with_empty_results (modules.ai.tests.test_list_embeddings_use_case.TestListEmbeddingsUseCase.test_execute_with_empty_results)
+Test that execute handles empty embedding list. ... ok
+test_execute_without_date_filters (modules.ai.tests.test_list_embeddings_use_case.TestListEmbeddingsUseCase.test_execute_without_date_filters)
+Test that execute works without date filters. ... ok
+test_calculate_stats_with_empty_list (modules.ai.tests.test_stats_ai_call_use_case.TestStatsAICallUseCase.test_calculate_stats_with_empty_list)
+Test that calculate_stats handles empty AI call list. ... ok
+test_execute_calculates_stats_for_ai_calls (modules.ai.tests.test_stats_ai_call_use_case.TestStatsAICallUseCase.test_execute_calculates_stats_for_ai_calls)
+Test that execute calculates statistics for AI calls. ... ok
+test_execute_counts_errors (modules.ai.tests.test_stats_ai_call_use_case.TestStatsAICallUseCase.test_execute_counts_errors)
+Test that execute correctly counts errors. ... ok
+test_execute_groups_stats_by_model (modules.ai.tests.test_stats_ai_call_use_case.TestStatsAICallUseCase.test_execute_groups_stats_by_model)
+Test that execute groups statistics by model. ... ok
+test_execute_with_filters (modules.ai.tests.test_stats_ai_call_use_case.TestStatsAICallUseCase.test_execute_with_filters)
+Test that execute passes filters to repository. ... ok
+test_calculate_stats_accumulates_prices (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_calculate_stats_accumulates_prices)
+Test that calculate_stats correctly accumulates prices. ... ok
+test_calculate_stats_with_empty_list (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_calculate_stats_with_empty_list)
+Test that calculate_stats handles empty embedding list. ... ok
+test_execute_calculates_stats_for_embeddings (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_execute_calculates_stats_for_embeddings)
+Test that execute calculates statistics for embeddings. ... ok
+test_execute_groups_stats_by_model (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_execute_groups_stats_by_model)
+Test that execute groups statistics by model. ... ok
+test_execute_with_filters (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_execute_with_filters)
+Test that execute passes filters to repository. ... ok
+test_execute_with_multiple_models (modules.ai.tests.test_stats_embeddings_use_case.TestStatsEmbeddingsUseCase.test_execute_with_multiple_models)
+Test that execute handles multiple different models. ... ok
+test_execute_calls_serializer_without_transactions (modules.file_reader.tests.test_list_bills_use_case.TestListBillsUseCase.test_execute_calls_serializer_without_transactions)
+Test that serializer is called with include_transactions=False. ... ok
+test_execute_returns_serialized_bills (modules.file_reader.tests.test_list_bills_use_case.TestListBillsUseCase.test_execute_returns_serialized_bills)
+Test that execute returns a list of serialized bills. ... ok
+test_execute_with_empty_bills (modules.file_reader.tests.test_list_bills_use_case.TestListBillsUseCase.test_execute_with_empty_bills)
+Test that execute handles empty bill list. ... ok
+test_execute_loads_bill_with_transactions (modules.file_reader.tests.test_load_bills_with_transactions_use_case.TestLoadBillsWithTransactionsUseCase.test_execute_loads_bill_with_transactions)
+Test that execute loads a bill and its sub-transactions. ... ok
+test_execute_sets_transactions_before_serializing (modules.file_reader.tests.test_load_bills_with_transactions_use_case.TestLoadBillsWithTransactionsUseCase.test_execute_sets_transactions_before_serializing)
+Test that sub-transactions are set on the bill before serialization. ... ok
+test_execute_with_no_transactions (modules.file_reader.tests.test_load_bills_with_transactions_use_case.TestLoadBillsWithTransactionsUseCase.test_execute_with_no_transactions)
+Test that execute handles bills with no sub-transactions. ... ok
+test_execute_copies_all_pages (modules.file_reader.tests.test_remove_pdf_password_use_case.TestRemovePDFPasswordUseCase.test_execute_copies_all_pages)
+Test that execute copies all pages from the original PDF. ... ok
+test_execute_raises_exception_on_invalid_password (modules.file_reader.tests.test_remove_pdf_password_use_case.TestRemovePDFPasswordUseCase.test_execute_raises_exception_on_invalid_password)
+Test that execute raises exception when password is invalid. ... ok
+test_execute_removes_password_from_encrypted_pdf (modules.file_reader.tests.test_remove_pdf_password_use_case.TestRemovePDFPasswordUseCase.test_execute_removes_password_from_encrypted_pdf)
+Test that execute removes password from an encrypted PDF. ... ok
+test_execute_skips_non_encrypted_pdf (modules.file_reader.tests.test_remove_pdf_password_use_case.TestRemovePDFPasswordUseCase.test_execute_skips_non_encrypted_pdf)
+Test that execute skips non-encrypted PDFs. ... ok
+test_execute_for_bill_with_sub_transactions (modules.file_reader.tests.test_transpose_file_bill_to_models_use_case.TestTransposeFileBillToModelsUseCase.test_execute_for_bill_with_sub_transactions)
+Test that execute processes bill with sub-transactions. ... ok
+test_execute_for_multiple_bills (modules.file_reader.tests.test_transpose_file_bill_to_models_use_case.TestTransposeFileBillToModelsUseCase.test_execute_for_multiple_bills)
+Test that execute processes multiple bills from a list response. ... ok
+test_execute_for_single_bill (modules.file_reader.tests.test_transpose_file_bill_to_models_use_case.TestTransposeFileBillToModelsUseCase.test_execute_for_single_bill)
+Test that execute processes a single bill correctly. ... ok
+test_execute_with_create_in_future_months_false (modules.file_reader.tests.test_transpose_file_bill_to_models_use_case.TestTransposeFileBillToModelsUseCase.test_execute_with_create_in_future_months_false)
+Test that execute does not create future transactions when flag is False. ... ok
+test_execute_returns_serialized_file (modules.file_reader.tests.test_upload_sheet_use_case.TestUploadSheetUseCase.test_execute_returns_serialized_file)
+Test that execute returns the serialized file. ... INFO 2026-02-07 15:04:06,544 modules.file_reader.use_cases.upload_sheet [UploadSheet] Starting upload for user 1, file: test.xlsx, model: deepseek-chat
+INFO 2026-02-07 15:04:06,544 modules.file_reader.use_cases.upload_sheet [UploadSheet] File saved with id: 123
+INFO 2026-02-07 15:04:06,544 modules.file_reader.use_cases.upload_sheet [UploadSheet] Queuing processing task for file: 123
+INFO 2026-02-07 15:04:06,544 modules.file_reader.use_cases.upload_sheet [UploadSheet] Task queued successfully
+ok
+test_execute_saves_file_before_queuing_task (modules.file_reader.tests.test_upload_sheet_use_case.TestUploadSheetUseCase.test_execute_saves_file_before_queuing_task)
+Test that file is saved before queuing the processing task. ... INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Starting upload for user 1, file: test.xlsx, model: deepseek-chat
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] File saved with id: 123
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Queuing processing task for file: 123
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Task queued successfully
+ok
+test_execute_uploads_file_and_queues_task (modules.file_reader.tests.test_upload_sheet_use_case.TestUploadSheetUseCase.test_execute_uploads_file_and_queues_task)
+Test that execute uploads file and queues processing task. ... INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Starting upload for user 1, file: test.xlsx, model: deepseek-chat
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] File saved with id: 123
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Queuing processing task for file: 123
+INFO 2026-02-07 15:04:06,545 modules.file_reader.use_cases.upload_sheet [UploadSheet] Task queued successfully
+ok
+test_execute_with_custom_model (modules.file_reader.tests.test_upload_sheet_use_case.TestUploadSheetUseCase.test_execute_with_custom_model)
+Test that execute passes custom model to processing task. ... INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Starting upload for user 1, file: test.xlsx, model: custom-model
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] File saved with id: 123
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Queuing processing task for file: 123
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Task queued successfully
+ok
+test_execute_with_user_description (modules.file_reader.tests.test_upload_sheet_use_case.TestUploadSheetUseCase.test_execute_with_user_description)
+Test that execute passes user description to processing task. ... INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Starting upload for user 1, file: test.xlsx, model: deepseek-chat
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] File saved with id: 123
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Queuing processing task for file: 123
+INFO 2026-02-07 15:04:06,546 modules.file_reader.use_cases.upload_sheet [UploadSheet] Task queued successfully
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorDetailToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,546 modules.transactions.use_cases.tools.get_actor_detail GetActorDetailToolUseCase.execute actor_id='1', due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorDetailToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,547 modules.transactions.use_cases.tools.get_actor_detail GetActorDetailToolUseCase.execute actor_id='1', due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorStatsToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,547 modules.transactions.use_cases.tools.get_actor_stats GetActorStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorStatsToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,547 modules.transactions.use_cases.tools.get_actor_stats GetActorStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorsToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,547 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetActorsToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,547 modules.transactions.use_cases.tools.get_actors GetActorsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetSubTransactionsFromTransactionToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_sub_transactions_from_transaction GetSubTransactionsFromTransactionToolUseCase.execute transaction_id=1
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetSubTransactionsFromTransactionToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_sub_transactions_from_transaction GetSubTransactionsFromTransactionToolUseCase.execute transaction_id=1
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetTransactionsToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_does_not_return_list (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetTransactionsToolReturnsString.test_execute_does_not_return_list)
+Verify execute() does not return a list. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetTransactionsToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_transactions GetTransactionsToolUseCase.execute transaction_type=None, due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_does_not_return_dict (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetUserGeneralStatsToolReturnsString.test_execute_does_not_return_dict)
+Verify execute() does not return a dict. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_execute_returns_string (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetUserGeneralStatsToolReturnsString.test_execute_returns_string)
+Verify execute() returns a string type. ... INFO 2026-02-07 15:04:06,548 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+test_result_is_not_valid_json_object (modules.transactions.use_cases.tools.tests.test_tools_return_string.TestGetUserGeneralStatsToolReturnsString.test_result_is_not_valid_json_object)
+Verify the result is not a JSON object that could be parsed as dict. ... INFO 2026-02-07 15:04:06,549 modules.transactions.use_cases.tools.get_user_general_stats GetUserGeneralStatsToolUseCase.execute due_date_start='2026-01-01', due_date_end='2026-01-31'
+ok
+
+----------------------------------------------------------------------
+Ran 154 tests in 1.740s
+
+OK
+Destroying test database for alias 'default' ('test_bills_manager')...
+ OK
+System check identified no issues (0 silenced).
