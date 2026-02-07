@@ -17,7 +17,8 @@ class ActorViewSet(viewsets.ViewSet):
 
     def list(self, request):
         due_date = request.query_params.get("due_date")
-        actors = self.container.list_actors_use_case().execute(request.user.id, due_date)
+        without_sub_transactions = request.query_params.get("without_sub_transactions", False)
+        actors = self.container.list_actors_use_case().execute(request.user.id, due_date, without_sub_transactions)
         return Response(actors, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk: str):

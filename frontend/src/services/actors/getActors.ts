@@ -4,6 +4,7 @@ import { mockActors, mockSubTransactions, delay } from '../mockData';
 
 export interface ActorFilters {
   due_date?: string; // Format: YYYY-MM-DD
+  without_sub_transactions?: boolean;
 }
 
 async function getActorsMock(filters?: ActorFilters): Promise<Actor[]> {

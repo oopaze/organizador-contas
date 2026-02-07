@@ -55,9 +55,8 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
   const fetchActors = async () => {
     setLoadingActors(true);
     try {
-      const actorsList = await getActors();
+      const actorsList = await getActors({ without_sub_transactions: true });
       setActors(actorsList);
-      console.log({selectedActorId, subTransaction });
     } catch (error) {
       toast.error('Falha ao carregar atores');
       console.error('Error fetching actors:', error);

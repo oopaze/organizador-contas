@@ -15,6 +15,9 @@ class UpdateSubTransactionUseCase:
         self.actor_repository = actor_repository
 
     def execute(self, id: int, data: dict, user_id: int) -> dict:
+        if isinstance(data.get("actor"), int):
+            data["actor_id"] = data.get("actor")
+        
         sub_transaction = self.sub_transaction_repository.get(id, user_id)
         actor = self.actor_repository.get(data["actor"], user_id) if data.get("actor") else None
 
@@ -23,8 +26,7 @@ class UpdateSubTransactionUseCase:
             data.update({
                 "amount": sub_transaction.amount, 
                 "actor": sub_transaction.actor, 
-                "actor_id": sub_transaction.actor_id
-            })
+                "actor_id": sub_transaction.actor.id if sub_transaction.actor else None,})
 
         sub_transaction.update(data)
         

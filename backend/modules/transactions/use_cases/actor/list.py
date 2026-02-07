@@ -18,8 +18,11 @@ class ListActorsUseCase:
         self.sub_transaction_repository = sub_transaction_repository
         self.sub_transaction_serializer = sub_transaction_serializer
 
-    def execute(self, user_id: int, due_date: str = None) -> list[dict]:
+    def execute(self, user_id: int, due_date: str = None, without_sub_transactions: bool = False) -> list[dict]:
         actors = self.actor_repository.get_all(user_id)
+        if without_sub_transactions:
+            return self.actor_serializer.serialize_many(actors)
+
         sub_transactions = self.sub_transaction_repository.get_all(user_id, due_date)
         separed_sub_transactions = self.separe_sub_transactions_by_actor(sub_transactions)
 

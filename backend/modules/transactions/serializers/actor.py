@@ -21,6 +21,9 @@ class ActorSerializer:
             "updated_at": actor.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "total_spent": actor.total_spent,
         }
+
+    def serialize_many(self, actors: list[ActorDomain]) -> list[dict]:
+        return [self.serialize(actor) for actor in actors]
     
     def serialize_for_tool(self, actor: ActorDomain) -> str:
         return ACTOR_FOR_TOOL_PROMPT.format(

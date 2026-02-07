@@ -16,11 +16,14 @@ import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
 import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
+import { TransactionStatsFilters } from '@/services/transactions/getTransactionStats';
 
 export const DashboardPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<TransactionStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showUploadBill, setShowUploadBill] = useState(false);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
@@ -31,25 +34,41 @@ export const DashboardPage: React.FC = () => {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
 
+  const loadTransactions = async (filters: TransactionFilters) => {
+    setTransactionsLoading(true);
+    getTransactions(filters).then(data => {
+      setTransactions(data);
+    }).catch(error => {
+      toast.error('Falha ao carregar transações');
+    }).finally(() => {
+      setTransactionsLoading(false);
+    });
+  }
+
+  const loadStats = async (filters: TransactionStatsFilters) => {
+    setStatsLoading(true);
+    getTransactionStats(filters).then(data => {
+      setStats(data);
+    }).catch(error => {
+      toast.error('Falha ao carregar estatísticas');
+    }).finally(() => {
+      setStatsLoading(false);
+    });
+  }
+
   const loadData = async () => {
     try {
-      setLoading(true);
       const filters: TransactionFilters = {
         due_date: selectedMonth,
       };
       const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD for stats
 
-      const [transactionsData, statsData] = await Promise.all([
-        getTransactions(filters),
-        getTransactionStats({ due_date: dueDate }),
+      await Promise.all([
+        loadTransactions(filters),
+        loadStats({ due_date: dueDate }),
       ]);
-
-      setTransactions(transactionsData);
-      setStats(statsData);
     } catch (error) {
       toast.error('Falha ao carregar dados');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -219,7 +238,7 @@ export const DashboardPage: React.FC = () => {
                 type="expenses"
                 transactions={transactions}
                 onUpdate={loadData}
-                loading={loading}
+                loading={transactionsLoading}
               />
             </TabsContent>
 
@@ -228,7 +247,7 @@ export const DashboardPage: React.FC = () => {
                 type="income"
                 transactions={transactions}
                 onUpdate={loadData}
-                loading={loading}
+                loading={transactionsLoading}
               />
             </TabsContent>
 
@@ -237,7 +256,7 @@ export const DashboardPage: React.FC = () => {
                 type="all"
                 transactions={transactions}
                 onUpdate={loadData}
-                loading={loading}
+                loading={transactionsLoading}
               />
             </TabsContent>
           </Tabs>
