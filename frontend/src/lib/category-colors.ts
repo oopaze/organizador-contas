@@ -164,3 +164,16 @@ export function getCategoryClassName(categoryKey: string | undefined | null): st
   return `${colors.bg} ${colors.text} ${colors.border}`;
 }
 
+/**
+ * Get the display label for a category
+ * @param categoryKey - The category key (e.g., 'food_grocery', 'education_tuition')
+ * @returns Display label for the category
+ */
+export function getCategoryLabel(categoryKey: string | undefined | null): string {
+  if (!categoryKey) return '-';
+
+  const normalizedKey = categoryKey.toLowerCase().replace(/-/g, '_');
+  const category = TRANSACTION_CATEGORIES.find(c => c.key === normalizedKey);
+  return category?.value || categoryKey;
+}
+

@@ -6,7 +6,7 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
 import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock } from 'lucide-react';
 import { getPublicActor, PublicActorResponse } from '@/services/actors/getPublicActor';
-import { getCategoryColor, getCategoryLabel } from '@/lib/category-colors';
+import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
 
 export const PublicActorPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -198,11 +198,7 @@ export const PublicActorPage: React.FC = () => {
                       <TableCell>
                         {subTransaction.category ? (
                           <span
-                            className="px-2 py-1 rounded-full text-xs font-medium"
-                            style={{
-                              backgroundColor: getCategoryColor(subTransaction.category) + '20',
-                              color: getCategoryColor(subTransaction.category),
-                            }}
+                            className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryClassName(subTransaction.category)}`}
                           >
                             {getCategoryLabel(subTransaction.category)}
                           </span>
