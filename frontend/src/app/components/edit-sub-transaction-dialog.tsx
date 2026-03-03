@@ -92,7 +92,7 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
         amount: String(amount).trim() ?? undefined,
         installment_info: installmentInfo.trim() ?? undefined,
         category: category || undefined,
-        actor: selectedActorId ? parseInt(selectedActorId, 10) : undefined,
+        actor: selectedActorId ? parseInt(selectedActorId, 10) : null,
         should_divide_for_actor: shouldDivideForActor ?? undefined,
         actor_amount: shouldDivideForActor && actorAmount ? parseFloat(actorAmount) : undefined,
       });
@@ -114,7 +114,7 @@ export const EditSubTransactionDialog: React.FC<EditSubTransactionDialogProps> =
     try {
       await updateSubTransaction(subTransaction.id, {
         user_provided_description: userProvidedDescription.trim() || undefined,
-        actor_id: undefined,
+        actor: null,
       });
       toast.success('Ator removido com sucesso');
       onSuccess();
