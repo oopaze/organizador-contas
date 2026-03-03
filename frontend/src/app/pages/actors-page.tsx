@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
-import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, TrendingDown, UserCheck, Calculator, Share2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
+import { Input } from '@/app/components/ui/input';
+import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, TrendingDown, UserCheck, Calculator, Share2, Copy, Check } from 'lucide-react';
 import { Actor, ActorStats, getActors, getActor, deleteActor, getActorStats } from '@/services';
 import { getActorShareToken } from '@/services/actors/getActorShareToken';
 import { ActorSubTransactionsTable } from '@/app/components/actor-sub-transactions-table';
@@ -28,6 +30,13 @@ export const ActorsPage: React.FC = () => {
   const [loadingActors, setLoadingActors] = useState<Set<number>>(new Set());
   const [actorErrors, setActorErrors] = useState<Record<number, string | null>>({});
   const [actorStats, setActorStats] = useState<ActorStats | null>(null);
+
+  // Share dialog state
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareActorName, setShareActorName] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+  const shareInputRef = useRef<HTMLInputElement>(null);
 
   // Month/Year filter
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -173,24 +182,40 @@ export const ActorsPage: React.FC = () => {
     e.stopPropagation();
     try {
       const token = await getActorShareToken(actor.id);
-      const shareUrl = `${window.location.origin}/share/actor?token=${token}`;
-      const copied = await copyToClipboard(shareUrl);
+      const url = `${window.location.origin}/share/actor?token=${token}`;
 
+      // Always show dialog for manual copy option
+      setShareUrl(url);
+      setShareActorName(actor.name);
+      setIsCopied(false);
+      setShareDialogOpen(true);
+
+      // Try to copy automatically
+      const copied = await copyToClipboard(url);
       if (copied) {
-        toast.success(`Link de compartilhamento copiado!`, {
-          description: `Compartilhe com ${actor.name} para que veja seus gastos.`,
-        });
-      } else {
-        // If copy failed, show the link so user can copy manually
-        toast.info('Copie o link manualmente:', {
-          description: shareUrl,
-          duration: 10000,
-        });
+        setIsCopied(true);
+        toast.success(`Link copiado!`);
       }
     } catch (err) {
       console.error('Error generating share token:', err);
       toast.error('Falha ao gerar link de compartilhamento');
     }
+  };
+
+  const handleCopyFromDialog = async () => {
+    const copied = await copyToClipboard(shareUrl);
+    if (copied) {
+      setIsCopied(true);
+      toast.success('Link copiado!');
+    } else {
+      // Select the input text so user can copy manually
+      shareInputRef.current?.select();
+      toast.info('Selecione e copie o link manualmente');
+    }
+  };
+
+  const handleSelectAll = () => {
+    shareInputRef.current?.select();
   };
 
   const handleConfirmDelete = async () => {
@@ -469,6 +494,43 @@ export const ActorsPage: React.FC = () => {
         onSuccess={fetchActors}
         actor={actorToEdit}
       />
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Compartilhar com {shareActorName}</DialogTitle>
+            <DialogDescription>
+              Envie este link para {shareActorName} visualizar os gastos.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Input
+                ref={shareInputRef}
+                value={shareUrl}
+                readOnly
+                className="flex-1 text-sm"
+                onClick={handleSelectAll}
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant={isCopied ? "default" : "outline"}
+                onClick={handleCopyFromDialog}
+                className="shrink-0"
+              >
+                {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {isCopied
+                ? "✓ Link copiado! Cole e envie para compartilhar."
+                : "Toque no link acima para selecionar, depois copie manualmente."}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
     </>
   );
