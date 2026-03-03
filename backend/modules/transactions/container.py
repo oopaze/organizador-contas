@@ -6,11 +6,14 @@ from modules.transactions.models import Actor, Transaction, SubTransaction
 from modules.transactions.repositories import ActorRepository, TransactionRepository, SubTransactionRepository
 from modules.transactions.serializers import ActorSerializer, TransactionSerializer, SubTransactionSerializer
 from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
+from modules.transactions.services.share_token import ShareTokenService
 from modules.transactions.use_cases import (
     GetToolsForAIUseCase,
     CreateActorUseCase,
     DeleteActorUseCase,
     GetActorUseCase,
+    GetPublicActorUseCase,
+    GenerateActorShareTokenUseCase,
     ListActorsUseCase,
     UpdateActorUseCase,
     ActorStatsUseCase,
@@ -67,6 +70,9 @@ class TransactionsContainer(containers.DeclarativeContainer):
     transaction_repository = providers.Factory(TransactionRepository, model=Transaction, transaction_factory=transaction_factory)
     sub_transaction_repository = providers.Factory(SubTransactionRepository, model=SubTransaction, sub_transaction_factory=sub_transaction_factory)
 
+    # SERVICES
+    share_token_service = providers.Factory(ShareTokenService)
+
     # USE CASES
     list_actors_use_case = providers.Factory(
         ListActorsUseCase,
@@ -106,6 +112,21 @@ class TransactionsContainer(containers.DeclarativeContainer):
         ActorStatsUseCase,
         actor_repository=actor_repository,
         sub_transaction_repository=sub_transaction_repository,
+    )
+
+    get_public_actor_use_case = providers.Factory(
+        GetPublicActorUseCase,
+        actor_repository=actor_repository,
+        actor_serializer=actor_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+        sub_transaction_serializer=sub_transaction_serializer,
+        share_token_service=share_token_service,
+    )
+
+    generate_actor_share_token_use_case = providers.Factory(
+        GenerateActorShareTokenUseCase,
+        actor_repository=actor_repository,
+        share_token_service=share_token_service,
     )
 
     list_transactions_use_case = providers.Factory(

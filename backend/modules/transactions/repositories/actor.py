@@ -22,6 +22,11 @@ class ActorRepository:
         actor_instance = self.queryset.get(id=actor_id, user_id=user_id)
         return self.actor_factory.build_from_model(actor_instance)
 
+    def get_by_id(self, actor_id: int) -> ActorDomain:
+        """Get actor by ID only (for public access via signed token)"""
+        actor_instance = self.queryset.get(id=actor_id)
+        return self.actor_factory.build_from_model(actor_instance)
+
     def get_all(self, user_id: int, filters: dict = {}) -> list[ActorDomain]:
         actor_instances = self.queryset.filter(user_id=user_id, **filters)
         return [self.actor_factory.build_from_model(actor) for actor in actor_instances]

@@ -46,7 +46,33 @@ class ActorViewSet(viewsets.ViewSet):
         due_date_end = request.query_params.get("due_date_end")
         stats = self.container.actor_stats_use_case().execute(request.user.id, due_date_start, due_date_end)
         return Response(stats, status=status.HTTP_200_OK)
-    
+
+    @decorators.action(detail=True, methods=["GET"])
+    def share_token(self, request, pk: str):
+        token = self.container.generate_actor_share_token_use_case().execute(pk, request.user.id)
+        return Response({"token": token}, status=status.HTTP_200_OK)
+
+
+class PublicActorViewSet(viewsets.ViewSet):
+    """Public viewset for accessing actor data via share token (no authentication required)"""
+    authentication_classes = []
+    permission_classes = []
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.container = TransactionsContainer()
+
+    def retrieve(self, request, pk: str):
+        """Get actor data by share token"""
+        due_date = request.query_params.get("due_date")
+        try:
+            actor = self.container.get_public_actor_use_case().execute(pk, due_date)
+            return Response(actor, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({"error": "Actor not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 class TransactionViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]

@@ -37,6 +37,8 @@ export interface Actor {
   name: string;
   sub_transactions?: SubTransaction[];
   total_spent?: number;
+  total_spent_paid?: number;
+  total_remaining?: number;
 }
 
 export type TransactionType = 'incoming' | 'outgoing';

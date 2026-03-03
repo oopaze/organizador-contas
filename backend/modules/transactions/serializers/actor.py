@@ -14,12 +14,17 @@ Ator {name}:
 
 class ActorSerializer:
     def serialize(self, actor: ActorDomain) -> dict:
+        total_spent = actor.get_total_spent()
+        total_spent_paid = actor.get_total_spent_paid()
+        total_remaining = total_spent - total_spent_paid
         return {
             "id": actor.id,
             "name": actor.name,
             "created_at": actor.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": actor.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "total_spent": actor.total_spent,
+            "total_spent": total_spent,
+            "total_spent_paid": total_spent_paid,
+            "total_remaining": total_remaining,
         }
 
     def serialize_many(self, actors: list[ActorDomain]) -> list[dict]:

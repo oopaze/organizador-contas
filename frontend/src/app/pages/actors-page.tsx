@@ -4,8 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
-import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, TrendingDown, UserCheck, Calculator } from 'lucide-react';
+import { Users, ChevronRight, ChevronLeft, Trash2, Plus, Pencil, Wallet, TrendingUp, TrendingDown, UserCheck, Calculator, Share2 } from 'lucide-react';
 import { Actor, ActorStats, getActors, getActor, deleteActor, getActorStats } from '@/services';
+import { getActorShareToken } from '@/services/actors/getActorShareToken';
 import { ActorSubTransactionsTable } from '@/app/components/actor-sub-transactions-table';
 import { ConfirmationDialog } from '@/app/components/confirmation-dialog';
 import { AddActorDialog } from '@/app/components/add-actor-dialog';
@@ -135,6 +136,21 @@ export const ActorsPage: React.FC = () => {
     e.stopPropagation();
     setActorToEdit(actor);
     setEditDialogOpen(true);
+  };
+
+  const handleShareClick = async (actor: Actor, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const token = await getActorShareToken(actor.id);
+      const shareUrl = `${window.location.origin}/share/actor/${token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success(`Link de compartilhamento copiado!`, {
+        description: `Compartilhe com ${actor.name} para que veja seus gastos.`,
+      });
+    } catch (err) {
+      console.error('Error generating share token:', err);
+      toast.error('Falha ao gerar link de compartilhamento');
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -301,6 +317,7 @@ export const ActorsPage: React.FC = () => {
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Gasto</TableHead>
+                <TableHead>Restante</TableHead>
                 <TableHead className="w-[100px] text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -326,8 +343,22 @@ export const ActorsPage: React.FC = () => {
                           <TableCell className="font-medium">
                             R$ {actor.total_spent?.toFixed(2) || Number(0).toFixed(2)}
                           </TableCell>
+                          <TableCell className="font-medium">
+                            <span className={actor.total_remaining && actor.total_remaining > 0 ? 'text-orange-600' : 'text-green-600'}>
+                              R$ {actor.total_remaining?.toFixed(2) || Number(0).toFixed(2)}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-blue-500"
+                                onClick={(e) => handleShareClick(actor, e)}
+                                title="Compartilhar"
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -350,7 +381,7 @@ export const ActorsPage: React.FC = () => {
                       </CollapsibleTrigger>
                       <CollapsibleContent asChild>
                         <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableCell colSpan={4} className="p-0">
+                          <TableCell colSpan={5} className="p-0">
                             <div className="px-8 py-4">
                               <h4 className="text-sm font-medium mb-2 text-muted-foreground">
                                 Subtransações vinculadas

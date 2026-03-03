@@ -8,6 +8,7 @@ import { DashboardPage } from './dashboard-page';
 import { ActorsPage } from './actors-page';
 import { ChatPage } from './chat-page';
 import { AIInsightsPage } from './ai-insights-page';
+import { PublicActorPage } from './public-actor-page';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -21,6 +22,9 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
+
+      {/* Public actor share page (no auth required) */}
+      <Route path="/share/actor/:token" element={<PublicActorPage />} />
 
       {/* Protected routes with Layout */}
       <Route
