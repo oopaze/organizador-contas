@@ -146,9 +146,6 @@ export const ActorsPage: React.FC = () => {
       await navigator.clipboard.writeText(shareUrl);
       toast.success(`Link de compartilhamento copiado!`, {
         description: `Compartilhe com ${actor.name} para que veja seus gastos.`,
-        classNames: {
-          description: 'text-gray-600',
-        },
       });
     } catch (err) {
       console.error('Error generating share token:', err);
