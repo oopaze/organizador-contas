@@ -62,11 +62,17 @@ class PublicActorViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.container = TransactionsContainer()
 
-    def retrieve(self, request, pk: str):
-        """Get actor data by share token"""
+    def list(self, request):
+        """Get actor data by share token from Authorization header"""
+        # Get token from Authorization header
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if not auth_header.startswith("Bearer "):
+            return Response({"error": "Authorization header required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token = auth_header[7:]  # Remove "Bearer " prefix
         due_date = request.query_params.get("due_date")
         try:
-            actor = self.container.get_public_actor_use_case().execute(pk, due_date)
+            actor = self.container.get_public_actor_use_case().execute(token, due_date)
             return Response(actor, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

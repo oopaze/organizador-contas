@@ -22,14 +22,15 @@ export async function getPublicActor(token: string, dueDate?: string): Promise<P
   if (dueDate) {
     params.append('due_date', dueDate);
   }
-  
+
   const queryString = params.toString();
-  const url = `${API_BASE_URL}/transactions/public/actors/${token}/${queryString ? `?${queryString}` : ''}`;
-  
+  const url = `${API_BASE_URL}/transactions/public/actors/${queryString ? `?${queryString}` : ''}`;
+
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
   });
 

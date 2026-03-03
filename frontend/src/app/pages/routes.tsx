@@ -24,7 +24,7 @@ export const AppRoutes: React.FC = () => {
       />
 
       {/* Public actor share page (no auth required) */}
-      <Route path="/share/actor/:token" element={<PublicActorPage />} />
+      <Route path="/share/actor" element={<PublicActorPage />} />
 
       {/* Protected routes with Layout */}
       <Route

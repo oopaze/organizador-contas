@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Skeleton } from '@/app/components/ui/skeleton';
@@ -9,8 +9,8 @@ import { getPublicActor, PublicActorResponse } from '@/services/actors/getPublic
 import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
 
 export const PublicActorPage: React.FC = () => {
-  const { token } = useParams<{ token: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const [actor, setActor] = useState<PublicActorResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const PublicActorPage: React.FC = () => {
     const date = new Date(year, month - 2, 1);
     const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     setSelectedMonth(newMonth);
-    setSearchParams({ month: newMonth });
+    setSearchParams({ token: token || '', month: newMonth });
   };
 
   const goToNextMonth = () => {
@@ -43,7 +43,7 @@ export const PublicActorPage: React.FC = () => {
     const date = new Date(year, month, 1);
     const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     setSelectedMonth(newMonth);
-    setSearchParams({ month: newMonth });
+    setSearchParams({ token: token || '', month: newMonth });
   };
 
   const fetchActor = useCallback(async () => {
