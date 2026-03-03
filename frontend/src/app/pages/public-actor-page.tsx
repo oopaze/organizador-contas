@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
 import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { Badge } from '@/app/components/ui/badge';
 import { getPublicActor, PublicActorResponse } from '@/services/actors/getPublicActor';
 import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
 
@@ -159,6 +160,7 @@ export const PublicActorPage: React.FC = () => {
                   <TableRow>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
+                    <TableHead>Parcela</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-center">Status</TableHead>
                   </TableRow>
@@ -168,6 +170,7 @@ export const PublicActorPage: React.FC = () => {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                       <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                       <TableCell className="text-center"><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
                     </TableRow>
@@ -184,6 +187,7 @@ export const PublicActorPage: React.FC = () => {
                   <TableRow>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
+                    <TableHead>Parcela</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-center">Status</TableHead>
                   </TableRow>
@@ -204,6 +208,15 @@ export const PublicActorPage: React.FC = () => {
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {subTransaction.installment_info && subTransaction.installment_info !== 'not installment' ? (
+                          <Badge variant="outline" className="text-xs">
+                            {subTransaction.installment_info.replace('installment ', '').replace(' of ', '/')}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">À vista</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right font-medium">

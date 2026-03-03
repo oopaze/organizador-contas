@@ -9,6 +9,7 @@ export interface PublicActorResponse extends Actor {
     amount: number;
     paid_at: string | null;
     category: string | null;
+    installment_info: string | null;
     transaction: {
       id: number;
       description: string;
