@@ -138,15 +138,55 @@ export const ActorsPage: React.FC = () => {
     setEditDialogOpen(true);
   };
 
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    // Try modern clipboard API first
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Safari may fail here, fall through to fallback
+      }
+    }
+
+    // Fallback for Safari and older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      return true;
+    } catch {
+      return false;
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
   const handleShareClick = async (actor: Actor, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       const token = await getActorShareToken(actor.id);
       const shareUrl = `${window.location.origin}/share/actor?token=${token}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success(`Link de compartilhamento copiado!`, {
-        description: `Compartilhe com ${actor.name} para que veja seus gastos.`,
-      });
+      const copied = await copyToClipboard(shareUrl);
+
+      if (copied) {
+        toast.success(`Link de compartilhamento copiado!`, {
+          description: `Compartilhe com ${actor.name} para que veja seus gastos.`,
+        });
+      } else {
+        // If copy failed, show the link so user can copy manually
+        toast.info('Copie o link manualmente:', {
+          description: shareUrl,
+          duration: 10000,
+        });
+      }
     } catch (err) {
       console.error('Error generating share token:', err);
       toast.error('Falha ao gerar link de compartilhamento');
