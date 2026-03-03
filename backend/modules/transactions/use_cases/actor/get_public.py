@@ -31,7 +31,7 @@ class GetPublicActorUseCase:
 
         actor_data = self.actor_serializer.serialize(actor)
         actor_data["sub_transactions"] = [
-            self.sub_transaction_serializer.serialize(sub_transaction, include_actor=False)
+            self.sub_transaction_serializer.serialize(sub_transaction, include_actor=False, include_transaction=True)
             for sub_transaction in sub_transactions
         ]
         return actor_data

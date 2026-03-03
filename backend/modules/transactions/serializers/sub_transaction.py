@@ -22,8 +22,8 @@ class SubTransactionSerializer:
         except ValueError:
             return category  # Return raw value if not found in enum
 
-    def serialize(self, sub_transaction: "SubTransactionDomain", include_actor: bool = True) -> dict:
-        return {
+    def serialize(self, sub_transaction: "SubTransactionDomain", include_actor: bool = True, include_transaction: bool = False) -> dict:
+        data = {
             "id": sub_transaction.id,
             "date": sub_transaction.date,
             "description": sub_transaction.description,
@@ -38,6 +38,13 @@ class SubTransactionSerializer:
             "paid_at": sub_transaction.paid_at.strftime("%Y-%m-%d %H:%M:%S") if sub_transaction.paid_at else None,
             "category": self._get_category_value(sub_transaction.category),
         }
+        if include_transaction:
+            data["transaction"] = {
+                "id": sub_transaction.transaction.id,
+                "description": sub_transaction.transaction.transaction_identifier,
+                "due_date": sub_transaction.transaction.due_date,
+            }
+        return data
 
     def serialize_many(self, sub_transactions: list["SubTransactionDomain"], include_actor: bool = True) -> list[dict]:
         return [self.serialize(sub_transaction, include_actor) for sub_transaction in sub_transactions]
