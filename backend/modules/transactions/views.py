@@ -47,7 +47,7 @@ class ActorViewSet(viewsets.ViewSet):
         stats = self.container.actor_stats_use_case().execute(request.user.id, due_date_start, due_date_end)
         return Response(stats, status=status.HTTP_200_OK)
 
-    @decorators.action(detail=True, methods=["GET"])
+    @decorators.action(detail=True, methods=["GET"], url_path="share_token")
     def share_token(self, request, pk: str):
         token = self.container.generate_actor_share_token_use_case().execute(pk, request.user.id)
         return Response({"token": token}, status=status.HTTP_200_OK)
