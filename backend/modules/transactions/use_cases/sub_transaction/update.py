@@ -15,9 +15,14 @@ class UpdateSubTransactionUseCase:
         self.actor_repository = actor_repository
 
     def execute(self, id: int, data: dict, user_id: int) -> dict:
-        if isinstance(data.get("actor"), int):
-            data["actor_id"] = data.get("actor")
-        
+        # Handle actor field: convert to actor_id, including null (remove actor)
+        if "actor" in data:
+            if isinstance(data.get("actor"), int):
+                data["actor_id"] = data.get("actor")
+            else:
+                # actor is null - explicitly set actor_id to None to remove it
+                data["actor_id"] = None
+
         sub_transaction = self.sub_transaction_repository.get(id, user_id)
         actor = self.actor_repository.get(data["actor"], user_id) if data.get("actor") else None
 
