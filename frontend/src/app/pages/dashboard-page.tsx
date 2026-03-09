@@ -10,7 +10,7 @@ import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 
-import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users, FileSpreadsheet } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users, FileSpreadsheet, CheckCircle2, Clock } from 'lucide-react';
 import { TransactionsList } from '@/app/components/transactions-list';
 import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
@@ -80,6 +80,8 @@ export const DashboardPage: React.FC = () => {
   const totalExpenses = stats?.outgoing_total || 0;
   const totalIncome = stats?.incoming_total || 0;
   const balance = stats?.balance || 0;
+  const totalPaid = stats?.outgoing_total_paid || 0;
+  const totalPending = totalExpenses - totalPaid;
 
   const handleTransactionAdded = () => {
     setShowAddTransaction(false);
@@ -139,7 +141,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Saldo</CardTitle>
@@ -172,15 +174,30 @@ export const DashboardPage: React.FC = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Despesas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium">Pago</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              R$ {totalExpenses.toFixed(2)}
+            <div className="text-2xl font-bold text-green-600">
+              R$ {totalPaid.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              No período selecionado
+              Contas já pagas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Falta Pagar</CardTitle>
+            <Clock className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              R$ {totalPending.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Contas pendentes
             </p>
           </CardContent>
         </Card>

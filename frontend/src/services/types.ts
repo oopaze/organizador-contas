@@ -101,6 +101,7 @@ export interface TransactionFilters {
 export interface TransactionStats {
   incoming_total: number;
   outgoing_total: number;
+  outgoing_total_paid: number;
   incoming_total_paid: number;
   balance: number;
   outgoing_from_actors: number;

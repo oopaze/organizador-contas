@@ -26,18 +26,22 @@ class TransactionStatsUseCase:
         outgoing_total = sum([transaction.total_amount for transaction in transactions if transaction.transaction_type == "outgoing"])
         balance = incoming_total - outgoing_total
         outgoing_from_actors = self.get_outgoing_from_actors(sub_transactions)
-                    
+
         return {
-            "incoming_total": incoming_total, 
-            "outgoing_total": outgoing_total, 
+            "incoming_total": incoming_total,
+            "outgoing_total": outgoing_total,
+            "outgoing_total_paid": self.get_outgoing_total_paid(transactions),
             "incoming_total_paid": self.get_incoming_total_paid(transactions),
-            "balance": balance, 
+            "balance": balance,
             "outgoing_from_actors": outgoing_from_actors,
             "outgoing_from_actors_paid": self.get_outgoing_from_actors_paid(sub_transactions),
         }
     
     def get_incoming_total_paid(self, transactions: list) -> dict:
         return sum([transaction.total_amount for transaction in transactions if transaction.transaction_type == "incoming" and transaction.is_paid])
+
+    def get_outgoing_total_paid(self, transactions: list) -> dict:
+        return sum([transaction.total_amount for transaction in transactions if transaction.transaction_type == "outgoing" and transaction.is_paid])
 
     def get_outgoing_from_actors(self, sub_transactions: list) -> dict:
         return sum([sub_transaction.amount for sub_transaction in sub_transactions if sub_transaction.actor])
