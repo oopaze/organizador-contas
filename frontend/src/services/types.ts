@@ -96,6 +96,7 @@ export interface Bill {
 export interface TransactionFilters {
   transaction_type?: 'incoming' | 'outgoing';
   due_date?: string;
+  payment_status?: 'paid' | 'unpaid' | 'all';
 }
 
 export interface TransactionStats {

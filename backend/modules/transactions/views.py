@@ -103,6 +103,13 @@ class TransactionViewSet(viewsets.ViewSet):
         if request.query_params.get("transaction_type"):
             filters["transaction_type"] = request.query_params.get("transaction_type")
 
+        # Filter by payment status
+        payment_status = request.query_params.get("payment_status")
+        if payment_status == "paid":
+            filters["paid_at__isnull"] = False
+        elif payment_status == "unpaid":
+            filters["paid_at__isnull"] = True
+
         transactions = self.container.list_transactions_use_case().execute(filters)
         return Response(transactions, status=status.HTTP_200_OK)
     

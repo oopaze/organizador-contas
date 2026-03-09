@@ -26,7 +26,10 @@ async function getTransactionsReal(filters?: TransactionFilters): Promise<Transa
     params.append('due_date__month', `${month}`);
     params.append('due_date__year', `${year}`);
   }
-  
+  if (filters?.payment_status && filters.payment_status !== 'all') {
+    params.append('payment_status', filters.payment_status);
+  }
+
   const query = params.toString();
   return apiRequest<Transaction[]>(`/transactions/transactions/?${query}`);
 }

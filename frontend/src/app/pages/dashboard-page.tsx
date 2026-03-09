@@ -34,6 +34,9 @@ export const DashboardPage: React.FC = () => {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
 
+  // Payment status filter
+  const [paymentStatus, setPaymentStatus] = useState<'all' | 'paid' | 'unpaid'>('all');
+
   const loadTransactions = async (filters: TransactionFilters) => {
     setTransactionsLoading(true);
     getTransactions(filters).then(data => {
@@ -60,6 +63,7 @@ export const DashboardPage: React.FC = () => {
     try {
       const filters: TransactionFilters = {
         due_date: selectedMonth,
+        payment_status: paymentStatus,
       };
       const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD for stats
 
@@ -74,7 +78,7 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedMonth]);
+  }, [selectedMonth, paymentStatus]);
 
   // Use stats from API
   const totalExpenses = stats?.outgoing_total || 0;
@@ -239,8 +243,41 @@ export const DashboardPage: React.FC = () => {
       {/* Transactions List */}
       <Card>
         <CardHeader>
-          <CardTitle>Atividade Recente</CardTitle>
-          <CardDescription>Visualize e gerencie suas transações</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle>Atividade Recente</CardTitle>
+              <CardDescription>Visualize e gerencie suas transações</CardDescription>
+            </div>
+
+            {/* Payment Status Filter */}
+            <div className="flex gap-2">
+              <Button
+                variant={paymentStatus === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentStatus('all')}
+              >
+                Todas
+              </Button>
+              <Button
+                variant={paymentStatus === 'paid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentStatus('paid')}
+                className={paymentStatus === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-1" />
+                Pagas
+              </Button>
+              <Button
+                variant={paymentStatus === 'unpaid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentStatus('unpaid')}
+                className={paymentStatus === 'unpaid' ? 'bg-orange-600 hover:bg-orange-700' : ''}
+              >
+                <Clock className="w-4 h-4 mr-1" />
+                Pendentes
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
