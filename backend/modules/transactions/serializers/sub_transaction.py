@@ -19,8 +19,8 @@ class SubTransactionSerializer:
     def _get_category_value(self, category: str) -> str:
         try:
             return TransactionCategory.get_by_name(category).value
-        except ValueError:
-            return category  # Return raw value if not found in enum
+        except (ValueError, AttributeError):
+            return TransactionCategory.OTHER.value  
 
     def serialize(self, sub_transaction: "SubTransactionDomain", include_actor: bool = True, include_transaction: bool = False) -> dict:
         data = {
