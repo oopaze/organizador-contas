@@ -33,5 +33,7 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Run with gunicorn for production (timeout 600s = 10 minutes for long AI processing)
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn infra.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --timeout 600"]
+# Run with gunicorn for production. Long-running AI work belongs in Celery,
+# not in HTTP request handlers — a 120s worker timeout keeps wedged workers
+# from staying stuck for 10 minutes.
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn infra.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --timeout 120"]

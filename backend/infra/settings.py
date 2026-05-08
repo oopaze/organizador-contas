@@ -104,6 +104,13 @@ DATABASES = {
         "OPTIONS": {
             "connect_timeout": 10,
             "options": "-c statement_timeout=30000",  # 30 second query timeout
+            # TCP keepalives so the kernel detects half-open sockets (idle DB
+            # connections silently dropped by the network) within ~80s instead
+            # of the default ~2h.
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
         },
     }
 }
@@ -205,6 +212,7 @@ CACHES = {
             "CONNECTION_POOL_KWARGS": {
                 "max_connections": 50,
                 "retry_on_timeout": True,
+                "socket_keepalive": True,
             },
             "SOCKET_CONNECT_TIMEOUT": 5,
             "SOCKET_TIMEOUT": 5,
