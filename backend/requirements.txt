@@ -20,6 +20,8 @@ redis==5.2.1
 django-storages==1.14.4
 boto3==1.35.0
 django-redis==5.4.0
+mcp==1.2.0
+sqlparse==0.5.3
 
 # Linting & Formatting
 black==24.10.0
