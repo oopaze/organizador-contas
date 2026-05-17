@@ -35,3 +35,7 @@ WASABI_ACCESS_KEY = environ.get("WASABI_ACCESS_KEY", "")
 WASABI_SECRET_KEY = environ.get("WASABI_SECRET_KEY", "")
 WASABI_BUCKET_NAME = environ.get("WASABI_BUCKET_NAME", "poupix-media")
 WASABI_REGION = environ.get("WASABI_REGION", "us-east-1")
+
+# MCP — read-only role for the MCP server
+MCP_DATABASE_USER = environ.get("MCP_DATABASE_USER", "poupix_mcp_ro")
+MCP_DATABASE_PASSWORD = environ.get("MCP_DATABASE_PASSWORD", "")

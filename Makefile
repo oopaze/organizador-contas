@@ -143,3 +143,13 @@ db_init_pgvector:
 db_clean:
 	docker compose down -v db
 	docker volume rm bills-manager_postgres_data 2>/dev/null || true
+
+# ===========================================
+# MCP
+# ===========================================
+
+mcp_setup_db:
+	@cd backend && python manage.py mcp_setup_db --admin-user $${PG_ADMIN_USER:-postgres} --admin-password $${PG_ADMIN_PASSWORD:?PG_ADMIN_PASSWORD is required}
+
+mcp_run:
+	@cd backend && python manage.py run_mcp
