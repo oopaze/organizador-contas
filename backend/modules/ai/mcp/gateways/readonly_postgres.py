@@ -1,9 +1,6 @@
 import logging
 import time
 
-import psycopg2
-from psycopg2 import errors as pg_errors
-from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from django.conf import settings
 
 from modules.ai.mcp.domains.query_result import QueryResult
@@ -24,6 +21,9 @@ class ReadOnlyPostgresGateway:
 
     A new connection is opened lazily on first use and reused for the life of
     the MCP process. On any failure we close and re-open on the next call.
+
+    psycopg2 is imported lazily inside methods so that the module can be
+    imported (e.g. by the DI container) even when psycopg2 is not installed.
     """
 
     def __init__(self, query_result_factory: QueryResultFactory):
@@ -31,6 +31,9 @@ class ReadOnlyPostgresGateway:
         self._conn = None
 
     def _connect(self):
+        import psycopg2  # noqa: PLC0415
+        from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED  # noqa: PLC0415
+
         db = settings.DATABASES["default"]
         conn = psycopg2.connect(
             host=db["HOST"],
@@ -54,6 +57,9 @@ class ReadOnlyPostgresGateway:
         return self._conn
 
     def execute(self, query: SqlQuery) -> QueryResult:
+        import psycopg2  # noqa: PLC0415
+        from psycopg2 import errors as pg_errors  # noqa: PLC0415
+
         conn = self._get_conn()
         started = time.monotonic()
         try:
@@ -82,6 +88,9 @@ class ReadOnlyPostgresGateway:
 
     def execute_raw_for_test(self, sql: str) -> QueryResult:
         """Test-only escape hatch: run a raw SQL string with no wrapping."""
+        import psycopg2  # noqa: PLC0415
+        from psycopg2 import errors as pg_errors  # noqa: PLC0415
+
         conn = self._get_conn()
         try:
             with conn.cursor() as cur:
