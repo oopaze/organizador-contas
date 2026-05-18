@@ -5,7 +5,7 @@ class AccessTokenFactory:
     def from_model(self, model) -> AccessToken:
         return AccessToken(
             token_hash=model.token_hash,
-            client_id=model.client_id,
+            client_id=model.client.client_id,
             user_id=model.user_id,
             scope=model.scope,
             expires_at=model.expires_at,

@@ -5,7 +5,7 @@ class AuthorizationCodeFactory:
     def from_model(self, model) -> AuthorizationCode:
         return AuthorizationCode(
             code=model.code,
-            client_id=model.client_id,
+            client_id=model.client.client_id,
             user_id=model.user_id,
             redirect_uri=model.redirect_uri,
             code_challenge=model.code_challenge,

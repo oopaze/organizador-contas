@@ -3,7 +3,7 @@ from typing import Optional
 
 from django.db import transaction
 
-from modules.ai.mcp.models import MCPAuthorizationCode
+from modules.ai.mcp.models import MCPAuthorizationCode, MCPOAuthClient
 from modules.ai.mcp.oauth.domains.auth_code import AuthorizationCode
 from modules.ai.mcp.oauth.factories.auth_code import AuthorizationCodeFactory
 
@@ -17,8 +17,9 @@ class AuthorizationCodeRepository:
         code_challenge: str, code_challenge_method: str, scope: str,
         expires_at: datetime,
     ) -> AuthorizationCode:
+        client = MCPOAuthClient.objects.get(client_id=client_id)
         m = MCPAuthorizationCode.objects.create(
-            code=code, client_id=client_id, user_id=user_id,
+            code=code, client=client, user_id=user_id,
             redirect_uri=redirect_uri, code_challenge=code_challenge,
             code_challenge_method=code_challenge_method, scope=scope,
             expires_at=expires_at,

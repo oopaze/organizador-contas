@@ -37,7 +37,8 @@ class TestAuthorizationCodeFactory(SimpleTestCase):
     def test_from_model(self):
         model = Mock()
         model.code = "abc"
-        model.client_id = "mcp_x"
+        model.client = Mock()
+        model.client.client_id = "mcp_x"
         model.user_id = 7
         model.redirect_uri = "https://example.com/cb"
         model.code_challenge = "ch"
@@ -54,7 +55,8 @@ class TestAccessTokenFactory(SimpleTestCase):
     def test_from_model(self):
         model = Mock()
         model.token_hash = "h"
-        model.client_id = "mcp_x"
+        model.client = Mock()
+        model.client.client_id = "mcp_x"
         model.user_id = 7
         model.scope = "mcp:read"
         model.expires_at = datetime(2030, 1, 1, tzinfo=timezone.utc)
