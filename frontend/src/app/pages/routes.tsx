@@ -8,6 +8,7 @@ import { DashboardPage } from './dashboard-page';
 import { ActorsPage } from './actors-page';
 import { ChatPage } from './chat-page';
 import { AIInsightsPage } from './ai-insights-page';
+import { IntegrationsPage } from './integrations-page';
 import { PublicActorPage } from './public-actor-page';
 
 export const AppRoutes: React.FC = () => {
@@ -38,6 +39,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/actors" element={<ActorsPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/ai-insights" element={<AIInsightsPage />} />
+        <Route path="/integracoes" element={<IntegrationsPage />} />
       </Route>
 
       {/* Catch all - redirect to home */}
