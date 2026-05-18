@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "storages",
     "modules.ai",
     "modules.ai.chat",
+    "modules.ai.mcp",
     "modules.file_reader",
     "modules.base",
     "modules.transactions",
