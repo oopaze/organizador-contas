@@ -23,6 +23,7 @@ from django.urls import include, path
 urlpatterns = [
     path("", include("modules.userdata.urls")),
     path("", include("modules.ai.mcp.oauth.urls")),
+    path("", include("modules.ai.mcp.http.urls")),
     path("admin/", admin.site.urls),
     path("file_reader/", include("modules.file_reader.urls")),
     path("transactions/", include("modules.transactions.urls")),
