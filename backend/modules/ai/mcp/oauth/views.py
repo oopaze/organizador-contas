@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from modules.ai.mcp.oauth.container import OAuthContainer
 from modules.ai.mcp.oauth.exceptions import OAuthError
@@ -149,3 +149,19 @@ def well_known_protected_resource(request):
         "scopes_supported": ["mcp:read"],
         "bearer_methods_supported": ["header"],
     })
+
+
+@login_required
+@require_http_methods(["GET"])
+def list_connections(request):
+    items = container.list_connections_use_case().execute(user_id=request.user.id)
+    return JsonResponse({"connections": items})
+
+
+@login_required
+@require_http_methods(["POST"])
+def revoke_connection(request, client_id: str):
+    n = container.revoke_use_case().execute_by_client(
+        client_id=client_id, user_id=request.user.id,
+    )
+    return JsonResponse({"revoked": n})

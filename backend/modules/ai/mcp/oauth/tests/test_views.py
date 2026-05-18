@@ -97,3 +97,24 @@ class TestOAuthFlow(TestCase):
         })
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()["error"], "invalid_grant")
+
+
+class TestConnectionsAPI(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(email="u@u.com", password="x")
+        from modules.ai.mcp.models import MCPOAuthClient
+        MCPOAuthClient.objects.create(client_id="mcp_a", name="A", redirect_uris=[], user_id=self.user.id)
+        MCPOAuthClient.objects.create(client_id="mcp_b", name="B", redirect_uris=[], user_id=self.user.id)
+        self.client.force_login(self.user)
+
+    def test_list_connections(self):
+        resp = self.client.get("/api/v1/mcp/connections/")
+        self.assertEqual(resp.status_code, 200)
+        names = [c["name"] for c in resp.json()["connections"]]
+        self.assertIn("A", names)
+        self.assertIn("B", names)
+
+    def test_revoke_connection(self):
+        resp = self.client.post("/api/v1/mcp/connections/mcp_a/revoke/")
+        self.assertEqual(resp.status_code, 200)
