@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Autorizar — Poupix</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 64px auto; padding: 24px; }
+    .card { border: 1px solid #e2e2e2; border-radius: 12px; padding: 24px; }
+    h1 { font-size: 1.25rem; }
+    .scope { background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 16px 0; }
+    button { font-size: 1rem; padding: 10px 20px; border-radius: 6px; border: 0; cursor: pointer; margin-right: 8px; }
+    .primary { background: #2563eb; color: white; }
+    .secondary { background: #f5f5f5; color: #111; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Autorizar <strong>{{ client_name }}</strong> ?</h1>
+    <p>Este aplicativo vai poder ler suas finanças no Poupix em modo somente-leitura.</p>
+    <div class="scope">
+      <strong>Permissão solicitada:</strong> {{ scope }}
+      <br><small>Leitura das suas transações, categorias e atores.</small>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="client_id" value="{{ client_id }}">
+      <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+      <input type="hidden" name="state" value="{{ state }}">
+      <input type="hidden" name="code_challenge" value="{{ code_challenge }}">
+      <input type="hidden" name="code_challenge_method" value="{{ code_challenge_method }}">
+      <input type="hidden" name="scope" value="{{ scope }}">
+      <button type="submit" name="decision" value="allow" class="primary">Autorizar</button>
+      <button type="submit" name="decision" value="deny" class="secondary">Negar</button>
+    </form>
+  </div>
+</body>
+</html>
