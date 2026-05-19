@@ -142,21 +142,21 @@ export const IntegrationsPage: React.FC = () => {
               {connections.map(c => (
                 <div
                   key={c.client_id}
-                  className="flex items-center justify-between border rounded-lg p-4"
+                  className="flex flex-col gap-3 border rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium">{c.name}</span>
                       <Badge variant="outline" className="text-xs text-green-600 border-green-200">
                         Ativo
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground font-mono">{c.client_id}</div>
+                    <div className="text-xs text-muted-foreground font-mono break-all">{c.client_id}</div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 text-destructive hover:text-destructive border-destructive/30 hover:border-destructive"
+                    className="gap-2 text-destructive hover:text-destructive border-destructive/30 hover:border-destructive w-full sm:w-auto sm:shrink-0"
                     onClick={() => handleRevoke(c.client_id)}
                     disabled={revokingId === c.client_id}
                   >
