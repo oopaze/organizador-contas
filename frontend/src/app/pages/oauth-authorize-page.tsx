@@ -35,12 +35,12 @@ export const OAuthAuthorizePage: React.FC = () => {
 
   // Auth gate — preserve full querystring through login.
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || missingParam) return;
     if (!isAuthenticated) {
       const next = encodeURIComponent(location.pathname + location.search);
       navigate(`/login?next=${next}`, { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate, location]);
+  }, [authLoading, isAuthenticated, missingParam, navigate, location]);
 
   // Fetch client info once we know required params exist and user is authed.
   useEffect(() => {
