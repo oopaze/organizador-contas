@@ -3,10 +3,9 @@ import logging
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.views.decorators.http import require_GET, require_POST
 
 from modules.ai.mcp.oauth.container import OAuthContainer
 from modules.ai.mcp.oauth.exceptions import OAuthError
@@ -188,17 +187,23 @@ def authorize_api(request):
     return JsonResponse({"redirect_to": f"{redirect_uri}?{qs}"})
 
 
-@login_required
-@require_http_methods(["GET"])
+@csrf_exempt
+@require_GET
 def list_connections(request):
-    items = container.list_connections_use_case().execute(user_id=request.user.id)
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    items = container.list_connections_use_case().execute(user_id=user.id)
     return JsonResponse({"connections": items})
 
 
-@login_required
-@require_http_methods(["POST"])
+@csrf_exempt
+@require_POST
 def revoke_connection(request, client_id: str):
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
     n = container.revoke_use_case().execute_by_client(
-        client_id=client_id, user_id=request.user.id,
+        client_id=client_id, user_id=user.id,
     )
     return JsonResponse({"revoked": n})

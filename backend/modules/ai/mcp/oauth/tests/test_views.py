@@ -110,18 +110,28 @@ class TestConnectionsAPI(TestCase):
         from modules.ai.mcp.models import MCPOAuthClient
         MCPOAuthClient.objects.create(client_id="mcp_a", name="A", redirect_uris=[], user_id=self.user.id)
         MCPOAuthClient.objects.create(client_id="mcp_b", name="B", redirect_uris=[], user_id=self.user.id)
-        self.client.force_login(self.user)
+        from modules.userdata.gateways.jwt import JWTGateway
+        from django.conf import settings as dj_settings
+        self.token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
+        self.auth = f"Bearer {self.token}"
 
     def test_list_connections(self):
-        resp = self.client.get("/api/v1/mcp/connections/")
+        resp = self.client.get("/api/v1/mcp/connections/", HTTP_AUTHORIZATION=self.auth)
         self.assertEqual(resp.status_code, 200)
         names = [c["name"] for c in resp.json()["connections"]]
         self.assertIn("A", names)
         self.assertIn("B", names)
 
     def test_revoke_connection(self):
-        resp = self.client.post("/api/v1/mcp/connections/mcp_a/revoke/")
+        resp = self.client.post(
+            "/api/v1/mcp/connections/mcp_a/revoke/",
+            HTTP_AUTHORIZATION=self.auth,
+        )
         self.assertEqual(resp.status_code, 200)
+
+    def test_list_requires_jwt(self):
+        resp = self.client.get("/api/v1/mcp/connections/")
+        self.assertEqual(resp.status_code, 401)
 
 
 class TestAuthorizeRedirect(TestCase):
