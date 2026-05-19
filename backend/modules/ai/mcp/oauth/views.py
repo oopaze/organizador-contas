@@ -5,7 +5,6 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
@@ -47,48 +46,18 @@ def register_client(request):
     }, status=201)
 
 
-@login_required(login_url="/")  # frontend handles login routing
+@require_GET
 def authorize(request):
-    params = request.POST if request.method == "POST" else request.GET
-    client_id = params.get("client_id")
-    redirect_uri = params.get("redirect_uri")
-    state = params.get("state", "")
-    code_challenge = params.get("code_challenge")
-    code_challenge_method = params.get("code_challenge_method", "S256")
-    scope = params.get("scope", "mcp:read")
-
-    if not all([client_id, redirect_uri, code_challenge]):
-        return HttpResponseBadRequest("missing required parameters")
-
-    if request.method == "GET":
-        client_repo = container.client_repository()
-        client = client_repo.get_by_client_id(client_id)
-        if client is None:
-            return HttpResponseBadRequest("unknown client_id")
-        return render(request, "mcp_oauth/consent.html", {
-            "client_id": client_id, "client_name": client.name,
-            "redirect_uri": redirect_uri, "state": state,
-            "code_challenge": code_challenge,
-            "code_challenge_method": code_challenge_method, "scope": scope,
-        })
-
-    decision = params.get("decision")
-    if decision == "deny":
-        qs = urlencode({"error": "access_denied", "state": state})
-        return HttpResponseRedirect(f"{redirect_uri}?{qs}")
-
-    try:
-        auth_code = container.authorize_use_case().execute(
-            client_id=client_id, user_id=request.user.id,
-            redirect_uri=redirect_uri, code_challenge=code_challenge,
-            code_challenge_method=code_challenge_method, scope=scope,
-        )
-    except OAuthError as exc:
-        qs = urlencode({"error": exc.error, "error_description": exc.message, "state": state})
-        return HttpResponseRedirect(f"{redirect_uri}?{qs}")
-
-    qs = urlencode({"code": auth_code.code, "state": state})
-    return HttpResponseRedirect(f"{redirect_uri}?{qs}")
+    """
+    Entry point for OAuth authorization from MCP clients (Claude, ChatGPT).
+    Hands off to the SPA's /oauth/authorize route, preserving the query string.
+    The SPA renders the consent UI and POSTs to /api/v1/mcp/oauth/authorize/.
+    """
+    qs = request.META.get("QUERY_STRING", "")
+    target = f"{settings.MCP_OAUTH_FRONTEND_URL.rstrip('/')}/oauth/authorize"
+    if qs:
+        target = f"{target}?{qs}"
+    return HttpResponseRedirect(target)
 
 
 @csrf_exempt
