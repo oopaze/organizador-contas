@@ -1,5 +1,8 @@
 from dependency_injector import containers, providers
 
+from modules.loans.repositories import LoanRepository
+from modules.loans.factories import LoanFactory, LoanPaymentFactory
+from modules.loans.models import Loan as LoanModel
 from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
 from modules.transactions.factories.actor import ActorFactory
 from modules.transactions.models import Actor, Transaction, SubTransaction
@@ -103,9 +106,17 @@ class TransactionsContainer(containers.DeclarativeContainer):
         actor_serializer=actor_serializer,
     )
 
+    loan_payment_factory_for_actor_delete = providers.Factory(LoanPaymentFactory)
+    loan_factory_for_actor_delete = providers.Factory(
+        LoanFactory, loan_payment_factory=loan_payment_factory_for_actor_delete
+    )
+    loan_repository_for_actor_delete = providers.Factory(
+        LoanRepository, model=LoanModel, loan_factory=loan_factory_for_actor_delete
+    )
     delete_actor_use_case = providers.Factory(
         DeleteActorUseCase,
         actor_repository=actor_repository,
+        loan_repository=loan_repository_for_actor_delete,
     )
 
     actor_stats_use_case = providers.Factory(

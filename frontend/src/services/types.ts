@@ -233,3 +233,73 @@ export interface EmbeddingItem {
   prompt_used_tokens: number;
   price: number;
 }
+
+// Loan types
+export interface LoanPayment {
+  id: number;
+  loan_id: number;
+  amount: string;
+  paid_at: string;
+  note: string;
+  file_id: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Loan {
+  id: number;
+  actor_id: number;
+  principal_amount: string;
+  lent_at: string;
+  description: string;
+  status: 'active' | 'settled' | 'cancelled';
+  file_id: number | null;
+  total_paid: string;
+  remaining: string;
+  progress_pct: number;
+  is_settled: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  payments?: LoanPayment[];
+}
+
+export interface LoanStats {
+  total_lent: string;
+  total_received: string;
+  total_outstanding: string;
+  active_principal: string;
+  settled_principal: string;
+  active_count: number;
+  settled_count: number;
+  cancelled_count: number;
+  payments_count: number;
+}
+
+export interface CreateLoanInput {
+  actor_id: number;
+  principal_amount: string;
+  lent_at: string;
+  description?: string;
+  file_id?: number;
+}
+
+export interface CreateLoanPaymentInput {
+  loan_id: number;
+  amount: string;
+  paid_at: string;
+  note?: string;
+  file_id?: number;
+}
+
+export interface UploadPixReceiptResult {
+  payment: LoanPayment;
+  extracted: {
+    amount: string;
+    paid_at: string;
+    payer_name: string | null;
+    payee_name: string | null;
+    transaction_id: string | null;
+    bank: string | null;
+    ai_call_id: string;
+  };
+}

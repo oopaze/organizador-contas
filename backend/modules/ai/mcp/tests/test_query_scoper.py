@@ -16,6 +16,8 @@ class TestQueryScoperService(SimpleTestCase):
         self.assertIn("transactions_actor AS", wrapped)
         self.assertIn("transactions_subtransaction AS", wrapped)
         self.assertIn("file_reader_file AS", wrapped)
+        self.assertIn("loans_loan AS", wrapped)
+        self.assertIn("loans_loanpayment AS", wrapped)
 
     def test_user_id_is_parameterized(self):
         wrapped, params = self.service.scope(
@@ -36,8 +38,8 @@ class TestQueryScoperService(SimpleTestCase):
 
     def test_filters_soft_deleted_rows(self):
         wrapped, _ = self.service.scope("SELECT 1", user_id=1)
-        # Three of the four tables have deleted_at; file_reader_file does not.
-        self.assertEqual(wrapped.count("deleted_at IS NULL"), 3)
+        # Five tables have deleted_at; file_reader_file does not.
+        self.assertEqual(wrapped.count("deleted_at IS NULL"), 5)
 
     def test_subtransaction_scoped_via_parent_transaction(self):
         wrapped, _ = self.service.scope("SELECT 1", user_id=1)
@@ -45,3 +47,8 @@ class TestQueryScoperService(SimpleTestCase):
         self.assertIn(
             "JOIN public.transactions_transaction t", wrapped
         )
+
+    def test_loan_payment_scoped_via_parent_loan(self):
+        wrapped, _ = self.service.scope("SELECT 1", user_id=1)
+        self.assertIn("loans_loanpayment p", wrapped)
+        self.assertIn("JOIN public.loans_loan l", wrapped)

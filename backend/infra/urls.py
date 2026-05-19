@@ -27,6 +27,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("file_reader/", include("modules.file_reader.urls")),
     path("transactions/", include("modules.transactions.urls")),
+    path("loans/", include("modules.loans.urls")),
     path("ai/", include("modules.ai.urls")),
 ]
 
