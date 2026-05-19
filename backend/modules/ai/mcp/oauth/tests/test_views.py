@@ -143,3 +143,26 @@ class TestAuthorizeRedirect(TestCase):
         self.assertEqual(qs["client_id"], ["mcp_abc"])
         self.assertEqual(qs["state"], ["xyz"])
         self.assertEqual(qs["code_challenge"], ["abc"])
+
+
+class TestClientInfoEndpoint(TestCase):
+    def setUp(self):
+        self.client = Client()
+        from modules.ai.mcp.models import MCPOAuthClient
+        MCPOAuthClient.objects.create(
+            client_id="mcp_known",
+            name="Claude",
+            redirect_uris=["https://claude.ai/cb"],
+        )
+
+    def test_returns_client_info_without_auth(self):
+        resp = self.client.get("/api/v1/mcp/oauth/client/mcp_known/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["client_id"], "mcp_known")
+        self.assertEqual(body["name"], "Claude")
+        self.assertEqual(body["redirect_uris"], ["https://claude.ai/cb"])
+
+    def test_unknown_client_returns_404(self):
+        resp = self.client.get("/api/v1/mcp/oauth/client/missing/")
+        self.assertEqual(resp.status_code, 404)
