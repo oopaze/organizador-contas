@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("file_reader", "0005_alter_file_ai_call"),
-        ("transactions", "0015_alter_subtransaction_category_and_more"),
+        ("transactions", "0014_subtransaction_category_transaction_category"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
