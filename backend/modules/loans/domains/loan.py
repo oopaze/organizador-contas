@@ -42,7 +42,7 @@ class LoanDomain:
 
     @property
     def progress_pct(self) -> float:
-        if not self.principal_amount or self.principal_amount == 0:
+        if not self.principal_amount:
             return 0.0
         ratio = self.total_paid / self.principal_amount
         return float(min(ratio, Decimal("1")) * 100)

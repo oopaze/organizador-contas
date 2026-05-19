@@ -7,7 +7,6 @@ class LoanPaymentDomain:
         amount=None,
         paid_at=None,
         loan_id: int = None,
-        loan: "LoanDomain" = None,
         note: str = "",
         file_id: int = None,
         id: int = None,
@@ -16,7 +15,6 @@ class LoanPaymentDomain:
     ):
         self.id = id
         self.loan_id = loan_id
-        self.loan = loan
         self.amount = Decimal(amount) if amount is not None else None
         self.paid_at = paid_at
         self.note = note or ""

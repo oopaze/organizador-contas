@@ -44,3 +44,21 @@ class TestLoanDomain(SimpleTestCase):
         self.assertTrue(self._make_loan(payments=[self._payment("5000")]).is_settled)
         self.assertTrue(self._make_loan(payments=[self._payment("5500")]).is_settled)
         self.assertFalse(self._make_loan(payments=[self._payment("100")]).is_settled)
+
+    def test_recompute_status_moves_active_to_settled_when_fully_paid(self):
+        loan = self._make_loan(payments=[self._payment("5000")])
+        loan.status = "active"
+        loan.recompute_status()
+        self.assertEqual(loan.status, "settled")
+
+    def test_recompute_status_reverts_settled_to_active_when_remaining(self):
+        loan = self._make_loan(payments=[self._payment("100")])
+        loan.status = "settled"
+        loan.recompute_status()
+        self.assertEqual(loan.status, "active")
+
+    def test_recompute_status_leaves_cancelled_alone(self):
+        loan = self._make_loan(payments=[self._payment("5000")])
+        loan.status = "cancelled"
+        loan.recompute_status()
+        self.assertEqual(loan.status, "cancelled")
