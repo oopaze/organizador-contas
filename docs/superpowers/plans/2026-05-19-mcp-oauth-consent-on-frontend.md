@@ -6,7 +6,9 @@
 
 **Architecture:** When Claude/ChatGPT hits `GET /oauth/authorize?...`, the backend now 302s to the SPA route `/oauth/authorize?...`. The React page renders a consent UI using the existing design system, calls a new JWT-auth'd `POST /api/v1/mcp/oauth/authorize/` to mint an auth code, then browser-navigates to the OAuth `redirect_uri`. The connection list/revoke endpoints move to JWT auth so the integrations page works in prod.
 
-**Tech Stack:** Django 6 (function views, `JsonResponse`), pytest + `MCP_PG_INTEGRATION=1` for integration tests, React 18 + React Router 6 + Vite, Tailwind + Radix UI components, `apiRequest` helper for HTTP.
+**Tech Stack:** Django 6 (function views, `JsonResponse`, `manage.py test` as test runner), `django.test.TestCase` + `Client`, React 18 + React Router 6 + Vite, Tailwind + Radix UI components, `apiRequest` helper for HTTP.
+
+**Test execution policy:** In-session test runs are deferred to the user (their dev env has the right deps + DB). The implementer writes the test code per the plan and commits it; pytest commands have been replaced with `python manage.py test` invocations the user can run later. "Run and confirm it fails/passes" steps are documented for the user's reference — the implementer skips them.
 
 **Spec:** [docs/superpowers/specs/2026-05-19-mcp-oauth-consent-on-frontend-design.md](../specs/2026-05-19-mcp-oauth-consent-on-frontend-design.md)
 
@@ -70,7 +72,25 @@ git commit -m "feat(mcp): add MCP_OAUTH_FRONTEND_URL setting"
 
 This test reflects the new contract: the backend hands the consent UI off to the SPA. It will fail today (current code renders the Django template).
 
-- [ ] **Step 1: Add the new test class at the bottom of the file**
+- [ ] **Step 1: Remove the pytest opt-in guard at the top of the file**
+
+The file currently starts with:
+
+```python
+import os
+import pytest
+
+if os.environ.get("MCP_PG_INTEGRATION") != "1":
+    pytest.skip(
+        "Set MCP_PG_INTEGRATION=1 to run OAuth view integration tests "
+        "(requires Postgres).",
+        allow_module_level=True,
+    )
+```
+
+Delete those 9 lines. We now run tests with `python manage.py test` (Django's runner always sets up a real test DB), so the opt-in is unnecessary and `import pytest` would break the runner.
+
+- [ ] **Step 2: Add the new test class at the bottom of the file**
 
 ```python
 class TestAuthorizeRedirect(TestCase):
@@ -108,14 +128,14 @@ class TestAuthorizeRedirect(TestCase):
         self.assertEqual(qs["code_challenge"], ["abc"])
 ```
 
-- [ ] **Step 2: Run the new test and confirm it fails**
+- [ ] **Step 3: Run the new test and confirm it fails**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestAuthorizeRedirect -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestAuthorizeRedirect --no-input -v 2
 ```
-Expected: FAIL — currently the view renders `consent.html` and returns 200, not a 302 to the SPA.
+Expected: FAIL — currently the view renders `consent.html` and returns 200, not a 302 to the SPA. (Test execution is deferred to the user — implementer skips this step.)
 
-- [ ] **Step 3: Commit the failing test**
+- [ ] **Step 4: Commit the failing test + pytest-guard removal**
 
 ```bash
 git add backend/modules/ai/mcp/oauth/tests/test_views.py
@@ -153,14 +173,14 @@ Then remove the now-unused `from django.shortcuts import render` import at the t
 - [ ] **Step 2: Run the test and confirm it passes**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestAuthorizeRedirect -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestAuthorizeRedirect --no-input -v 2
 ```
 Expected: PASS.
 
 - [ ] **Step 3: Run the full OAuth view test module to check what's broken**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views --no-input -v 2
 ```
 Expected: `TestOAuthFlow.test_full_flow` and `TestOAuthFlow.test_pkce_failure` now fail (they POST to `/oauth/authorize` with `decision=allow`, which no longer accepts POST). That's intentional and Task 5 replaces them.
 
@@ -207,7 +227,7 @@ class TestClientInfoEndpoint(TestCase):
 - [ ] **Step 2: Run and confirm it fails**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestClientInfoEndpoint -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestClientInfoEndpoint --no-input -v 2
 ```
 Expected: FAIL with 404 on `/api/v1/mcp/oauth/client/...` (URL not registered yet).
 
@@ -255,7 +275,7 @@ Open `backend/modules/ai/mcp/oauth/urls.py`. Add this line inside `urlpatterns`,
 - [ ] **Step 3: Run the tests**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestClientInfoEndpoint -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestClientInfoEndpoint --no-input -v 2
 ```
 Expected: both tests pass.
 
@@ -354,7 +374,7 @@ If the method name is different (e.g. `issue_access_token`, `generate_token`), u
 - [ ] **Step 2: Run and confirm it fails**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestAuthorizeApiEndpoint -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestAuthorizeApiEndpoint --no-input -v 2
 ```
 Expected: all three tests fail with 404 (endpoint not registered yet).
 
@@ -446,7 +466,7 @@ In `backend/modules/ai/mcp/oauth/urls.py`, add this line inside `urlpatterns`, r
 - [ ] **Step 3: Run the tests**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestAuthorizeApiEndpoint -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestAuthorizeApiEndpoint --no-input -v 2
 ```
 Expected: all three tests pass.
 
@@ -546,7 +566,7 @@ The `self.client.force_login(self.user)` line in both methods can be removed —
 - [ ] **Step 3: Run the full module**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views --no-input -v 2
 ```
 Expected: all tests pass except possibly `TestConnectionsAPI` (covered in Task 9).
 
@@ -606,7 +626,7 @@ class TestConnectionsAPI(TestCase):
 - [ ] **Step 2: Run and confirm the new test fails**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestConnectionsAPI -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestConnectionsAPI --no-input -v 2
 ```
 Expected: `test_list_requires_jwt` fails — current code uses `@login_required(login_url="/")` so it returns 302, not 401. The other two also fail because they no longer `force_login`.
 
@@ -642,14 +662,14 @@ Now `login_required` is unused. Remove the import: delete the line `from django.
 - [ ] **Step 4: Run and confirm tests pass**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/test_views.py::TestConnectionsAPI -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests.test_views.TestConnectionsAPI --no-input -v 2
 ```
 Expected: all three pass.
 
 - [ ] **Step 5: Run the full oauth test directory as a regression check**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/ -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests --no-input -v 2
 ```
 Expected: all tests pass.
 
@@ -687,7 +707,7 @@ rmdir backend/modules/ai/mcp/oauth/templates
 - [ ] **Step 3: Verify oauth tests still pass**
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/tests/ -v
+cd backend && python manage.py test modules.ai.mcp.oauth.tests --no-input -v 2
 ```
 Expected: all tests pass.
 
@@ -1132,7 +1152,7 @@ No commit needed for Task 15 — it's verification only.
 - [ ] Run the full OAuth test suite one more time:
 
 ```bash
-cd backend && MCP_PG_INTEGRATION=1 pytest modules/ai/mcp/oauth/ -v
+cd backend && python manage.py test modules.ai.mcp.oauth --no-input -v 2
 ```
 Expected: all tests pass.
 
