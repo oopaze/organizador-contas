@@ -39,7 +39,10 @@ class Loan(TimedModel, UserOwnedModel, SoftDeleteModel):
         ]
 
     def __str__(self):
-        return f"Loan {self.id} to actor {self.actor_id} R${self.principal_amount}"
+        return f"Loan {self.id} - actor {self.actor_id} - {self.principal_amount}"
+
+    def __repr__(self):
+        return f"<Loan {self.id} - actor {self.actor_id} - {self.principal_amount}>"
 
 
 class LoanPayment(TimedModel, SoftDeleteModel):
@@ -69,4 +72,7 @@ class LoanPayment(TimedModel, SoftDeleteModel):
         ]
 
     def __str__(self):
-        return f"LoanPayment {self.id} for loan {self.loan_id} R${self.amount}"
+        return f"LoanPayment {self.id} - loan {self.loan_id} - {self.amount}"
+
+    def __repr__(self):
+        return f"<LoanPayment {self.id} - loan {self.loan_id} - {self.amount}>"
