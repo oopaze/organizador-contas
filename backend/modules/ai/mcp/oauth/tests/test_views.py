@@ -1,13 +1,3 @@
-import os
-import pytest
-
-if os.environ.get("MCP_PG_INTEGRATION") != "1":
-    pytest.skip(
-        "Set MCP_PG_INTEGRATION=1 to run OAuth view integration tests "
-        "(requires Postgres).",
-        allow_module_level=True,
-    )
-
 import base64
 import hashlib
 import json
@@ -118,3 +108,38 @@ class TestConnectionsAPI(TestCase):
     def test_revoke_connection(self):
         resp = self.client.post("/api/v1/mcp/connections/mcp_a/revoke/")
         self.assertEqual(resp.status_code, 200)
+
+
+class TestAuthorizeRedirect(TestCase):
+    def setUp(self):
+        self.client = Client()
+        from modules.ai.mcp.models import MCPOAuthClient
+        MCPOAuthClient.objects.create(
+            client_id="mcp_abc", name="Claude",
+            redirect_uris=["https://app.example.com/cb"],
+        )
+
+    def test_get_redirects_to_spa_with_query_string(self):
+        from django.test import override_settings
+        with override_settings(MCP_OAUTH_FRONTEND_URL="https://app.poupix.test"):
+            resp = self.client.get(
+                "/oauth/authorize",
+                {
+                    "client_id": "mcp_abc",
+                    "redirect_uri": "https://app.example.com/cb",
+                    "code_challenge": "abc",
+                    "code_challenge_method": "S256",
+                    "scope": "mcp:read",
+                    "state": "xyz",
+                },
+            )
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(
+            resp.url.startswith("https://app.poupix.test/oauth/authorize?"),
+            resp.url,
+        )
+        from urllib.parse import urlparse, parse_qs
+        qs = parse_qs(urlparse(resp.url).query)
+        self.assertEqual(qs["client_id"], ["mcp_abc"])
+        self.assertEqual(qs["state"], ["xyz"])
+        self.assertEqual(qs["code_challenge"], ["abc"])
