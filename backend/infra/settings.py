@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "modules.file_reader",
     "modules.base",
     "modules.transactions",
+    "modules.loans",
     "modules.userdata",
     "corsheaders",
 ]
