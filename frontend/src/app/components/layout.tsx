@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/app/components/ui/button';
-import { LogOut, Wallet, Home, Users, MessageSquare, Brain, Plug } from 'lucide-react';
+import { LogOut, Wallet, Home, Users, MessageSquare, Brain, Plug, HandCoins } from 'lucide-react';
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -78,6 +78,17 @@ export const Layout: React.FC = () => {
                     title="Integrações"
                   >
                     <Plug className="w-5 h-5" />
+                  </Button>
+                )}
+              </NavLink>
+              <NavLink to="/loans">
+                {({ isActive }) => (
+                  <Button
+                    variant={isActive ? 'secondary' : 'ghost'}
+                    size="icon"
+                    title="Empréstimos"
+                  >
+                    <HandCoins className="w-5 h-5" />
                   </Button>
                 )}
               </NavLink>

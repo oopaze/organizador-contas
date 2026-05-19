@@ -11,6 +11,7 @@ import { AIInsightsPage } from './ai-insights-page';
 import { IntegrationsPage } from './integrations-page';
 import { PublicActorPage } from './public-actor-page';
 import { OAuthAuthorizePage } from './oauth-authorize-page';
+import { LoansPage } from '@/app/pages/loans-page';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -44,6 +45,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/ai-insights" element={<AIInsightsPage />} />
         <Route path="/integracoes" element={<IntegrationsPage />} />
+        <Route path="/loans" element={<LoansPage />} />
       </Route>
 
       {/* Catch all - redirect to home */}
