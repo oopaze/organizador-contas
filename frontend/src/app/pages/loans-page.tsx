@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover';
 import {
   Plus, ChevronRight, Pencil, Trash2,
   Wallet, TrendingUp, Clock, CheckCircle2,
@@ -41,6 +41,30 @@ export const LoansPage: React.FC = () => {
   const [editing, setEditing] = useState<Loan | null>(null);
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
+  const [menuFor, setMenuFor] = useState<{ id: number; top: number; left: number } | null>(null);
+  const triggerRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    if (!menuFor) return;
+    const close = () => setMenuFor(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [menuFor]);
+
+  const openMenu = (loanId: number) => {
+    const btn = triggerRefs.current[loanId];
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setMenuFor({
+      id: loanId,
+      top: rect.bottom + 4,
+      left: rect.right - 224, // 224px = w-56
+    });
+  };
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -188,29 +212,15 @@ export const LoansPage: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex items-center justify-end">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="ghost" size="sm" title="Adicionar pagamento">
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent align="end" className="w-56 p-1">
-                            <button
-                              type="button"
-                              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                              onClick={() => setUploadFor(l.id)}
-                            >
-                              <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
-                            </button>
-                            <button
-                              type="button"
-                              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                              onClick={() => setManualFor(l.id)}
-                            >
-                              <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
-                            </button>
-                          </PopoverContent>
-                        </Popover>
+                        <Button
+                          ref={(el) => { triggerRefs.current[l.id] = el; }}
+                          variant="ghost"
+                          size="sm"
+                          title="Adicionar pagamento"
+                          onClick={() => openMenu(l.id)}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                       </div>
@@ -229,6 +239,35 @@ export const LoansPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {menuFor && createPortal(
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setMenuFor(null)}
+          />
+          <div
+            className="fixed z-50 w-56 rounded-md border bg-popover p-1 shadow-md"
+            style={{ top: menuFor.top, left: menuFor.left }}
+          >
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+              onClick={() => { const id = menuFor.id; setMenuFor(null); setUploadFor(id); }}
+            >
+              <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
+            </button>
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+              onClick={() => { const id = menuFor.id; setMenuFor(null); setManualFor(id); }}
+            >
+              <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
 
       <AddLoanDialog open={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       <EditLoanDialog open={!!editing} onOpenChange={(v) => { if (!v) setEditing(null); }} loan={editing} onSuccess={refresh} />
