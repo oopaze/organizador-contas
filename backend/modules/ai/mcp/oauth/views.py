@@ -120,6 +120,19 @@ def well_known_protected_resource(request):
     })
 
 
+@require_GET
+def mcp_client_info(request, client_id: str):
+    """Public endpoint: the SPA consent screen calls this to render the client name."""
+    client = container.client_repository().get_by_client_id(client_id)
+    if client is None:
+        return JsonResponse({"error": "not_found"}, status=404)
+    return JsonResponse({
+        "client_id": client.client_id,
+        "name": client.name,
+        "redirect_uris": client.redirect_uris,
+    })
+
+
 @login_required
 @require_http_methods(["GET"])
 def list_connections(request):
