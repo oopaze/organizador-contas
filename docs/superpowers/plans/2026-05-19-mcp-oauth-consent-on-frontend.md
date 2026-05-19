@@ -311,7 +311,7 @@ class TestAuthorizeApiEndpoint(TestCase):
     def _jwt_for(self, user):
         from django.conf import settings as dj_settings
         from modules.userdata.gateways.jwt import JWTGateway
-        return JWTGateway(secret_key=dj_settings.SECRET_KEY).create_access_token(user_id=user.id)
+        return JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=user.id, email=user.email)
 
     def test_happy_path_returns_redirect_to_with_code_and_state(self):
         token = self._jwt_for(self.user)
@@ -364,12 +364,7 @@ class TestAuthorizeApiEndpoint(TestCase):
         self.assertEqual(resp.json()["error"], "invalid_request")
 ```
 
-You also need the JWT helper. Confirm it exists with the right method name:
-
-```bash
-grep -n 'create_access_token\|def create_' backend/modules/userdata/gateways/jwt.py
-```
-If the method name is different (e.g. `issue_access_token`, `generate_token`), update the `_jwt_for` helper above to match. Read the file to confirm: `cat backend/modules/userdata/gateways/jwt.py`.
+The JWT gateway method on this project is `generate_access_token(user_id, email)` — confirmed against `backend/modules/userdata/gateways/jwt.py` during Task 6 implementation.
 
 - [ ] **Step 2: Run and confirm it fails**
 
@@ -495,7 +490,7 @@ Find the existing `test_full_flow` method (around line 52). Replace its body wit
         client_id = self._register()
         from modules.userdata.gateways.jwt import JWTGateway
         from django.conf import settings as dj_settings
-        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).create_access_token(user_id=self.user.id)
+        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
         resp = self.client.post(
             "/api/v1/mcp/oauth/authorize/",
             data=json.dumps({
@@ -535,7 +530,7 @@ Replace its body with:
         client_id = self._register()
         from modules.userdata.gateways.jwt import JWTGateway
         from django.conf import settings as dj_settings
-        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).create_access_token(user_id=self.user.id)
+        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
         resp = self.client.post(
             "/api/v1/mcp/oauth/authorize/",
             data=json.dumps({
@@ -601,7 +596,7 @@ class TestConnectionsAPI(TestCase):
         MCPOAuthClient.objects.create(client_id="mcp_b", name="B", redirect_uris=[], user_id=self.user.id)
         from modules.userdata.gateways.jwt import JWTGateway
         from django.conf import settings as dj_settings
-        self.token = JWTGateway(secret_key=dj_settings.SECRET_KEY).create_access_token(user_id=self.user.id)
+        self.token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
         self.auth = f"Bearer {self.token}"
 
     def test_list_connections(self):
@@ -1168,6 +1163,6 @@ Expected: no errors introduced by this plan.
 ## Notes / pitfalls
 
 - **`MCP_OAUTH_FRONTEND_URL` in prod** must be set to the SPA's origin (e.g. `https://app.poupix.connectakit.com.br`). If `MCP_OAUTH_FRONTEND_URL` and `MCP_OAUTH_ISSUER` point at different hosts, CORS for `/api/v1/mcp/oauth/*` already works because `CORS_ALLOW_ALL_ORIGINS = True` (see `infra/settings.py`).
-- **JWT method name on `JWTGateway`:** the plan assumes `create_access_token(user_id=...)`. Confirm in Task 6, Step 1. If the actual name differs, swap it everywhere in the test code (Tasks 6, 8, 9).
+- **JWT method on `JWTGateway`:** `generate_access_token(user_id=..., email=...)`. Tasks 6, 8, 9 all use this call signature.
 - **`apiRequest` and 401:** existing code in `frontend/src/services/client.ts` treats 403 as expired-token (refresh + retry) and any other non-2xx as a generic error. The new public client-info endpoint returns 404 for unknown clients; the consent page handles that by showing the "Aplicativo não reconhecido" card. 401 from the authorize endpoint becomes a generic error toast — acceptable.
 - **CSRF:** the JSON authorize and revoke endpoints are `@csrf_exempt` (matching the rest of the OAuth views). They're protected by JWT, not session cookies.
