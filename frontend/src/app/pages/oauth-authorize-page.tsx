@@ -82,10 +82,6 @@ export const OAuthAuthorizePage: React.FC = () => {
     window.location.assign(`${redirectUri}${sep}${qs}`);
   }
 
-  if (authLoading || !isAuthenticated) {
-    return <Shell><Skeleton className="h-32 w-full" /></Shell>;
-  }
-
   if (missingParam) {
     return (
       <Shell>
@@ -95,6 +91,10 @@ export const OAuthAuthorizePage: React.FC = () => {
         />
       </Shell>
     );
+  }
+
+  if (authLoading || !isAuthenticated) {
+    return <Shell><Skeleton className="h-32 w-full" /></Shell>;
   }
 
   if (loadingClient) {
