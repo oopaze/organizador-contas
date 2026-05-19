@@ -246,11 +246,30 @@ FORMATO (JSON apenas):
 Rota: `/loans`. Item de menu "Empréstimos" no `layout.tsx`.
 
 Componentes:
-- Card de stats no topo: `Total Emprestado`, `Total Recebido`, `A Receber`, `Quitados`.
+- **Stat cards no topo (padrão `dashboard-page`)** — grid responsivo `grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6`. Cada card: título pequeno + ícone à direita, número grande colorido, linha secundária em texto muted:
+  1. **Emprestado** (ícone `Wallet`) — `R$ {total_lent}` / `R$ {active_principal} ativos`.
+  2. **Recebido** (ícone `TrendingUp` verde) — `R$ {total_received}` (verde) / `{payments_count} pagamentos`.
+  3. **A Receber** (ícone `Clock` laranja) — `R$ {total_outstanding}` (laranja) / `{active_count} empréstimos pendentes`.
+  4. **Quitados** (ícone `CheckCircle2` verde) — `R$ {settled_principal}` (verde) / `{settled_count} empréstimos quitados`.
 - Tabela colapsável (estilo `actors-page`) — uma linha por Loan:
   - Actor, principal, pago, falta, progresso (barra), último pagamento, ações (✏️ 🗑️ 📎).
   - Expansão mostra `LoanPaymentsTable` com data, valor, nota, link pro comprovante (download).
 - Botões topo: `+ Novo empréstimo`, `Subir comprovante PIX`.
+
+A payload de `GET /loans/loans/stats/` precisa expor:
+```json
+{
+  "total_lent": "10000.00",
+  "total_received": "1500.00",
+  "total_outstanding": "8500.00",
+  "active_principal": "5000.00",
+  "settled_principal": "5000.00",
+  "active_count": 1,
+  "settled_count": 1,
+  "cancelled_count": 0,
+  "payments_count": 3
+}
+```
 
 ### Dialogs novos
 
