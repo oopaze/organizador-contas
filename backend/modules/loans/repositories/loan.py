@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from modules.loans.domains.loan import LoanDomain
 from modules.loans.factories.loan import LoanFactory
-from modules.loans.models import Loan
+from modules.loans.models import Loan, LoanPayment
 
 
 class LoanRepository:
@@ -63,8 +63,6 @@ class LoanRepository:
         self.queryset.filter(id=loan_id, user_id=user_id).update(deleted_at=timezone.now())
 
     def stats(self, user_id: int) -> dict:
-        from modules.loans.models import LoanPayment
-
         qs = self.model.objects.filter(user_id=user_id).exclude(deleted_at__isnull=False)
 
         loan_agg = qs.aggregate(
