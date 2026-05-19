@@ -1,4 +1,13 @@
+from datetime import date, datetime
 from decimal import Decimal
+
+
+def _coerce_date(value):
+    if value is None or isinstance(value, date):
+        return value
+    if isinstance(value, datetime):
+        return value.date()
+    return datetime.strptime(value, "%Y-%m-%d").date()
 
 
 class LoanDomain:
@@ -23,7 +32,7 @@ class LoanDomain:
         self.principal_amount = (
             Decimal(principal_amount) if principal_amount is not None else None
         )
-        self.lent_at = lent_at
+        self.lent_at = _coerce_date(lent_at)
         self.description = description or ""
         self.status = status
         self.file_id = file_id
@@ -57,7 +66,7 @@ class LoanDomain:
         if "principal_amount" in data:
             self.principal_amount = Decimal(data["principal_amount"])
         if "lent_at" in data:
-            self.lent_at = data["lent_at"]
+            self.lent_at = _coerce_date(data["lent_at"])
         if "description" in data:
             self.description = data["description"] or ""
         if "status" in data:
