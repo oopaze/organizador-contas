@@ -55,3 +55,16 @@ export { getAICallsStats, type AIDateFilters } from './ai/getAICallsStats';
 export { getAICalls } from './ai/getAICalls';
 export { getEmbeddingsStats } from './ai/getEmbeddingsStats';
 export { getEmbeddings } from './ai/getEmbeddings';
+
+// Loan services
+export { getLoans } from './loans/getLoans';
+export { getLoan } from './loans/getLoan';
+export { createLoan } from './loans/createLoan';
+export { updateLoan } from './loans/updateLoan';
+export { deleteLoan } from './loans/deleteLoan';
+export { getLoanStats } from './loans/getLoanStats';
+export { getLoanPayments } from './loans/getLoanPayments';
+export { createLoanPayment } from './loans/createLoanPayment';
+export { updateLoanPayment } from './loans/updateLoanPayment';
+export { deleteLoanPayment } from './loans/deleteLoanPayment';
+export { uploadPixReceipt } from './loans/uploadPixReceipt';
