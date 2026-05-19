@@ -166,3 +166,73 @@ class TestClientInfoEndpoint(TestCase):
     def test_unknown_client_returns_404(self):
         resp = self.client.get("/api/v1/mcp/oauth/client/missing/")
         self.assertEqual(resp.status_code, 404)
+
+
+class TestAuthorizeApiEndpoint(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(email="u@u.com", password="x", is_active=True)
+        self.redirect_uri = "https://app.example.com/cb"
+        self.verifier, self.challenge = pkce_pair()
+        from modules.ai.mcp.models import MCPOAuthClient
+        MCPOAuthClient.objects.create(
+            client_id="mcp_x", name="Claude",
+            redirect_uris=[self.redirect_uri],
+        )
+
+    def _jwt_for(self, user):
+        from django.conf import settings as dj_settings
+        from modules.userdata.gateways.jwt import JWTGateway
+        return JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(
+            user_id=user.id, email=user.email
+        )
+
+    def test_happy_path_returns_redirect_to_with_code_and_state(self):
+        token = self._jwt_for(self.user)
+        resp = self.client.post(
+            "/api/v1/mcp/oauth/authorize/",
+            data=json.dumps({
+                "client_id": "mcp_x",
+                "redirect_uri": self.redirect_uri,
+                "code_challenge": self.challenge,
+                "code_challenge_method": "S256",
+                "scope": "mcp:read",
+                "state": "st-1",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+        body = resp.json()
+        self.assertIn("redirect_to", body)
+        self.assertTrue(body["redirect_to"].startswith(self.redirect_uri + "?"))
+        from urllib.parse import urlparse, parse_qs
+        qs = parse_qs(urlparse(body["redirect_to"]).query)
+        self.assertIn("code", qs)
+        self.assertEqual(qs["state"], ["st-1"])
+
+    def test_requires_jwt(self):
+        resp = self.client.post(
+            "/api/v1/mcp/oauth/authorize/",
+            data=json.dumps({"client_id": "mcp_x"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 401)
+
+    def test_mismatched_redirect_uri_returns_400(self):
+        token = self._jwt_for(self.user)
+        resp = self.client.post(
+            "/api/v1/mcp/oauth/authorize/",
+            data=json.dumps({
+                "client_id": "mcp_x",
+                "redirect_uri": "https://evil.example.com/cb",
+                "code_challenge": self.challenge,
+                "code_challenge_method": "S256",
+                "scope": "mcp:read",
+                "state": "st",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["error"], "invalid_request")
