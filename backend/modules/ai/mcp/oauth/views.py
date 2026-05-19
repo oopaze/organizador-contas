@@ -133,6 +133,61 @@ def mcp_client_info(request, client_id: str):
     })
 
 
+def _authenticate_jwt(request):
+    """Returns the authenticated user, or None. Mirrors JWTAuthentication's logic."""
+    from modules.userdata.authentication import JWTAuthentication
+    auth = JWTAuthentication()
+    try:
+        result = auth.authenticate(request)
+    except Exception:
+        return None
+    if result is None:
+        return None
+    user, _token = result
+    return user
+
+
+@csrf_exempt
+@require_POST
+def authorize_api(request):
+    """
+    Called by the SPA consent screen when the user clicks "Autorizar".
+    Issues an auth code and returns the redirect URL for the client.
+    """
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    try:
+        body = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid_request", "error_description": "invalid JSON"}, status=400)
+
+    client_id = body.get("client_id")
+    redirect_uri = body.get("redirect_uri")
+    code_challenge = body.get("code_challenge")
+    code_challenge_method = body.get("code_challenge_method", "S256")
+    scope = body.get("scope", "mcp:read")
+    state = body.get("state", "")
+
+    if not all([client_id, redirect_uri, code_challenge]):
+        return JsonResponse(
+            {"error": "invalid_request", "error_description": "missing required parameters"},
+            status=400,
+        )
+
+    try:
+        auth_code = container.authorize_use_case().execute(
+            client_id=client_id, user_id=user.id,
+            redirect_uri=redirect_uri, code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method, scope=scope,
+        )
+    except OAuthError as exc:
+        return _oauth_error(exc)
+
+    qs = urlencode({"code": auth_code.code, "state": state})
+    return JsonResponse({"redirect_to": f"{redirect_uri}?{qs}"})
+
+
 @login_required
 @require_http_methods(["GET"])
 def list_connections(request):
