@@ -5,12 +5,6 @@ import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/app/components/ui/dropdown-menu';
-import {
   Plus, ChevronRight, Pencil, Trash2,
   Wallet, TrendingUp, Clock, CheckCircle2,
   HandCoins, Upload, FilePlus,
@@ -46,6 +40,7 @@ export const LoansPage: React.FC = () => {
   const [editing, setEditing] = useState<Loan | null>(null);
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -192,23 +187,47 @@ export const LoansPage: React.FC = () => {
                       <Badge className={STATUS_CLASS[l.status]}>{STATUS_LABEL[l.status]}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" title="Adicionar pagamento">
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setUploadFor(l.id)}>
-                            <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setManualFor(l.id)}>
-                            <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                      <div className="relative inline-flex items-center justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Adicionar pagamento"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === l.id ? null : l.id);
+                          }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                        {openMenuId === l.id && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setOpenMenuId(null)}
+                            />
+                            <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-md border bg-popover p-1 shadow-md">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start w-full"
+                                onClick={() => { setOpenMenuId(null); setUploadFor(l.id); }}
+                              >
+                                <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start w-full"
+                                onClick={() => { setOpenMenuId(null); setManualFor(l.id); }}
+                              >
+                                <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   {expanded.has(l.id) && (
