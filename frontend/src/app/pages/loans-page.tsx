@@ -78,7 +78,7 @@ export const LoansPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-4">
         <h1 className="text-2xl font-bold">Empréstimos</h1>
         <Button onClick={() => setAddOpen(true)}>
           <Plus className="w-4 h-4 mr-2" /> Novo empréstimo
