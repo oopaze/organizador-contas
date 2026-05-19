@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover';
 import {
   Plus, ChevronRight, Pencil, Trash2,
   Wallet, TrendingUp, Clock, CheckCircle2,
@@ -40,7 +41,6 @@ export const LoansPage: React.FC = () => {
   const [editing, setEditing] = useState<Loan | null>(null);
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -187,44 +187,30 @@ export const LoansPage: React.FC = () => {
                       <Badge className={STATUS_CLASS[l.status]}>{STATUS_LABEL[l.status]}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="relative inline-flex items-center justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Adicionar pagamento"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(openMenuId === l.id ? null : l.id);
-                          }}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                        {openMenuId === l.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-40"
-                              onClick={() => setOpenMenuId(null)}
-                            />
-                            <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-md border bg-popover p-1 shadow-md">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start w-full"
-                                onClick={() => { setOpenMenuId(null); setUploadFor(l.id); }}
-                              >
-                                <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start w-full"
-                                onClick={() => { setOpenMenuId(null); setManualFor(l.id); }}
-                              >
-                                <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
-                              </Button>
-                            </div>
-                          </>
-                        )}
+                      <div className="inline-flex items-center justify-end">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="sm" title="Adicionar pagamento">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-56 p-1">
+                            <button
+                              type="button"
+                              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                              onClick={() => setUploadFor(l.id)}
+                            >
+                              <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
+                            </button>
+                            <button
+                              type="button"
+                              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                              onClick={() => setManualFor(l.id)}
+                            >
+                              <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
+                            </button>
+                          </PopoverContent>
+                        </Popover>
                         <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                       </div>
