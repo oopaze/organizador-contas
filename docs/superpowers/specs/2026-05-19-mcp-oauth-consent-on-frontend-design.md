@@ -153,12 +153,7 @@ Both go through the existing `apiRequest` helper. `fetchMCPClient` bypasses the 
 - `GET /api/v1/mcp/connections/` returns the user's connections when called with a valid JWT.
 - `POST /api/v1/mcp/connections/<id>/revoke/` revokes and returns the count.
 
-**Frontend (vitest + RTL, in line with existing tests):**
-- Page reads query params and shows the client name after fetch.
-- "Negar" redirects to `<redirect_uri>?error=access_denied&state=`.
-- "Autorizar" posts and navigates to `redirect_to`.
-- Unauthenticated visit redirects to `/login?next=...`.
-- Invalid `redirect_uri` hides the approve button.
+**Frontend:** the project has no test framework set up today; verify manually via `make run_dev` against the registered OAuth client. Cover: client-name renders, "Negar" round-trips with `error=access_denied`, "Autorizar" round-trips with `code` + `state`, unauthenticated visit lands on login and returns to consent after auth, and an unregistered `redirect_uri` hides the approve button.
 
 ## Migration / rollout
 
