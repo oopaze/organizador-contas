@@ -4,8 +4,8 @@ from modules.loans.serializers.loan_payment import LoanPaymentSerializer
 
 class ListLoanPaymentsUseCase:
     def __init__(self, loan_payment_repository: LoanPaymentRepository, loan_payment_serializer: LoanPaymentSerializer):
-        self.repo = loan_payment_repository
-        self.serializer = loan_payment_serializer
+        self.loan_payment_repository = loan_payment_repository
+        self.loan_payment_serializer = loan_payment_serializer
 
     def execute(
         self,
@@ -21,5 +21,5 @@ class ListLoanPaymentsUseCase:
             filters["paid_at__month"] = paid_at_month
         if paid_at_year:
             filters["paid_at__year"] = paid_at_year
-        payments = self.repo.get_all(user_id, filters)
-        return self.serializer.serialize_many(payments)
+        payments = self.loan_payment_repository.get_all(user_id, filters)
+        return self.loan_payment_serializer.serialize_many(payments)

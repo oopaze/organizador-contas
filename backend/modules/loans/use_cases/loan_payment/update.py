@@ -12,20 +12,20 @@ class UpdateLoanPaymentUseCase:
         loan_repository: LoanRepository,
         loan_payment_serializer: LoanPaymentSerializer,
     ):
-        self.payment_repo = loan_payment_repository
-        self.loan_repo = loan_repository
-        self.serializer = loan_payment_serializer
+        self.loan_payment_repository = loan_payment_repository
+        self.loan_repository = loan_repository
+        self.loan_payment_serializer = loan_payment_serializer
 
     @transaction.atomic
     def execute(self, payment_id: str, data: dict, user_id: int) -> dict:
-        payment = self.payment_repo.get(payment_id, user_id)
+        payment = self.loan_payment_repository.get(payment_id, user_id)
         payment.update(data)
-        updated = self.payment_repo.update(payment)
+        updated = self.loan_payment_repository.update(payment)
 
-        loan = self.loan_repo.get(payment.loan_id, user_id)
+        loan = self.loan_repository.get(payment.loan_id, user_id)
         previous_status = loan.status
         loan.recompute_status()
         if loan.status != previous_status:
-            self.loan_repo.update(loan)
+            self.loan_repository.update(loan)
 
-        return self.serializer.serialize(updated)
+        return self.loan_payment_serializer.serialize(updated)
