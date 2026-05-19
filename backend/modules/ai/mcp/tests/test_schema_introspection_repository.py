@@ -13,7 +13,7 @@ class TestSchemaIntrospectionRepository(SimpleTestCase):
             table_schema_factory=TableSchemaFactory(),
         )
 
-    def test_list_all_returns_four_scoped_tables(self):
+    def test_list_all_returns_all_scoped_tables(self):
         tables = self.repo.list_all()
         names = [t.name for t in tables]
         self.assertEqual(
@@ -23,6 +23,8 @@ class TestSchemaIntrospectionRepository(SimpleTestCase):
                 "transactions_subtransaction",
                 "transactions_actor",
                 "file_reader_file",
+                "loans_loan",
+                "loans_loanpayment",
             ]),
         )
 
