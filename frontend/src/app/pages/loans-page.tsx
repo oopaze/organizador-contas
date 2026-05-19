@@ -1,16 +1,40 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Button } from '@/app/components/ui/button';
+import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Plus, Upload, ChevronRight, Pencil, Trash2, Wallet, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/app/components/ui/dropdown-menu';
+import {
+  Plus, ChevronRight, Pencil, Trash2,
+  Wallet, TrendingUp, Clock, CheckCircle2,
+  HandCoins, Upload, FilePlus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Loan, LoanStats, Actor, getLoans, getLoanStats, getActors, deleteLoan } from '@/services';
 import { AddLoanDialog } from '@/app/components/add-loan-dialog';
 import { EditLoanDialog } from '@/app/components/edit-loan-dialog';
 import { UploadPixReceiptDialog } from '@/app/components/upload-pix-receipt-dialog';
+import { AddLoanPaymentDialog } from '@/app/components/add-loan-payment-dialog';
 import { LoanPaymentsTable } from '@/app/components/loan-payments-table';
+
+const STATUS_LABEL: Record<Loan['status'], string> = {
+  active: 'Pendente',
+  settled: 'Pago',
+  cancelled: 'Cancelado',
+};
+
+const STATUS_CLASS: Record<Loan['status'], string> = {
+  active: 'bg-orange-100 text-orange-800',
+  settled: 'bg-green-100 text-green-800',
+  cancelled: 'bg-gray-100 text-gray-600',
+};
 
 export const LoansPage: React.FC = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -19,8 +43,9 @@ export const LoansPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [editing, setEditing] = useState<Loan | null>(null);
+  const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
+  const [manualFor, setManualFor] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -60,14 +85,9 @@ export const LoansPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Empréstimos</h1>
-        <div className="flex gap-2">
-          <Button onClick={() => setUploadOpen(true)} variant="outline">
-            <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
-          </Button>
-          <Button onClick={() => setAddOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Novo empréstimo
-          </Button>
-        </div>
+        <Button onClick={() => setAddOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" /> Novo empréstimo
+        </Button>
       </div>
 
       {stats && (
@@ -127,21 +147,36 @@ export const LoansPage: React.FC = () => {
       )}
 
       <Card>
-        <CardContent className="p-0">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <HandCoins className="h-5 w-5" />
+            <CardTitle>Empréstimos</CardTitle>
+          </div>
+          <CardDescription>
+            Acompanhe o dinheiro que você emprestou e os pagamentos recebidos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead></TableHead>
+                <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Para</TableHead>
                 <TableHead>Emprestado</TableHead>
                 <TableHead>Pago</TableHead>
                 <TableHead>Falta</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead></TableHead>
+                <TableHead className="w-[160px] text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loans.map((l) => (
+              {loans.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-sm text-gray-500 py-8">
+                    Nenhum empréstimo registrado ainda.
+                  </TableCell>
+                </TableRow>
+              ) : loans.map((l) => (
                 <React.Fragment key={l.id}>
                   <TableRow>
                     <TableCell>
@@ -153,10 +188,27 @@ export const LoansPage: React.FC = () => {
                     <TableCell>R$ {l.principal_amount}</TableCell>
                     <TableCell>R$ {l.total_paid}</TableCell>
                     <TableCell>R$ {l.remaining}</TableCell>
-                    <TableCell>{l.status}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => setEditing(l)}><Pencil className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)}><Trash2 className="w-4 h-4" /></Button>
+                      <Badge className={STATUS_CLASS[l.status]}>{STATUS_LABEL[l.status]}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" title="Adicionar pagamento">
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setUploadFor(l.id)}>
+                            <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setManualFor(l.id)}>
+                            <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                     </TableCell>
                   </TableRow>
                   {expanded.has(l.id) && (
@@ -175,7 +227,18 @@ export const LoansPage: React.FC = () => {
 
       <AddLoanDialog open={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       <EditLoanDialog open={!!editing} onOpenChange={(v) => { if (!v) setEditing(null); }} loan={editing} onSuccess={refresh} />
-      <UploadPixReceiptDialog open={uploadOpen} onOpenChange={setUploadOpen} onSuccess={refresh} />
+      <UploadPixReceiptDialog
+        open={uploadFor !== undefined}
+        onOpenChange={(v) => { if (!v) setUploadFor(undefined); }}
+        onSuccess={refresh}
+        preselectedLoanId={uploadFor}
+      />
+      <AddLoanPaymentDialog
+        open={manualFor !== null}
+        onOpenChange={(v) => { if (!v) setManualFor(null); }}
+        onSuccess={refresh}
+        loanId={manualFor}
+      />
     </div>
   );
 };
