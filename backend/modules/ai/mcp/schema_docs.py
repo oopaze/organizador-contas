@@ -25,6 +25,16 @@ TABLE_DESCRIPTIONS = {
         "Arquivo original (PDF/Excel) de onde uma transação foi extraída "
         "por IA."
     ),
+    "loans_loan": (
+        "Empréstimo feito pelo usuário a um Actor. principal_amount é o valor "
+        "original; saldo restante = principal_amount - SUM(loans_loanpayment.amount). "
+        "status: active/settled/cancelled. file_id aponta opcionalmente para o "
+        "comprovante de origem."
+    ),
+    "loans_loanpayment": (
+        "Pagamento recebido de um empréstimo. Ligado a loans_loan via loan_id. "
+        "file_id aponta para o comprovante PIX do pagamento, quando enviado."
+    ),
 }
 
 
@@ -44,4 +54,6 @@ SCOPED_TABLES = [
     "transactions_subtransaction",
     "transactions_actor",
     "file_reader_file",
+    "loans_loan",
+    "loans_loanpayment",
 ]

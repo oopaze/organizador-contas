@@ -17,6 +17,15 @@ WITH
   file_reader_file AS (
     SELECT * FROM public.file_reader_file
     WHERE user_id = (SELECT id FROM me)
+  ),
+  loans_loan AS (
+    SELECT * FROM public.loans_loan
+    WHERE user_id = (SELECT id FROM me) AND deleted_at IS NULL
+  ),
+  loans_loanpayment AS (
+    SELECT p.* FROM public.loans_loanpayment p
+    JOIN public.loans_loan l ON p.loan_id = l.id
+    WHERE l.user_id = (SELECT id FROM me) AND p.deleted_at IS NULL
   )
 """
 
