@@ -41,21 +41,27 @@ class TestOAuthFlow(TestCase):
 
     def test_full_flow(self):
         client_id = self._register()
-        self.client.force_login(self.user)
-        # Authorize (POST allow)
-        resp = self.client.post("/oauth/authorize", {
-            "client_id": client_id,
-            "redirect_uri": self.redirect_uri,
-            "code_challenge": self.challenge,
-            "code_challenge_method": "S256",
-            "scope": "mcp:read",
-            "state": "xyz",
-            "decision": "allow",
-        })
-        self.assertEqual(resp.status_code, 302)
-        qs = parse_qs(urlparse(resp.url).query)
+        from modules.userdata.gateways.jwt import JWTGateway
+        from django.conf import settings as dj_settings
+        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
+        resp = self.client.post(
+            "/api/v1/mcp/oauth/authorize/",
+            data=json.dumps({
+                "client_id": client_id,
+                "redirect_uri": self.redirect_uri,
+                "code_challenge": self.challenge,
+                "code_challenge_method": "S256",
+                "scope": "mcp:read",
+                "state": "xyz",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+        from urllib.parse import urlparse, parse_qs
+        qs = parse_qs(urlparse(resp.json()["redirect_to"]).query)
         code = qs["code"][0]
-        # Token exchange
+        # Token exchange — unchanged
         resp = self.client.post("/oauth/token", {
             "grant_type": "authorization_code",
             "code": code, "client_id": client_id,
@@ -69,16 +75,24 @@ class TestOAuthFlow(TestCase):
 
     def test_pkce_failure(self):
         client_id = self._register()
-        self.client.force_login(self.user)
-        resp = self.client.post("/oauth/authorize", {
-            "client_id": client_id,
-            "redirect_uri": self.redirect_uri,
-            "code_challenge": self.challenge,
-            "code_challenge_method": "S256", "scope": "mcp:read",
-            "state": "xyz", "decision": "allow",
-        })
-        code = parse_qs(urlparse(resp.url).query)["code"][0]
-        # Wrong verifier
+        from modules.userdata.gateways.jwt import JWTGateway
+        from django.conf import settings as dj_settings
+        token = JWTGateway(secret_key=dj_settings.SECRET_KEY).generate_access_token(user_id=self.user.id, email=self.user.email)
+        resp = self.client.post(
+            "/api/v1/mcp/oauth/authorize/",
+            data=json.dumps({
+                "client_id": client_id,
+                "redirect_uri": self.redirect_uri,
+                "code_challenge": self.challenge,
+                "code_challenge_method": "S256",
+                "scope": "mcp:read",
+                "state": "xyz",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        from urllib.parse import urlparse, parse_qs
+        code = parse_qs(urlparse(resp.json()["redirect_to"]).query)["code"][0]
         resp = self.client.post("/oauth/token", {
             "grant_type": "authorization_code",
             "code": code, "client_id": client_id,
