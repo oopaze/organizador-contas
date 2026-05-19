@@ -12,7 +12,7 @@ export const Layout: React.FC = () => {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 sm:grid sm:grid-cols-[1fr_auto_1fr]">
             {/* Logo and Title */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
@@ -25,7 +25,7 @@ export const Layout: React.FC = () => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex items-center gap-1 sm:order-2 sm:w-auto justify-center">
+            <nav className="flex items-center gap-1 sm:order-2 sm:w-auto justify-center sm:justify-self-center">
               <NavLink to="/">
                 {({ isActive }) => (
                   <Button
@@ -95,7 +95,7 @@ export const Layout: React.FC = () => {
             </nav>
 
             {/* Logout Button */}
-            <div className="flex order-2 sm:order-3">
+            <div className="flex order-2 sm:order-3 sm:justify-self-end">
               <Button variant="outline" size="icon" onClick={logout} className="sm:hidden" title="Sair">
                 <LogOut className="w-4 h-4" />
               </Button>
