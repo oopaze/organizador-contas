@@ -10,6 +10,7 @@ import { ChatPage } from './chat-page';
 import { AIInsightsPage } from './ai-insights-page';
 import { IntegrationsPage } from './integrations-page';
 import { PublicActorPage } from './public-actor-page';
+import { OAuthAuthorizePage } from './oauth-authorize-page';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -26,6 +27,9 @@ export const AppRoutes: React.FC = () => {
 
       {/* Public actor share page (no auth required) */}
       <Route path="/share/actor" element={<PublicActorPage />} />
+
+      {/* OAuth consent — handles its own auth gate */}
+      <Route path="/oauth/authorize" element={<OAuthAuthorizePage />} />
 
       {/* Protected routes with Layout */}
       <Route

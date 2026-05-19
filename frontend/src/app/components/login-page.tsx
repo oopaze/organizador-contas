@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -8,8 +9,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
+function safeNext(raw: string | null): string {
+  if (!raw) return '/';
+  // Only allow relative same-origin paths to avoid open-redirect.
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  return raw;
+}
+
 export const LoginPage: React.FC = () => {
   const { login, register } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
   // Login form state
@@ -28,6 +38,8 @@ export const LoginPage: React.FC = () => {
     try {
       await login({ email: loginEmail, password: loginPassword });
       toast.success('Bem-vindo de volta!');
+      const target = safeNext(searchParams.get('next'));
+      navigate(target, { replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao entrar');
     } finally {

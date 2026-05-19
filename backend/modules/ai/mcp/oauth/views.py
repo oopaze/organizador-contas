@@ -3,11 +3,9 @@ import logging
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.views.decorators.http import require_GET, require_POST
 
 from modules.ai.mcp.oauth.container import OAuthContainer
 from modules.ai.mcp.oauth.exceptions import OAuthError
@@ -47,48 +45,18 @@ def register_client(request):
     }, status=201)
 
 
-@login_required(login_url="/")  # frontend handles login routing
+@require_GET
 def authorize(request):
-    params = request.POST if request.method == "POST" else request.GET
-    client_id = params.get("client_id")
-    redirect_uri = params.get("redirect_uri")
-    state = params.get("state", "")
-    code_challenge = params.get("code_challenge")
-    code_challenge_method = params.get("code_challenge_method", "S256")
-    scope = params.get("scope", "mcp:read")
-
-    if not all([client_id, redirect_uri, code_challenge]):
-        return HttpResponseBadRequest("missing required parameters")
-
-    if request.method == "GET":
-        client_repo = container.client_repository()
-        client = client_repo.get_by_client_id(client_id)
-        if client is None:
-            return HttpResponseBadRequest("unknown client_id")
-        return render(request, "mcp_oauth/consent.html", {
-            "client_id": client_id, "client_name": client.name,
-            "redirect_uri": redirect_uri, "state": state,
-            "code_challenge": code_challenge,
-            "code_challenge_method": code_challenge_method, "scope": scope,
-        })
-
-    decision = params.get("decision")
-    if decision == "deny":
-        qs = urlencode({"error": "access_denied", "state": state})
-        return HttpResponseRedirect(f"{redirect_uri}?{qs}")
-
-    try:
-        auth_code = container.authorize_use_case().execute(
-            client_id=client_id, user_id=request.user.id,
-            redirect_uri=redirect_uri, code_challenge=code_challenge,
-            code_challenge_method=code_challenge_method, scope=scope,
-        )
-    except OAuthError as exc:
-        qs = urlencode({"error": exc.error, "error_description": exc.message, "state": state})
-        return HttpResponseRedirect(f"{redirect_uri}?{qs}")
-
-    qs = urlencode({"code": auth_code.code, "state": state})
-    return HttpResponseRedirect(f"{redirect_uri}?{qs}")
+    """
+    Entry point for OAuth authorization from MCP clients (Claude, ChatGPT).
+    Hands off to the SPA's /oauth/authorize route, preserving the query string.
+    The SPA renders the consent UI and POSTs to /api/v1/mcp/oauth/authorize/.
+    """
+    qs = request.META.get("QUERY_STRING", "")
+    target = f"{settings.MCP_OAUTH_FRONTEND_URL.rstrip('/')}/oauth/authorize"
+    if qs:
+        target = f"{target}?{qs}"
+    return HttpResponseRedirect(target)
 
 
 @csrf_exempt
@@ -151,17 +119,91 @@ def well_known_protected_resource(request):
     })
 
 
-@login_required
-@require_http_methods(["GET"])
+@require_GET
+def mcp_client_info(request, client_id: str):
+    """Public endpoint: the SPA consent screen calls this to render the client name."""
+    client = container.client_repository().get_by_client_id(client_id)
+    if client is None:
+        return JsonResponse({"error": "not_found"}, status=404)
+    return JsonResponse({
+        "client_id": client.client_id,
+        "name": client.name,
+        "redirect_uris": client.redirect_uris,
+    })
+
+
+def _authenticate_jwt(request):
+    """Returns the authenticated user, or None. Mirrors JWTAuthentication's logic."""
+    from modules.userdata.authentication import JWTAuthentication
+    auth = JWTAuthentication()
+    try:
+        result = auth.authenticate(request)
+    except Exception:
+        return None
+    if result is None:
+        return None
+    user, _token = result
+    return user
+
+
+@csrf_exempt
+@require_POST
+def authorize_api(request):
+    """
+    Called by the SPA consent screen when the user clicks "Autorizar".
+    Issues an auth code and returns the redirect URL for the client.
+    """
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    try:
+        body = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid_request", "error_description": "invalid JSON"}, status=400)
+
+    client_id = body.get("client_id")
+    redirect_uri = body.get("redirect_uri")
+    code_challenge = body.get("code_challenge")
+    code_challenge_method = body.get("code_challenge_method", "S256")
+    scope = body.get("scope", "mcp:read")
+    state = body.get("state", "")
+
+    if not all([client_id, redirect_uri, code_challenge]):
+        return JsonResponse(
+            {"error": "invalid_request", "error_description": "missing required parameters"},
+            status=400,
+        )
+
+    try:
+        auth_code = container.authorize_use_case().execute(
+            client_id=client_id, user_id=user.id,
+            redirect_uri=redirect_uri, code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method, scope=scope,
+        )
+    except OAuthError as exc:
+        return _oauth_error(exc)
+
+    qs = urlencode({"code": auth_code.code, "state": state})
+    return JsonResponse({"redirect_to": f"{redirect_uri}?{qs}"})
+
+
+@csrf_exempt
+@require_GET
 def list_connections(request):
-    items = container.list_connections_use_case().execute(user_id=request.user.id)
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    items = container.list_connections_use_case().execute(user_id=user.id)
     return JsonResponse({"connections": items})
 
 
-@login_required
-@require_http_methods(["POST"])
+@csrf_exempt
+@require_POST
 def revoke_connection(request, client_id: str):
+    user = _authenticate_jwt(request)
+    if user is None:
+        return JsonResponse({"error": "unauthorized"}, status=401)
     n = container.revoke_use_case().execute_by_client(
-        client_id=client_id, user_id=request.user.id,
+        client_id=client_id, user_id=user.id,
     )
     return JsonResponse({"revoked": n})

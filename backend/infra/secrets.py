@@ -42,3 +42,4 @@ MCP_DATABASE_PASSWORD = environ.get("MCP_DATABASE_PASSWORD", "")
 
 # MCP — OAuth Authorization Server issuer URL (no trailing slash)
 MCP_OAUTH_ISSUER = environ.get("MCP_OAUTH_ISSUER", "http://localhost:8000")
+MCP_OAUTH_FRONTEND_URL = environ.get("MCP_OAUTH_FRONTEND_URL", "http://localhost:5173")

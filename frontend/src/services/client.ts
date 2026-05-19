@@ -75,8 +75,10 @@ export async function apiRequest<T>(
         throw new Error('Session expired');
       }
     }
-    const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-    throw new Error(error.detail || 'An error occurred');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      error.detail || error.error_description || error.error || 'An error occurred'
+    );
   }
 
   if (response.status === 204) {
