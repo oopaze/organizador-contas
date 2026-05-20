@@ -191,6 +191,7 @@ export const LoansPage: React.FC = () => {
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Para</TableHead>
+                <TableHead>Data</TableHead>
                 <TableHead>Emprestado</TableHead>
                 <TableHead>Pago</TableHead>
                 <TableHead>Falta</TableHead>
@@ -204,6 +205,7 @@ export const LoansPage: React.FC = () => {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -213,7 +215,7 @@ export const LoansPage: React.FC = () => {
                 ))
               ) : loans.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-sm text-gray-500 py-8">
+                  <TableCell colSpan={8} className="text-center text-sm text-gray-500 py-8">
                     Nenhum empréstimo registrado ainda.
                   </TableCell>
                 </TableRow>
@@ -226,6 +228,7 @@ export const LoansPage: React.FC = () => {
                       </Button>
                     </TableCell>
                     <TableCell>{l.actor?.name ?? `Actor #${l.actor_id}`}</TableCell>
+                    <TableCell className="text-sm">{l.lent_at}</TableCell>
                     <TableCell>R$ {l.principal_amount}</TableCell>
                     <TableCell>R$ {l.total_paid}</TableCell>
                     <TableCell>R$ {l.remaining}</TableCell>
@@ -249,7 +252,7 @@ export const LoansPage: React.FC = () => {
                   </TableRow>
                   {expanded.has(l.id) && (
                     <TableRow>
-                      <TableCell colSpan={7} className="bg-gray-50">
+                      <TableCell colSpan={8} className="bg-gray-50">
                         <LoanPaymentsTable payments={l.payments ?? []} onChange={refresh} />
                       </TableCell>
                     </TableRow>
