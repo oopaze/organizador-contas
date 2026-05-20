@@ -8,9 +8,10 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import {
   Plus, ChevronRight, Pencil, Trash2,
   Wallet, TrendingUp, Clock, CheckCircle2,
-  HandCoins, Upload, FilePlus, Download,
+  HandCoins, Upload, FilePlus, Download, Share2,
 } from 'lucide-react';
 import { resolveFileUrl } from '@/lib/file-url';
+import { ShareActorDialog } from '@/app/components/share-actor-dialog';
 import { toast } from 'sonner';
 
 import { Loan, LoanStats, getLoans, getLoanStats, deleteLoan } from '@/services';
@@ -44,6 +45,7 @@ export const LoansPage: React.FC = () => {
   const [manualFor, setManualFor] = useState<number | null>(null);
   const [manualFileId, setManualFileId] = useState<number | undefined>(undefined);
   const [menuFor, setMenuFor] = useState<{ id: number; top: number; left: number } | null>(null);
+  const [shareActor, setShareActor] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     if (!menuFor) return;
@@ -263,6 +265,14 @@ export const LoansPage: React.FC = () => {
                             <Download className="w-4 h-4 text-indigo-600" />
                           </a>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Compartilhar"
+                          onClick={() => setShareActor({ id: l.actor_id, name: l.actor?.name ?? `Actor #${l.actor_id}` })}
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                       </div>
@@ -310,6 +320,13 @@ export const LoansPage: React.FC = () => {
         </>,
         document.body
       )}
+
+      <ShareActorDialog
+        open={shareActor !== null}
+        onOpenChange={(v) => { if (!v) setShareActor(null); }}
+        actorId={shareActor?.id ?? null}
+        actorName={shareActor?.name ?? ''}
+      />
 
       <AddLoanDialog open={addOpen} onOpenChange={setAddOpen} onSuccess={refresh} />
       <EditLoanDialog open={!!editing} onOpenChange={(v) => { if (!v) setEditing(null); }} loan={editing} onSuccess={refresh} />

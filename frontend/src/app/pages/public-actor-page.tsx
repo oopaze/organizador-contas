@@ -109,50 +109,109 @@ export const PublicActorPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Gasto</CardTitle>
+        {/* Stats — Cartão de Crédito (somente quando há gastos) */}
+        {(loading || (actor?.sub_transactions && actor.sub_transactions.length > 0)) && (
+          <>
+            <div className="flex items-center gap-2 mb-2 mt-6">
               <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_spent || 0).toFixed(2)}`}
-              </div>
-            </CardContent>
-          </Card>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Cartão de Crédito
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total em Cartão</CardTitle>
+                  <Wallet className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_spent || 0).toFixed(2)}`}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Já Pago</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_spent_paid || 0).toFixed(2)}`}
-              </div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pago em Cartão</CardTitle>
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_spent_paid || 0).toFixed(2)}`}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Restante</CardTitle>
-              <Clock className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${(actor?.total_remaining || 0) > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_remaining || 0).toFixed(2)}`}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Restante em Cartão</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${(actor?.total_remaining || 0) > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                    {loading ? <Skeleton className="h-8 w-24" /> : `R$ ${(actor?.total_remaining || 0).toFixed(2)}`}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
 
-        {/* Transactions Table */}
+        {/* Stats — Empréstimos */}
+        {actor?.loans && actor.loans.length > 0 && (() => {
+          const totalLent = actor.loans.reduce((s, l) => s + Number(l.principal_amount || 0), 0);
+          const totalReceived = actor.loans.reduce((s, l) => s + Number(l.total_paid || 0), 0);
+          const totalOutstanding = actor.loans.reduce((s, l) => s + Number(l.remaining || 0), 0);
+          return (
+            <>
+              <div className="flex items-center gap-2 mb-2 mt-6">
+                <HandCoins className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Empréstimos
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Emprestado</CardTitle>
+                    <HandCoins className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">R$ {totalLent.toFixed(2)}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Recebido</CardTitle>
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">R$ {totalReceived.toFixed(2)}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">A Receber</CardTitle>
+                    <Clock className="h-4 w-4 text-orange-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${totalOutstanding > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      R$ {totalOutstanding.toFixed(2)}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          );
+        })()}
+
+        {/* Gastos em Cartão (somente quando há sub_transactions) */}
+        {(loading || (actor?.sub_transactions && actor.sub_transactions.length > 0)) && (
         <Card>
           <CardHeader>
-            <CardTitle>Itens</CardTitle>
-            <CardDescription>Detalhamento dos gastos</CardDescription>
+            <CardTitle>Gastos em Cartão</CardTitle>
+            <CardDescription>Detalhamento dos gastos no período</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -241,6 +300,7 @@ export const PublicActorPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Loans Section */}
         {actor?.loans && actor.loans.length > 0 && (
