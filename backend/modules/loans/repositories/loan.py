@@ -18,8 +18,8 @@ class LoanRepository:
     def queryset(self):
         return (
             self.model.objects.exclude(deleted_at__isnull=False)
-            .select_related("actor")
-            .prefetch_related("payments")
+            .select_related("actor", "file")
+            .prefetch_related("payments__file")
             .order_by("-lent_at")
         )
 

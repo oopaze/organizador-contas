@@ -20,6 +20,7 @@ class LoanDomain:
         description: str = "",
         status: str = "active",
         file_id: int = None,
+        file_url: str = None,
         user_id: int = None,
         id: int = None,
         created_at=None,
@@ -36,6 +37,7 @@ class LoanDomain:
         self.description = description or ""
         self.status = status
         self.file_id = file_id
+        self.file_url = file_url
         self.user_id = user_id
         self.created_at = created_at
         self.updated_at = updated_at

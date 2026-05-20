@@ -13,6 +13,9 @@ class LoanFactory:
             if getattr(model, "actor", None)
             else None
         )
+        file_url = None
+        if model.file_id and getattr(model, "file", None) and model.file.raw_file:
+            file_url = model.file.raw_file.url
         loan = LoanDomain(
             id=model.id,
             actor_id=model.actor_id,
@@ -22,6 +25,7 @@ class LoanFactory:
             description=model.description,
             status=model.status,
             file_id=model.file_id,
+            file_url=file_url,
             user_id=model.user_id,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -32,6 +36,7 @@ class LoanFactory:
                 for p in (
                     model.payments
                     .exclude(deleted_at__isnull=False)
+                    .select_related("file")
                     .order_by("-paid_at")
                 )
             ]

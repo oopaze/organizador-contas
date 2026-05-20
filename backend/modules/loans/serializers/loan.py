@@ -16,6 +16,7 @@ class LoanSerializer:
             "description": loan.description,
             "status": loan.status,
             "file_id": loan.file_id,
+            "file_url": loan.file_url,
             "total_paid": str(loan.total_paid),
             "remaining": str(loan.remaining),
             "progress_pct": loan.progress_pct,

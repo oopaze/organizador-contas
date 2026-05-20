@@ -10,6 +10,7 @@ class LoanPaymentSerializer:
             "paid_at": payment.paid_at.isoformat() if payment.paid_at else None,
             "note": payment.note,
             "file_id": payment.file_id,
+            "file_url": payment.file_url,
             "created_at": payment.created_at.isoformat() if payment.created_at else None,
             "updated_at": payment.updated_at.isoformat() if payment.updated_at else None,
         }

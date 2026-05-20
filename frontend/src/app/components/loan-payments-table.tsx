@@ -2,8 +2,9 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Button } from '@/app/components/ui/button';
 import { LoanPayment, deleteLoanPayment } from '@/services';
-import { Trash2, FileText } from 'lucide-react';
+import { Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveFileUrl } from '@/lib/file-url';
 
 interface Props {
   payments: LoanPayment[];
@@ -38,23 +39,33 @@ export const LoanPaymentsTable: React.FC<Props> = ({ payments, onChange }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {payments.map((p) => (
-          <TableRow key={p.id}>
-            <TableCell>{p.paid_at}</TableCell>
-            <TableCell>R$ {p.amount}</TableCell>
-            <TableCell>{p.note || '—'}</TableCell>
-            <TableCell>
-              {p.file_id ? (
-                <FileText className="w-4 h-4 text-indigo-600" />
-              ) : '—'}
-            </TableCell>
-            <TableCell>
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {payments.map((p) => {
+          const url = resolveFileUrl(p.file_url);
+          return (
+            <TableRow key={p.id}>
+              <TableCell>{p.paid_at}</TableCell>
+              <TableCell>R$ {p.amount}</TableCell>
+              <TableCell>{p.note || '—'}</TableCell>
+              <TableCell>
+                {url ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-sm"
+                  >
+                    <Download className="w-4 h-4" /> Baixar
+                  </a>
+                ) : '—'}
+              </TableCell>
+              <TableCell>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

@@ -4,6 +4,9 @@ from modules.loans.models import LoanPayment
 
 class LoanPaymentFactory:
     def build_from_model(self, model: LoanPayment) -> LoanPaymentDomain:
+        file_url = None
+        if model.file_id and getattr(model, "file", None) and model.file.raw_file:
+            file_url = model.file.raw_file.url
         return LoanPaymentDomain(
             id=model.id,
             loan_id=model.loan_id,
@@ -11,6 +14,7 @@ class LoanPaymentFactory:
             paid_at=model.paid_at,
             note=model.note,
             file_id=model.file_id,
+            file_url=file_url,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

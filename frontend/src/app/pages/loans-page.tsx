@@ -8,8 +8,9 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import {
   Plus, ChevronRight, Pencil, Trash2,
   Wallet, TrendingUp, Clock, CheckCircle2,
-  HandCoins, Upload, FilePlus,
+  HandCoins, Upload, FilePlus, Download,
 } from 'lucide-react';
+import { resolveFileUrl } from '@/lib/file-url';
 import { toast } from 'sonner';
 
 import { Loan, LoanStats, getLoans, getLoanStats, deleteLoan } from '@/services';
@@ -251,6 +252,17 @@ export const LoansPage: React.FC = () => {
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
+                        {l.file_url && (
+                          <a
+                            href={resolveFileUrl(l.file_url) ?? '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground"
+                            title="Baixar comprovante do empréstimo"
+                          >
+                            <Download className="w-4 h-4 text-indigo-600" />
+                          </a>
+                        )}
                         <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                       </div>

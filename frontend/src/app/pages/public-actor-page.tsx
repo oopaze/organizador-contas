@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
-import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock, HandCoins } from 'lucide-react';
+import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock, HandCoins, Download } from 'lucide-react';
+import { resolveFileUrl } from '@/lib/file-url';
 import { Badge } from '@/app/components/ui/badge';
 import { getPublicActor, PublicActorResponse } from '@/services/actors/getPublicActor';
 import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
@@ -263,6 +264,7 @@ export const PublicActorPage: React.FC = () => {
                     <TableHead className="text-right">Pago</TableHead>
                     <TableHead className="text-right">Falta</TableHead>
                     <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">Comprovante</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,6 +290,20 @@ export const PublicActorPage: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge className={statusClass}>{statusLabel}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {loan.file_url ? (
+                            <a
+                              href={resolveFileUrl(loan.file_url) ?? '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs"
+                            >
+                              <Download className="w-3 h-3" /> Baixar
+                            </a>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                       </TableRow>
                     );

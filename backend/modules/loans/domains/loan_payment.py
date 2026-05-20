@@ -18,6 +18,7 @@ class LoanPaymentDomain:
         loan_id: int = None,
         note: str = "",
         file_id: int = None,
+        file_url: str = None,
         id: int = None,
         created_at=None,
         updated_at=None,
@@ -28,6 +29,7 @@ class LoanPaymentDomain:
         self.paid_at = _coerce_date(paid_at)
         self.note = note or ""
         self.file_id = file_id
+        self.file_url = file_url
         self.created_at = created_at
         self.updated_at = updated_at
 

@@ -242,6 +242,7 @@ export interface LoanPayment {
   paid_at: string;
   note: string;
   file_id: number | null;
+  file_url: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -255,6 +256,7 @@ export interface Loan {
   description: string;
   status: 'active' | 'settled' | 'cancelled';
   file_id: number | null;
+  file_url: string | null;
   total_paid: string;
   remaining: string;
   progress_pct: number;

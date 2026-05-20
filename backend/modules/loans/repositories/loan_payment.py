@@ -12,7 +12,11 @@ class LoanPaymentRepository:
 
     @property
     def queryset(self):
-        return self.model.objects.exclude(deleted_at__isnull=False).order_by("-paid_at")
+        return (
+            self.model.objects.exclude(deleted_at__isnull=False)
+            .select_related("file")
+            .order_by("-paid_at")
+        )
 
     def get(self, payment_id: str, user_id: int) -> LoanPaymentDomain:
         instance = self.queryset.get(id=payment_id, loan__user_id=user_id)
