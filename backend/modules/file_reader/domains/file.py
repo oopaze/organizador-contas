@@ -81,7 +81,10 @@ class FileDomain:
             with pdf_open(file_obj, password=password) as pdf:
                 text = ""
                 for page in pdf.pages:
-                    text += page.extract_text()
+                    # extract_text() returns None for image-only pages (e.g.,
+                    # bank receipts rendered as images inside a PDF). Guard
+                    # against that so the concat doesn't raise TypeError.
+                    text += page.extract_text() or ""
 
         self.raw_text = self._clean_text(text)
         self.raw_text = self._keep_financial_lines(self.raw_text)

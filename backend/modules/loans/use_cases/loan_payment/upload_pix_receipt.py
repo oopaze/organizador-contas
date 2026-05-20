@@ -46,6 +46,15 @@ class UploadPixReceiptUseCase:
 
         raw_text = saved_file.extract_text_from_pdf(password)
 
+        # Image-based PDFs (e.g., Sicoob comprovantes rendered as images)
+        # produce empty or near-empty text. Don't burn an AI call on noise —
+        # tell the user and let them fall back to manual entry with the file.
+        if not raw_text or len(raw_text.strip()) < 20:
+            raise PixReceiptParseError(
+                "Não consegui ler o texto do PDF (parece ser uma imagem). Use entrada manual.",
+                file_id=saved_file.id,
+            )
+
         try:
             extracted = self.parse_pix_receipt_use_case.execute(
                 raw_text=raw_text,
