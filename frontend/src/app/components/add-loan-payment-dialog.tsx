@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,8 @@ import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
 import { Input } from '@/app/components/ui/input';
 import { toast } from 'sonner';
-import { createLoanPayment } from '@/services';
+import { FileText, Upload, X } from 'lucide-react';
+import { createLoanPayment, uploadLoanPaymentFile } from '@/services';
 
 interface Props {
   open: boolean;
@@ -20,6 +21,8 @@ interface Props {
   preselectedFileId?: number;
   onSuccess: () => void;
 }
+
+const ACCEPTED_TYPES = 'application/pdf,image/png,image/jpeg,image/jpg,image/webp';
 
 export const AddLoanPaymentDialog: React.FC<Props> = ({
   open,
@@ -31,23 +34,35 @@ export const AddLoanPaymentDialog: React.FC<Props> = ({
   const [amount, setAmount] = useState('');
   const [paidAt, setPaidAt] = useState(new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const reset = () => {
+    setAmount('');
+    setNote('');
+    setPaidAt(new Date().toISOString().slice(0, 10));
+    setSelectedFile(null);
+  };
 
   useEffect(() => {
-    if (open) {
-      setAmount('');
-      setNote('');
-      setPaidAt(new Date().toISOString().slice(0, 10));
-    }
+    if (open) reset();
   }, [open]);
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setAmount('');
-      setNote('');
-      setPaidAt(new Date().toISOString().slice(0, 10));
-    }
+    if (!isOpen) reset();
     onOpenChange(isOpen);
+  };
+
+  const handleFile = (f: File) => {
+    const isAccepted =
+      f.type === 'application/pdf' ||
+      f.type.startsWith('image/');
+    if (!isAccepted) {
+      toast.error('Use PDF ou imagem (PNG/JPG/WebP)');
+      return;
+    }
+    setSelectedFile(f);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,12 +75,18 @@ export const AddLoanPaymentDialog: React.FC<Props> = ({
 
     setLoading(true);
     try {
+      let fileId = preselectedFileId;
+      if (selectedFile && !fileId) {
+        const uploaded = await uploadLoanPaymentFile(selectedFile);
+        fileId = uploaded.id;
+      }
+
       await createLoanPayment({
         loan_id: loanId,
         amount,
         paid_at: paidAt,
         note,
-        file_id: preselectedFileId,
+        file_id: fileId,
       });
       toast.success('Pagamento registrado');
       onSuccess();
@@ -85,7 +106,7 @@ export const AddLoanPaymentDialog: React.FC<Props> = ({
           <DialogDescription>
             {preselectedFileId
               ? 'Comprovante já enviado — preencha os dados manualmente.'
-              : 'Registre um pagamento recebido.'}
+              : 'Registre um pagamento recebido. Você pode anexar o comprovante (PDF ou imagem).'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -118,6 +139,43 @@ export const AddLoanPaymentDialog: React.FC<Props> = ({
                 onChange={(e) => setNote(e.target.value)}
               />
             </div>
+            {!preselectedFileId && (
+              <div className="space-y-2">
+                <Label>Comprovante (opcional)</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_TYPES}
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                />
+                {selectedFile ? (
+                  <div className="flex items-center justify-between rounded-md border p-2 bg-gray-50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <div className="text-sm truncate">{selectedFile.name}</div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedFile(null)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" /> Anexar PDF ou imagem
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button

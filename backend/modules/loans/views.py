@@ -108,6 +108,23 @@ class LoanPaymentViewSet(viewsets.ViewSet):
         self.container.delete_loan_payment_use_case().execute(pk, request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @decorators.action(detail=False, methods=["POST"], url_path="upload_file")
+    def upload_file(self, request):
+        """Save a raw file (PDF, image) and return its id.
+
+        Used by the manual payment dialog when the user wants to attach a
+        receipt without going through the AI parsing flow (e.g. screenshots
+        the model would struggle with).
+        """
+        file = request.FILES.get("file")
+        if not file:
+            return Response({"error": "Nenhum arquivo foi enviado."}, status=400)
+
+        file_factory = self.file_reader.file_factory()
+        file_repository = self.file_reader.file_repository()
+        saved = file_repository.create(file_factory.build(file), request.user.id)
+        return Response({"id": saved.id, "url": saved.url}, status=status.HTTP_201_CREATED)
+
     @decorators.action(detail=False, methods=["POST"], url_path="upload_receipt")
     def upload_receipt(self, request):
         file = request.FILES.get("file")
