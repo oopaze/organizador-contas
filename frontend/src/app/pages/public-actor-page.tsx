@@ -102,24 +102,20 @@ export const PublicActorPage: React.FC = () => {
           <p className="text-muted-foreground mt-1">Resumo de gastos compartilhado</p>
         </div>
 
-        {/* Month Navigation — só faz sentido quando há gastos de cartão.
-            Empréstimos não filtram por mês, então pra atores só-empréstimo
-            o seletor confunde mais do que ajuda. */}
-        {(loading || (actor?.sub_transactions && actor.sub_transactions.length > 0)) && (
-          <div className="mb-6 flex justify-center">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
-                {formatMonthDisplay(selectedMonth)}
-              </span>
-              <Button variant="outline" size="icon" onClick={goToNextMonth}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+        {/* Month Navigation */}
+        <div className="mb-6 flex justify-center">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
+              {formatMonthDisplay(selectedMonth)}
+            </span>
+            <Button variant="outline" size="icon" onClick={goToNextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* Stats — Cartão de Crédito (somente quando há gastos) */}
         {(loading || (actor?.sub_transactions && actor.sub_transactions.length > 0)) && (
