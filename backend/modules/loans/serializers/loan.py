@@ -10,6 +10,7 @@ class LoanSerializer:
         data = {
             "id": loan.id,
             "actor_id": loan.actor_id,
+            "actor": loan.actor,
             "principal_amount": str(loan.principal_amount),
             "lent_at": loan.lent_at.isoformat() if loan.lent_at else None,
             "description": loan.description,

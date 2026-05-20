@@ -125,7 +125,7 @@ export const UploadPixReceiptDialog: React.FC<Props> = ({
                   <SelectContent>
                     {loans.map((l) => (
                       <SelectItem key={l.id} value={String(l.id)}>
-                        Actor #{l.actor_id} — R$ {l.principal_amount} (faltam R$ {l.remaining})
+                        {l.actor?.name ?? `Actor #${l.actor_id}`} — R$ {l.principal_amount} (faltam R$ {l.remaining})
                       </SelectItem>
                     ))}
                   </SelectContent>

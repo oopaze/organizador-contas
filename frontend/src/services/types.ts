@@ -249,6 +249,7 @@ export interface LoanPayment {
 export interface Loan {
   id: number;
   actor_id: number;
+  actor: { id: number; name: string } | null;
   principal_amount: string;
   lent_at: string;
   description: string;

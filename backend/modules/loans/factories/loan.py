@@ -8,9 +8,15 @@ class LoanFactory:
         self.loan_payment_factory = loan_payment_factory
 
     def build_from_model(self, model: Loan, include_payments: bool = False) -> LoanDomain:
+        actor_data = (
+            {"id": model.actor.id, "name": model.actor.name}
+            if getattr(model, "actor", None)
+            else None
+        )
         loan = LoanDomain(
             id=model.id,
             actor_id=model.actor_id,
+            actor=actor_data,
             principal_amount=model.principal_amount,
             lent_at=model.lent_at,
             description=model.description,

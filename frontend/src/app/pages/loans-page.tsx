@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Loan, LoanStats, Actor, getLoans, getLoanStats, getActors, deleteLoan } from '@/services';
+import { Loan, LoanStats, getLoans, getLoanStats, deleteLoan } from '@/services';
 import { AddLoanDialog } from '@/app/components/add-loan-dialog';
 import { EditLoanDialog } from '@/app/components/edit-loan-dialog';
 import { UploadPixReceiptDialog } from '@/app/components/upload-pix-receipt-dialog';
@@ -34,7 +34,6 @@ const STATUS_CLASS: Record<Loan['status'], string> = {
 export const LoansPage: React.FC = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [stats, setStats] = useState<LoanStats | null>(null);
-  const [actors, setActors] = useState<Record<number, Actor>>({});
   const [statsLoading, setStatsLoading] = useState(true);
   const [loansLoading, setLoansLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -73,11 +72,8 @@ export const LoansPage: React.FC = () => {
       .catch(() => toast.error('Falha ao carregar estatísticas'))
       .finally(() => setStatsLoading(false));
 
-    Promise.all([getLoans(), getActors()])
-      .then(([ls, ac]) => {
-        setLoans(ls);
-        setActors(Object.fromEntries(ac.map((a) => [a.id, a])));
-      })
+    getLoans()
+      .then(setLoans)
       .catch(() => toast.error('Falha ao carregar empréstimos'))
       .finally(() => setLoansLoading(false));
   }, []);
@@ -228,7 +224,7 @@ export const LoansPage: React.FC = () => {
                         <ChevronRight className={`w-4 h-4 transition-transform ${expanded.has(l.id) ? 'rotate-90' : ''}`} />
                       </Button>
                     </TableCell>
-                    <TableCell>{actors[l.actor_id]?.name ?? `Actor #${l.actor_id}`}</TableCell>
+                    <TableCell>{l.actor?.name ?? `Actor #${l.actor_id}`}</TableCell>
                     <TableCell>R$ {l.principal_amount}</TableCell>
                     <TableCell>R$ {l.total_paid}</TableCell>
                     <TableCell>R$ {l.remaining}</TableCell>
