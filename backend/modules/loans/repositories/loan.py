@@ -60,7 +60,12 @@ class LoanRepository:
         return self.factory.build_from_model(instance, include_payments=True)
 
     def delete(self, loan_id: str, user_id: int):
-        self.queryset.filter(id=loan_id, user_id=user_id).update(deleted_at=timezone.now())
+        # Bypass the queryset property (which has select_related/prefetch_
+        # related/order_by) so the generated UPDATE doesn't carry JOINs
+        # or ORDER BY that some Postgres setups reject.
+        self.model.objects.filter(
+            id=loan_id, user_id=user_id, deleted_at__isnull=True
+        ).update(deleted_at=timezone.now())
 
     def stats(self, user_id: int) -> dict:
         qs = self.model.objects.filter(user_id=user_id).exclude(deleted_at__isnull=False)

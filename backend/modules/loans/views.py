@@ -54,8 +54,15 @@ class LoanViewSet(viewsets.ViewSet):
         return Response(loan, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk: str):
-        self.container.delete_loan_use_case().execute(pk, request.user.id)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            self.container.delete_loan_use_case().execute(pk, request.user.id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception:
+            logger.error(traceback.format_exc())
+            return Response(
+                {"error": "Erro ao remover o empréstimo."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @decorators.action(detail=False, methods=["GET"])
     def stats(self, request):

@@ -83,8 +83,14 @@ export const LoansPage: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Remover este empréstimo? Os pagamentos vinculados também serão removidos.')) return;
-    try { await deleteLoan(id); toast.success('Empréstimo removido'); refresh(); }
-    catch { toast.error('Falha ao remover'); }
+    try {
+      await deleteLoan(id);
+      toast.success('Empréstimo removido');
+      refresh();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Falha ao remover';
+      toast.error(msg);
+    }
   };
 
   const toggle = (id: number) => {
