@@ -70,7 +70,7 @@ export const Layout: React.FC = () => {
                   </Button>
                 )}
               </NavLink>
-              <NavLink to="/integracoes">
+              <NavLink to="/integrations">
                 {({ isActive }) => (
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
@@ -81,7 +81,7 @@ export const Layout: React.FC = () => {
                   </Button>
                 )}
               </NavLink>
-              <NavLink to="/emprestimos">
+              <NavLink to="/loans">
                 {({ isActive }) => (
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
