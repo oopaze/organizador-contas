@@ -41,9 +41,13 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = tokenManager.getAccessToken();
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-  });
+  const isFormData = options.body instanceof FormData;
+  // Don't set Content-Type for FormData — the browser appends the
+  // required multipart/form-data boundary automatically. Forcing
+  // application/json here makes Django reject the upload with 400.
+  const headers = new Headers(
+    isFormData ? {} : { 'Content-Type': 'application/json' }
+  );
 
   if (options.headers) {
     const optionHeaders = new Headers(options.headers);
