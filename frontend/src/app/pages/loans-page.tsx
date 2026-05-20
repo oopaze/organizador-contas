@@ -35,7 +35,8 @@ export const LoansPage: React.FC = () => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [stats, setStats] = useState<LoanStats | null>(null);
   const [actors, setActors] = useState<Record<number, Actor>>({});
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [loansLoading, setLoansLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Loan | null>(null);
@@ -64,17 +65,21 @@ export const LoansPage: React.FC = () => {
   };
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [ls, st, ac] = await Promise.all([getLoans(), getLoanStats(), getActors()]);
-      setLoans(ls);
-      setStats(st);
-      setActors(Object.fromEntries(ac.map((a) => [a.id, a])));
-    } catch {
-      toast.error('Falha ao carregar empréstimos');
-    } finally {
-      setLoading(false);
-    }
+    setStatsLoading(true);
+    setLoansLoading(true);
+
+    getLoanStats()
+      .then(setStats)
+      .catch(() => toast.error('Falha ao carregar estatísticas'))
+      .finally(() => setStatsLoading(false));
+
+    Promise.all([getLoans(), getActors()])
+      .then(([ls, ac]) => {
+        setLoans(ls);
+        setActors(Object.fromEntries(ac.map((a) => [a.id, a])));
+      })
+      .catch(() => toast.error('Falha ao carregar empréstimos'))
+      .finally(() => setLoansLoading(false));
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -93,10 +98,6 @@ export const LoansPage: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return <div className="p-6 space-y-4">{Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>;
-  }
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -106,7 +107,22 @@ export const LoansPage: React.FC = () => {
         </Button>
       </div>
 
-      {stats && (
+      {statsLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-32 mb-2" />
+                <Skeleton className="h-3 w-28" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -186,7 +202,19 @@ export const LoansPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loans.length === 0 ? (
+              {loansLoading ? (
+                [1, 2, 3].map((i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : loans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-sm text-gray-500 py-8">
                     Nenhum empréstimo registrado ainda.
