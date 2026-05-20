@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
@@ -42,7 +42,6 @@ export const LoansPage: React.FC = () => {
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
   const [menuFor, setMenuFor] = useState<{ id: number; top: number; left: number } | null>(null);
-  const triggerRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 
   useEffect(() => {
     if (!menuFor) return;
@@ -55,10 +54,8 @@ export const LoansPage: React.FC = () => {
     };
   }, [menuFor]);
 
-  const openMenu = (loanId: number) => {
-    const btn = triggerRefs.current[loanId];
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
+  const openMenu = (loanId: number, e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
     setMenuFor({
       id: loanId,
       top: rect.bottom + 4,
@@ -213,11 +210,10 @@ export const LoansPage: React.FC = () => {
                     <TableCell className="text-right">
                       <div className="inline-flex items-center justify-end">
                         <Button
-                          ref={(el) => { triggerRefs.current[l.id] = el; }}
                           variant="ghost"
                           size="sm"
                           title="Adicionar pagamento"
-                          onClick={() => openMenu(l.id)}
+                          onClick={(e) => openMenu(l.id, e)}
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
