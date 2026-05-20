@@ -12,7 +12,7 @@ import { Label } from '@/app/components/ui/label';
 import { Input } from '@/app/components/ui/input';
 import { toast } from 'sonner';
 import { FileText, Upload, X } from 'lucide-react';
-import { createLoanPayment, uploadLoanPaymentFile } from '@/services';
+import { createLoanPayment, uploadLoanFile } from '@/services';
 
 interface Props {
   open: boolean;
@@ -77,7 +77,7 @@ export const AddLoanPaymentDialog: React.FC<Props> = ({
     try {
       let fileId = preselectedFileId;
       if (selectedFile && !fileId) {
-        const uploaded = await uploadLoanPaymentFile(selectedFile);
+        const uploaded = await uploadLoanFile(selectedFile);
         fileId = uploaded.id;
       }
 

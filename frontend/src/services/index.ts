@@ -68,4 +68,4 @@ export { createLoanPayment } from './loans/createLoanPayment';
 export { updateLoanPayment } from './loans/updateLoanPayment';
 export { deleteLoanPayment } from './loans/deleteLoanPayment';
 export { uploadPixReceipt } from './loans/uploadPixReceipt';
-export { uploadLoanPaymentFile } from './loans/uploadLoanPaymentFile';
+export { uploadLoanFile } from './loans/uploadLoanFile';
