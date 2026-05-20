@@ -1,4 +1,4 @@
-import { Actor } from '../types';
+import { Actor, Loan } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.poupix.connectakit.com.br';
 
@@ -16,6 +16,7 @@ export interface PublicActorResponse extends Actor {
       due_date: string;
     };
   }>;
+  loans: Loan[];
 }
 
 export async function getPublicActor(token: string, dueDate?: string): Promise<PublicActorResponse> {

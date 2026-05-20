@@ -13,12 +13,16 @@ class GetPublicActorUseCase:
         sub_transaction_repository: SubTransactionRepository,
         sub_transaction_serializer: SubTransactionSerializer,
         share_token_service: ShareTokenService,
+        loan_repository=None,
+        loan_serializer=None,
     ):
         self.actor_repository = actor_repository
         self.actor_serializer = actor_serializer
         self.sub_transaction_repository = sub_transaction_repository
         self.sub_transaction_serializer = sub_transaction_serializer
         self.share_token_service = share_token_service
+        self.loan_repository = loan_repository
+        self.loan_serializer = loan_serializer
 
     def execute(self, token: str, due_date: str = None) -> dict:
         actor_id = self.share_token_service.validate_token(token)
@@ -34,5 +38,12 @@ class GetPublicActorUseCase:
             self.sub_transaction_serializer.serialize(sub_transaction, include_actor=False, include_transaction=True)
             for sub_transaction in sub_transactions
         ]
+
+        if self.loan_repository and self.loan_serializer:
+            loans = self.loan_repository.get_all(actor.user_id, filters={"actor_id": actor.id})
+            actor_data["loans"] = self.loan_serializer.serialize_many(loans)
+        else:
+            actor_data["loans"] = []
+
         return actor_data
 

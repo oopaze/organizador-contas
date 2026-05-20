@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 
 from modules.loans.repositories import LoanRepository
 from modules.loans.factories import LoanFactory, LoanPaymentFactory
+from modules.loans.serializers import LoanSerializer, LoanPaymentSerializer
 from modules.loans.models import Loan as LoanModel
 from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
 from modules.transactions.factories.actor import ActorFactory
@@ -106,17 +107,23 @@ class TransactionsContainer(containers.DeclarativeContainer):
         actor_serializer=actor_serializer,
     )
 
-    loan_payment_factory_for_actor_delete = providers.Factory(LoanPaymentFactory)
-    loan_factory_for_actor_delete = providers.Factory(
-        LoanFactory, loan_payment_factory=loan_payment_factory_for_actor_delete
+    # Cross-module dependency: loans providers used by actor use cases
+    loan_payment_factory = providers.Factory(LoanPaymentFactory)
+    loan_factory = providers.Factory(
+        LoanFactory, loan_payment_factory=loan_payment_factory
     )
-    loan_repository_for_actor_delete = providers.Factory(
-        LoanRepository, model=LoanModel, loan_factory=loan_factory_for_actor_delete
+    loan_repository = providers.Factory(
+        LoanRepository, model=LoanModel, loan_factory=loan_factory
     )
+    loan_payment_serializer = providers.Factory(LoanPaymentSerializer)
+    loan_serializer = providers.Factory(
+        LoanSerializer, loan_payment_serializer=loan_payment_serializer
+    )
+
     delete_actor_use_case = providers.Factory(
         DeleteActorUseCase,
         actor_repository=actor_repository,
-        loan_repository=loan_repository_for_actor_delete,
+        loan_repository=loan_repository,
     )
 
     actor_stats_use_case = providers.Factory(
@@ -132,6 +139,8 @@ class TransactionsContainer(containers.DeclarativeContainer):
         sub_transaction_repository=sub_transaction_repository,
         sub_transaction_serializer=sub_transaction_serializer,
         share_token_service=share_token_service,
+        loan_repository=loan_repository,
+        loan_serializer=loan_serializer,
     )
 
     generate_actor_share_token_use_case = providers.Factory(

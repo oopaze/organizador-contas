@@ -13,7 +13,6 @@ class ShareTokenService:
 
     ALGORITHM = "HS256"
     TOKEN_TYPE = "actor_share"
-    TOKEN_EXPIRATION_DAYS = 7
 
     def __init__(self, secret_key: str = SECRET_KEY):
         self.secret_key = secret_key
@@ -23,7 +22,6 @@ class ShareTokenService:
             "actor_id": actor_id,
             "type": self.TOKEN_TYPE,
             "iat": int(time.time()),
-            "exp": int(time.time()) + (self.TOKEN_EXPIRATION_DAYS * 24 * 60 * 60),
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.ALGORITHM)
     

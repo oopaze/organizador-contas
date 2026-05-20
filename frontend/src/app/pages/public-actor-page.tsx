@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Skeleton } from '@/app/components/ui/skeleton';
 import { Button } from '@/app/components/ui/button';
-import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { Users, ChevronRight, ChevronLeft, Wallet, CheckCircle2, Clock, HandCoins } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { getPublicActor, PublicActorResponse } from '@/services/actors/getPublicActor';
 import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
@@ -240,6 +240,63 @@ export const PublicActorPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Loans Section */}
+        {actor?.loans && actor.loans.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <HandCoins className="h-5 w-5" />
+                <CardTitle>Empréstimos</CardTitle>
+              </div>
+              <CardDescription>
+                Empréstimos vinculados a este ator
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead className="text-right">Emprestado</TableHead>
+                    <TableHead className="text-right">Pago</TableHead>
+                    <TableHead className="text-right">Falta</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {actor.loans.map((loan) => {
+                    const statusLabel =
+                      loan.status === 'settled' ? 'Pago' :
+                      loan.status === 'cancelled' ? 'Cancelado' : 'Pendente';
+                    const statusClass =
+                      loan.status === 'settled' ? 'bg-green-100 text-green-800' :
+                      loan.status === 'cancelled' ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-800';
+                    return (
+                      <TableRow key={loan.id}>
+                        <TableCell className="text-sm">{loan.lent_at}</TableCell>
+                        <TableCell className="text-sm">{loan.description || '—'}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          R$ {Number(loan.principal_amount).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right text-green-700">
+                          R$ {Number(loan.total_paid).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right text-orange-700">
+                          R$ {Number(loan.remaining).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={statusClass}>{statusLabel}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
