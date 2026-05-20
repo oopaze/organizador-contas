@@ -45,7 +45,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/ai-insights" element={<AIInsightsPage />} />
         <Route path="/integracoes" element={<IntegrationsPage />} />
-        <Route path="/loans" element={<LoansPage />} />
+        <Route path="/emprestimos" element={<LoansPage />} />
       </Route>
 
       {/* Catch all - redirect to home */}
