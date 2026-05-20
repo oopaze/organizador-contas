@@ -37,6 +37,17 @@ export const Layout: React.FC = () => {
                   </Button>
                 )}
               </NavLink>
+              <NavLink to="/loans">
+                {({ isActive }) => (
+                  <Button
+                    variant={isActive ? 'secondary' : 'ghost'}
+                    size="icon"
+                    title="Empréstimos"
+                  >
+                    <HandCoins className="w-5 h-5" />
+                  </Button>
+                )}
+              </NavLink>
               <NavLink to="/actors">
                 {({ isActive }) => (
                   <Button
@@ -59,17 +70,6 @@ export const Layout: React.FC = () => {
                   </Button>
                 )}
               </NavLink>
-              <NavLink to="/ai-insights">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="AI Insights"
-                  >
-                    <Brain className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
               <NavLink to="/integrations">
                 {({ isActive }) => (
                   <Button
@@ -81,14 +81,14 @@ export const Layout: React.FC = () => {
                   </Button>
                 )}
               </NavLink>
-              <NavLink to="/loans">
+              <NavLink to="/ai-insights">
                 {({ isActive }) => (
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
                     size="icon"
-                    title="Empréstimos"
+                    title="AI Insights"
                   >
-                    <HandCoins className="w-5 h-5" />
+                    <Brain className="w-5 h-5" />
                   </Button>
                 )}
               </NavLink>
