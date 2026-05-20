@@ -162,16 +162,17 @@ export const UploadPixReceiptDialog: React.FC<Props> = ({
                   onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
                 {selectedFile ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <FileText className="w-8 h-8 text-green-600" />
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">{selectedFile.name}</p>
+                  <div className="flex items-center justify-center gap-2 min-w-0">
+                    <FileText className="w-8 h-8 text-green-600 shrink-0" />
+                    <div className="text-left min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 truncate" title={selectedFile.name}>{selectedFile.name}</p>
                       <p className="text-sm text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className="shrink-0"
                       onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
                     >
                       <X className="w-4 h-4" />

@@ -168,15 +168,18 @@ export const AddLoanDialog: React.FC<Props> = ({ open, onOpenChange, onSuccess }
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
               {selectedFile ? (
-                <div className="flex items-center justify-between rounded-md border p-2 bg-gray-50">
-                  <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center justify-between gap-2 rounded-md border p-2 bg-gray-50 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
-                    <div className="text-sm truncate">{selectedFile.name}</div>
+                    <span className="text-sm truncate block min-w-0" title={selectedFile.name}>
+                      {selectedFile.name}
+                    </span>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
+                    className="shrink-0"
                     onClick={() => setSelectedFile(null)}
                   >
                     <X className="w-4 h-4" />
