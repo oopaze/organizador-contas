@@ -41,6 +41,7 @@ export const LoansPage: React.FC = () => {
   const [editing, setEditing] = useState<Loan | null>(null);
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
+  const [manualFileId, setManualFileId] = useState<number | undefined>(undefined);
   const [menuFor, setMenuFor] = useState<{ id: number; top: number; left: number } | null>(null);
 
   useEffect(() => {
@@ -296,12 +297,17 @@ export const LoansPage: React.FC = () => {
         onOpenChange={(v) => { if (!v) setUploadFor(undefined); }}
         onSuccess={refresh}
         preselectedLoanId={uploadFor}
+        onParseFailed={(fileId, loanId) => {
+          setManualFor(loanId);
+          setManualFileId(fileId);
+        }}
       />
       <AddLoanPaymentDialog
         open={manualFor !== null}
-        onOpenChange={(v) => { if (!v) setManualFor(null); }}
+        onOpenChange={(v) => { if (!v) { setManualFor(null); setManualFileId(undefined); } }}
         onSuccess={refresh}
         loanId={manualFor}
+        preselectedFileId={manualFileId}
       />
     </div>
   );

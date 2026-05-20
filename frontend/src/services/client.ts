@@ -75,10 +75,12 @@ export async function apiRequest<T>(
         throw new Error('Session expired');
       }
     }
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      error.detail || error.error_description || error.error || 'An error occurred'
-    );
+    const data = await response.json().catch(() => ({}));
+    const err = new Error(
+      data.detail || data.error_description || data.error || 'An error occurred'
+    ) as Error & { response?: { status: number; data: Record<string, unknown> } };
+    err.response = { status: response.status, data };
+    throw err;
   }
 
   if (response.status === 204) {

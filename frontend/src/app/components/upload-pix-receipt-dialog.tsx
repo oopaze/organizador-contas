@@ -26,10 +26,11 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   preselectedLoanId?: number;
+  onParseFailed?: (fileId: number, loanId: number) => void;
 }
 
 export const UploadPixReceiptDialog: React.FC<Props> = ({
-  open, onOpenChange, onSuccess, preselectedLoanId,
+  open, onOpenChange, onSuccess, preselectedLoanId, onParseFailed,
 }) => {
   const [loading, setLoading] = useState(false);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -92,9 +93,16 @@ export const UploadPixReceiptDialog: React.FC<Props> = ({
       onSuccess();
       onOpenChange(false);
     } catch (err: unknown) {
-      const data = (err as { response?: { data?: { file_id?: string; error?: string } } })?.response?.data ?? {};
-      if (data.file_id) {
-        toast.error(`IA não conseguiu extrair: ${data.error}. Adicione manualmente.`);
+      const data = (err as { response?: { data?: { file_id?: number; error?: string } } })?.response?.data ?? {};
+      if (data.file_id && onParseFailed) {
+        toast.info(data.error || 'Use entrada manual — arquivo anexado');
+        const fileId = Number(data.file_id);
+        const targetLoan = loanId!;
+        reset();
+        onOpenChange(false);
+        onParseFailed(fileId, targetLoan);
+      } else if (data.file_id) {
+        toast.error(`${data.error}. Use entrada manual.`);
       } else {
         toast.error(data.error || 'Falha ao processar o comprovante');
       }
