@@ -381,8 +381,10 @@ export const ActorsPage: React.FC = () => {
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead>Gasto</TableHead>
-                <TableHead>Restante</TableHead>
+                <TableHead>Cartão (Gasto)</TableHead>
+                <TableHead>Cartão (Restante)</TableHead>
+                <TableHead>Emprestado</TableHead>
+                <TableHead>A Receber</TableHead>
                 <TableHead className="w-[100px] text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -412,6 +414,22 @@ export const ActorsPage: React.FC = () => {
                             <span className={actor.total_remaining && actor.total_remaining > 0 ? 'text-orange-600' : 'text-green-600'}>
                               R$ {actor.total_remaining?.toFixed(2) || Number(0).toFixed(2)}
                             </span>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {actor.loan_total_lent && actor.loan_total_lent > 0
+                              ? `R$ ${actor.loan_total_lent.toFixed(2)}`
+                              : <span className="text-muted-foreground">—</span>}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {actor.loan_total_outstanding && actor.loan_total_outstanding > 0 ? (
+                              <span className="text-orange-600">
+                                R$ {actor.loan_total_outstanding.toFixed(2)}
+                              </span>
+                            ) : actor.loan_total_lent && actor.loan_total_lent > 0 ? (
+                              <span className="text-green-600">R$ 0,00</span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -446,7 +464,7 @@ export const ActorsPage: React.FC = () => {
                       </CollapsibleTrigger>
                       <CollapsibleContent asChild>
                         <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableCell colSpan={5} className="p-0">
+                          <TableCell colSpan={7} className="p-0">
                             <div className="px-8 py-4">
                               <h4 className="text-sm font-medium mb-2 text-muted-foreground">
                                 Subtransações vinculadas

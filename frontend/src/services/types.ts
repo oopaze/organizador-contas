@@ -39,6 +39,10 @@ export interface Actor {
   total_spent?: number;
   total_spent_paid?: number;
   total_remaining?: number;
+  loan_total_lent?: number;
+  loan_total_received?: number;
+  loan_total_outstanding?: number;
+  active_loan_count?: number;
 }
 
 export type TransactionType = 'incoming' | 'outgoing';

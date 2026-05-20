@@ -25,6 +25,10 @@ class ActorSerializer:
             "total_spent": total_spent,
             "total_spent_paid": total_spent_paid,
             "total_remaining": total_remaining,
+            "loan_total_lent": float(actor.get_loan_total_lent()),
+            "loan_total_received": float(actor.get_loan_total_received()),
+            "loan_total_outstanding": float(actor.get_loan_total_outstanding()),
+            "active_loan_count": actor.get_active_loan_count(),
         }
 
     def serialize_many(self, actors: list[ActorDomain]) -> list[dict]:

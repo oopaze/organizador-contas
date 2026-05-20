@@ -77,6 +77,19 @@ class TransactionsContainer(containers.DeclarativeContainer):
     # SERVICES
     share_token_service = providers.Factory(ShareTokenService)
 
+    # Cross-module dependency: loans providers reused by actor use cases
+    loan_payment_factory = providers.Factory(LoanPaymentFactory)
+    loan_factory = providers.Factory(
+        LoanFactory, loan_payment_factory=loan_payment_factory
+    )
+    loan_repository = providers.Factory(
+        LoanRepository, model=LoanModel, loan_factory=loan_factory
+    )
+    loan_payment_serializer = providers.Factory(LoanPaymentSerializer)
+    loan_serializer = providers.Factory(
+        LoanSerializer, loan_payment_serializer=loan_payment_serializer
+    )
+
     # USE CASES
     list_actors_use_case = providers.Factory(
         ListActorsUseCase,
@@ -84,6 +97,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         actor_serializer=actor_serializer,
         sub_transaction_repository=sub_transaction_repository,
         sub_transaction_serializer=sub_transaction_serializer,
+        loan_repository=loan_repository,
     )
 
     get_actor_use_case = providers.Factory(
@@ -92,6 +106,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         actor_serializer=actor_serializer,
         sub_transaction_repository=sub_transaction_repository,
         sub_transaction_serializer=sub_transaction_serializer,
+        loan_repository=loan_repository,
     )
 
     create_actor_use_case = providers.Factory(
@@ -105,19 +120,6 @@ class TransactionsContainer(containers.DeclarativeContainer):
         UpdateActorUseCase,
         actor_repository=actor_repository,
         actor_serializer=actor_serializer,
-    )
-
-    # Cross-module dependency: loans providers used by actor use cases
-    loan_payment_factory = providers.Factory(LoanPaymentFactory)
-    loan_factory = providers.Factory(
-        LoanFactory, loan_payment_factory=loan_payment_factory
-    )
-    loan_repository = providers.Factory(
-        LoanRepository, model=LoanModel, loan_factory=loan_factory
-    )
-    loan_payment_serializer = providers.Factory(LoanPaymentSerializer)
-    loan_serializer = providers.Factory(
-        LoanSerializer, loan_payment_serializer=loan_payment_serializer
     )
 
     delete_actor_use_case = providers.Factory(

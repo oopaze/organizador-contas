@@ -13,6 +13,14 @@ import { getCategoryClassName, getCategoryLabel } from '@/lib/category-colors';
 export const PublicActorPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const token = searchParams.get('token');
+  const [expandedLoans, setExpandedLoans] = useState<Set<number>>(new Set());
+  const toggleLoan = (id: number) => {
+    setExpandedLoans((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
   const [actor, setActor] = useState<PublicActorResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -318,6 +326,7 @@ export const PublicActorPage: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[40px]"></TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead>Descrição</TableHead>
                     <TableHead className="text-right">Emprestado</TableHead>
@@ -335,37 +344,99 @@ export const PublicActorPage: React.FC = () => {
                     const statusClass =
                       loan.status === 'settled' ? 'bg-green-100 text-green-800' :
                       loan.status === 'cancelled' ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-800';
+                    const isExpanded = expandedLoans.has(loan.id);
+                    const hasPayments = loan.payments && loan.payments.length > 0;
                     return (
-                      <TableRow key={loan.id}>
-                        <TableCell className="text-sm">{loan.lent_at}</TableCell>
-                        <TableCell className="text-sm">{loan.description || '—'}</TableCell>
-                        <TableCell className="text-right font-medium">
-                          R$ {Number(loan.principal_amount).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right text-green-700">
-                          R$ {Number(loan.total_paid).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right text-orange-700">
-                          R$ {Number(loan.remaining).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge className={statusClass}>{statusLabel}</Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {loan.file_url ? (
-                            <a
-                              href={resolveFileUrl(loan.file_url) ?? '#'}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs"
-                            >
-                              <Download className="w-3 h-3" /> Baixar
-                            </a>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
+                      <React.Fragment key={loan.id}>
+                        <TableRow>
+                          <TableCell>
+                            {hasPayments ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleLoan(loan.id)}
+                                title={isExpanded ? 'Ocultar pagamentos' : 'Ver pagamentos'}
+                              >
+                                <ChevronRight
+                                  className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                                />
+                              </Button>
+                            ) : null}
+                          </TableCell>
+                          <TableCell className="text-sm">{loan.lent_at}</TableCell>
+                          <TableCell className="text-sm">{loan.description || '—'}</TableCell>
+                          <TableCell className="text-right font-medium">
+                            R$ {Number(loan.principal_amount).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right text-green-700">
+                            R$ {Number(loan.total_paid).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right text-orange-700">
+                            R$ {Number(loan.remaining).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge className={statusClass}>{statusLabel}</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {loan.file_url ? (
+                              <a
+                                href={resolveFileUrl(loan.file_url) ?? '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs"
+                              >
+                                <Download className="w-3 h-3" /> Baixar
+                              </a>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        {isExpanded && hasPayments && (
+                          <TableRow>
+                            <TableCell colSpan={8} className="bg-gray-50 p-3">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                                Pagamentos
+                              </p>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Data</TableHead>
+                                    <TableHead className="text-right">Valor</TableHead>
+                                    <TableHead>Nota</TableHead>
+                                    <TableHead className="text-center">Comprovante</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {loan.payments!.map((p) => (
+                                    <TableRow key={p.id}>
+                                      <TableCell className="text-sm">{p.paid_at}</TableCell>
+                                      <TableCell className="text-right text-sm">
+                                        R$ {Number(p.amount).toFixed(2)}
+                                      </TableCell>
+                                      <TableCell className="text-sm">{p.note || '—'}</TableCell>
+                                      <TableCell className="text-center">
+                                        {p.file_url ? (
+                                          <a
+                                            href={resolveFileUrl(p.file_url) ?? '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs"
+                                          >
+                                            <Download className="w-3 h-3" /> Baixar
+                                          </a>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground">—</span>
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </TableBody>
