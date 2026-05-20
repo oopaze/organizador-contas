@@ -43,8 +43,10 @@ export const UploadPixReceiptDialog: React.FC<Props> = ({
 
   useEffect(() => {
     if (open) {
-      getLoans({ status: 'active' }).then(setLoans).catch(() => toast.error('Falha ao carregar empréstimos'));
       setLoanId(preselectedLoanId);
+      if (!preselectedLoanId) {
+        getLoans({ status: 'active' }).then(setLoans).catch(() => toast.error('Falha ao carregar empréstimos'));
+      }
     }
   }, [open, preselectedLoanId]);
 
@@ -113,21 +115,23 @@ export const UploadPixReceiptDialog: React.FC<Props> = ({
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Empréstimo</Label>
-              <Select value={loanId ? String(loanId) : ''} onValueChange={(v) => setLoanId(Number(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o empréstimo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {loans.map((l) => (
-                    <SelectItem key={l.id} value={String(l.id)}>
-                      Actor #{l.actor_id} — R$ {l.principal_amount} (faltam R$ {l.remaining})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!preselectedLoanId && (
+              <div className="space-y-2">
+                <Label>Empréstimo</Label>
+                <Select value={loanId ? String(loanId) : ''} onValueChange={(v) => setLoanId(Number(v))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o empréstimo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loans.map((l) => (
+                      <SelectItem key={l.id} value={String(l.id)}>
+                        Actor #{l.actor_id} — R$ {l.principal_amount} (faltam R$ {l.remaining})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Arquivo PDF</Label>
