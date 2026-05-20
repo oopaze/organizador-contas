@@ -29,7 +29,11 @@ class LoanFactory:
         if include_payments:
             payments = [
                 self.loan_payment_factory.build_from_model(p)
-                for p in model.payments.exclude(deleted_at__isnull=False)
+                for p in (
+                    model.payments
+                    .exclude(deleted_at__isnull=False)
+                    .order_by("-paid_at")
+                )
             ]
             loan.set_payments(payments)
         return loan
