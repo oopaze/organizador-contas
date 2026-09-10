@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState } from 'react';
 import { SubTransaction, paySubTransaction } from '@/services';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { Skeleton } from '@/app/components/ui/skeleton';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/app/components/ui/dropdown-menu';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { MoreVertical, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,56 +25,13 @@ export const ActorSubTransactionsTable: React.FC<ActorSubTransactionsTableProps>
   error = null,
   onUpdate,
 }) => {
-  const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
-  const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number } | null>(null);
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [subTransactionToPay, setSubTransactionToPay] = useState<SubTransaction | null>(null);
   const [isPaying, setIsPaying] = useState(false);
-  const buttonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openPopoverId !== null) {
-        const button = buttonRefs.current[openPopoverId];
-        const dropdown = dropdownRef.current;
-        const target = event.target as Node;
-
-        // Don't close if clicking on the button or the dropdown
-        if (button?.contains(target) || dropdown?.contains(target)) {
-          return;
-        }
-
-        setOpenPopoverId(null);
-        setPopoverPosition(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openPopoverId]);
-
-  const handleTogglePopover = (subTransactionId: number, buttonElement: HTMLButtonElement) => {
-    if (openPopoverId === subTransactionId) {
-      setOpenPopoverId(null);
-      setPopoverPosition(null);
-    } else {
-      const rect = buttonElement.getBoundingClientRect();
-      // For fixed positioning, use viewport coordinates directly
-      setPopoverPosition({
-        top: rect.bottom + 4,
-        left: rect.right - 160, // 160 = dropdown width (w-40)
-      });
-      setOpenPopoverId(subTransactionId);
-    }
-  };
 
   const handlePayClick = (subTransaction: SubTransaction) => {
     setSubTransactionToPay(subTransaction);
     setPayDialogOpen(true);
-    setOpenPopoverId(null);
-    setPopoverPosition(null);
   };
 
   const handleConfirmPay = async () => {
@@ -205,20 +164,26 @@ export const ActorSubTransactionsTable: React.FC<ActorSubTransactionsTableProps>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
-                    <Button
-                      ref={(el) => { buttonRefs.current[subTransaction.id] = el; }}
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleTogglePopover(subTransaction.id, e.currentTarget);
-                      }}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      title="Mais opções"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Mais opções"
+                          aria-label="Mais opções"
+                          onClick={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem onSelect={() => handlePayClick(subTransaction)}>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {subTransaction.paid_at ? 'Despagar' : 'Pagar'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
@@ -226,37 +191,6 @@ export const ActorSubTransactionsTable: React.FC<ActorSubTransactionsTableProps>
           })}
         </TableBody>
       </Table>
-
-      {/* Portal dropdown menu */}
-      {openPopoverId !== null && popoverPosition && createPortal(
-        <div
-          ref={dropdownRef}
-          className="fixed z-[9999] w-40 rounded-md border bg-popover p-1 shadow-md"
-          style={{
-            top: popoverPosition.top,
-            left: popoverPosition.left,
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col gap-1">
-            {subTransactions.find(st => st.id === openPopoverId) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start w-full"
-                onClick={() => {
-                  const st = subTransactions.find(s => s.id === openPopoverId);
-                  if (st) handlePayClick(st);
-                }}
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {subTransactions.find(st => st.id === openPopoverId)?.paid_at ? 'Despagar' : 'Pagar'}
-              </Button>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
 
       <ConfirmationDialog
         open={payDialogOpen}

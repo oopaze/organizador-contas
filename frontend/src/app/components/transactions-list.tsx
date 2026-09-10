@@ -1,5 +1,7 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { Portal } from '@/app/components/ui/portal';
+import React, { useMemo, useState } from 'react';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/app/components/ui/dropdown-menu';
 import {
   Transaction,
   deleteTransaction,
@@ -62,30 +64,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
-  const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number } | null>(null);
-  const buttonRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const popoverRef = useRef<HTMLDivElement>(null);
   const [payDialogOpen, setPayDialogOpen] = useState(false);
-
-  // Close popover when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openPopoverId !== null) {
-        const button = buttonRefs.current.get(openPopoverId);
-        const target = event.target as Node;
-        const popoverElement = document.querySelector('[data-popover-menu]');
-
-        if (button && !button.contains(target) && popoverElement && !popoverElement.contains(target)) {
-          setOpenPopoverId(null);
-          setPopoverPosition(null);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openPopoverId]);
   const [transactionToPay, setTransactionToPay] = useState<Transaction | null>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [paySubTransactions, setPaySubTransactions] = useState(true);
@@ -148,11 +127,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   };
 
-  const handlePayClick = (transaction: Transaction, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePayClick = (transaction: Transaction) => {
     setTransactionToPay(transaction);
     setPayDialogOpen(true);
-    setOpenPopoverId(null);
   };
 
   const handleConfirmPay = async () => {
@@ -174,11 +151,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   };
 
-  const handleRecalculateClick = (transaction: Transaction, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRecalculateClick = (transaction: Transaction) => {
     setTransactionToRecalculate(transaction);
     setRecalculateDialogOpen(true);
-    setOpenPopoverId(null);
   };
 
   const handleConfirmRecalculate = async () => {
@@ -198,11 +173,9 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   };
 
-  const handleGuessCategoryClick = (transaction: Transaction, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleGuessCategoryClick = (transaction: Transaction) => {
     setTransactionToGuessCategory(transaction);
     setGuessCategoryDialogOpen(true);
-    setOpenPopoverId(null);
   };
 
   const handleConfirmGuessCategory = async () => {
@@ -337,42 +310,39 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                                   size="sm"
                                   onClick={(e) => handleDeleteClick(transaction, e)}
                                   title="Excluir transação"
+                                  aria-label="Excluir transação"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                 </Button>
                                 {transaction.transaction_type === 'outgoing' && (
-                                  <div
-                                    ref={(el) => {
-                                      if (el) buttonRefs.current.set(transaction.id, el);
-                                    }}
-                                  >
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        if (openPopoverId === transaction.id) {
-                                          setOpenPopoverId(null);
-                                          setPopoverPosition(null);
-                                        } else {
-                                          const wrapper = buttonRefs.current.get(transaction.id);
-                                          if (wrapper) {
-                                            const rect = wrapper.getBoundingClientRect();
-                                            setPopoverPosition({
-                                              top: rect.bottom + 4,
-                                              left: rect.right - 208,
-                                            });
-                                          }
-                                          setOpenPopoverId(transaction.id);
-                                        }
-                                      }}
-                                      onPointerDown={(e) => e.stopPropagation()}
-                                      title="Mais opções"
-                                    >
-                                      <MoreVertical className="w-4 h-4" />
-                                    </Button>
-                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        title="Mais opções"
+                                        aria-label="Mais opções"
+                                        onClick={(e) => e.stopPropagation()}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreVertical className="w-4 h-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-52">
+                                      <DropdownMenuItem onSelect={() => handlePayClick(transaction)}>
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        {transaction.is_paid ? 'Despagar' : 'Pagar'}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleRecalculateClick(transaction)}>
+                                        <Calculator className="w-4 h-4 mr-2" />
+                                        Recalcular
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleGuessCategoryClick(transaction)}>
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        Adivinhar Categorias
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 )}
                               </div>
                             </TableCell>
@@ -400,59 +370,6 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         <div className="text-center py-8 text-gray-500">
           Nenhuma {parseTypeToPortuguese[type]} encontrada
         </div>
-      )}
-
-      {openPopoverId !== null && popoverPosition && (
-        <Portal>
-          <div
-            data-popover-menu
-            className="fixed z-[9999] w-52 rounded-md border bg-popover p-1 shadow-md"
-            style={{
-              top: popoverPosition.top,
-              left: popoverPosition.left,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start w-full"
-                onClick={(e) => {
-                  const transaction = transactions.find(t => t.id === openPopoverId);
-                  if (transaction) handlePayClick(transaction, e);
-                }}
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {transactions.find(t => t.id === openPopoverId)?.is_paid ? 'Despagar' : 'Pagar'}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start w-full"
-                onClick={(e) => {
-                  const transaction = transactions.find(t => t.id === openPopoverId);
-                  if (transaction) handleRecalculateClick(transaction, e);
-                }}
-              >
-                <Calculator className="w-4 h-4 mr-2" />
-                Recalcular
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start w-full"
-                onClick={(e) => {
-                  const transaction = transactions.find(t => t.id === openPopoverId);
-                  if (transaction) handleGuessCategoryClick(transaction, e);
-                }}
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Adivinhar Categorias
-              </Button>
-            </div>
-          </div>
-        </Portal>
       )}
 
       {transactionToEdit && (

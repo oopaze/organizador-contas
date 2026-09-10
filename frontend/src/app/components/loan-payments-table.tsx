@@ -59,8 +59,15 @@ export const LoanPaymentsTable: React.FC<Props> = ({ payments, onChange }) => {
                 ) : '—'}
               </TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>
-                  <Trash2 className="w-4 h-4" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-11"
+                  onClick={() => handleDelete(p.id)}
+                  title="Remover pagamento"
+                  aria-label="Remover pagamento"
+                >
+                  <Trash2 className="w-4 h-4 text-red-600" />
                 </Button>
               </TableCell>
             </TableRow>

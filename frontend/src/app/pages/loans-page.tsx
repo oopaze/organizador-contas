@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/app/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
@@ -44,28 +46,7 @@ export const LoansPage: React.FC = () => {
   const [uploadFor, setUploadFor] = useState<number | undefined>(undefined);
   const [manualFor, setManualFor] = useState<number | null>(null);
   const [manualFileId, setManualFileId] = useState<number | undefined>(undefined);
-  const [menuFor, setMenuFor] = useState<{ id: number; top: number; left: number } | null>(null);
   const [shareActor, setShareActor] = useState<{ id: number; name: string } | null>(null);
-
-  useEffect(() => {
-    if (!menuFor) return;
-    const close = () => setMenuFor(null);
-    window.addEventListener('scroll', close, true);
-    window.addEventListener('resize', close);
-    return () => {
-      window.removeEventListener('scroll', close, true);
-      window.removeEventListener('resize', close);
-    };
-  }, [menuFor]);
-
-  const openMenu = (loanId: number, e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMenuFor({
-      id: loanId,
-      top: rect.bottom + 4,
-      left: rect.right - 224, // 224px = w-56
-    });
-  };
 
   const refresh = useCallback(async () => {
     setStatsLoading(true);
@@ -232,7 +213,13 @@ export const LoansPage: React.FC = () => {
                 <React.Fragment key={l.id}>
                   <TableRow>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => toggle(l.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-11"
+                        onClick={() => toggle(l.id)}
+                        aria-label={expanded.has(l.id) ? 'Recolher pagamentos' : 'Ver pagamentos'}
+                      >
                         <ChevronRight className={`w-4 h-4 transition-transform ${expanded.has(l.id) ? 'rotate-90' : ''}`} />
                       </Button>
                     </TableCell>
@@ -245,15 +232,22 @@ export const LoansPage: React.FC = () => {
                       <Badge className={STATUS_CLASS[l.status]}>{STATUS_LABEL[l.status]}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="inline-flex items-center justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Adicionar pagamento"
-                          onClick={(e) => openMenu(l.id, e)}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" title="Adicionar pagamento" aria-label="Adicionar pagamento">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuItem onSelect={() => setUploadFor(l.id)}>
+                              <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setManualFor(l.id)}>
+                              <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         {l.file_url && (
                           <a
                             href={resolveFileUrl(l.file_url) ?? '#'}
@@ -261,6 +255,7 @@ export const LoansPage: React.FC = () => {
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground"
                             title="Baixar comprovante do empréstimo"
+                            aria-label="Baixar comprovante do empréstimo"
                           >
                             <Download className="w-4 h-4 text-indigo-600" />
                           </a>
@@ -269,12 +264,22 @@ export const LoansPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           title="Compartilhar"
+                          aria-label="Compartilhar"
                           onClick={() => setShareActor({ id: l.actor_id, name: l.actor?.name ?? `Actor #${l.actor_id}` })}
                         >
                           <Share2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar" aria-label="Editar"><Pencil className="w-4 h-4" /></Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-11"
+                          onClick={() => handleDelete(l.id)}
+                          title="Remover"
+                          aria-label="Remover empréstimo"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -291,35 +296,6 @@ export const LoansPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
-
-      {menuFor && createPortal(
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setMenuFor(null)}
-          />
-          <div
-            className="fixed z-50 w-56 rounded-md border bg-popover p-1 shadow-md"
-            style={{ top: menuFor.top, left: menuFor.left }}
-          >
-            <button
-              type="button"
-              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-              onClick={() => { const id = menuFor.id; setMenuFor(null); setUploadFor(id); }}
-            >
-              <Upload className="w-4 h-4 mr-2" /> Subir comprovante PIX
-            </button>
-            <button
-              type="button"
-              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-              onClick={() => { const id = menuFor.id; setMenuFor(null); setManualFor(id); }}
-            >
-              <FilePlus className="w-4 h-4 mr-2" /> Entrada manual
-            </button>
-          </div>
-        </>,
-        document.body
-      )}
 
       <ShareActorDialog
         open={shareActor !== null}

@@ -77,7 +77,6 @@ export const AddActorDialog: React.FC<AddActorDialogProps> = ({
                 placeholder="Ex: José, João"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                autoFocus
               />
             </div>
           </div>

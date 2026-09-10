@@ -105,7 +105,9 @@ export const ShareActorDialog: React.FC<Props> = ({ open, onOpenChange, actorId,
               ref={inputRef}
               value={loading ? 'Gerando link…' : shareUrl}
               readOnly
-              className="flex-1 text-sm"
+              inputMode="none"
+              aria-label="Link de compartilhamento"
+              className="flex-1"
               onClick={() => inputRef.current?.select()}
             />
             <Button
