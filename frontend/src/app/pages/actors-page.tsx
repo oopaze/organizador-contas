@@ -439,6 +439,7 @@ export const ActorsPage: React.FC = () => {
                                 className="h-8 w-8 text-muted-foreground hover:text-blue-500"
                                 onClick={(e) => handleShareClick(actor, e)}
                                 title="Compartilhar"
+                                aria-label="Compartilhar com este ator"
                               >
                                 <Share2 className="h-4 w-4" />
                               </Button>
@@ -447,14 +448,18 @@ export const ActorsPage: React.FC = () => {
                                 size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-primary"
                                 onClick={(e) => handleEditClick(actor, e)}
+                                title="Editar"
+                                aria-label="Editar ator"
                               >
                                 <Pencil className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                className="size-11 text-muted-foreground hover:text-destructive"
                                 onClick={(e) => handleDeleteClick(actor, e)}
+                                title="Remover"
+                                aria-label="Remover ator"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>

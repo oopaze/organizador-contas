@@ -232,7 +232,13 @@ export const LoansPage: React.FC = () => {
                 <React.Fragment key={l.id}>
                   <TableRow>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => toggle(l.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-11"
+                        onClick={() => toggle(l.id)}
+                        aria-label={expanded.has(l.id) ? 'Recolher pagamentos' : 'Ver pagamentos'}
+                      >
                         <ChevronRight className={`w-4 h-4 transition-transform ${expanded.has(l.id) ? 'rotate-90' : ''}`} />
                       </Button>
                     </TableCell>
@@ -245,11 +251,12 @@ export const LoansPage: React.FC = () => {
                       <Badge className={STATUS_CLASS[l.status]}>{STATUS_LABEL[l.status]}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="inline-flex items-center justify-end">
+                      <div className="inline-flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
                           title="Adicionar pagamento"
+                          aria-label="Adicionar pagamento"
                           onClick={(e) => openMenu(l.id, e)}
                         >
                           <Plus className="w-4 h-4" />
@@ -261,6 +268,7 @@ export const LoansPage: React.FC = () => {
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground"
                             title="Baixar comprovante do empréstimo"
+                            aria-label="Baixar comprovante do empréstimo"
                           >
                             <Download className="w-4 h-4 text-indigo-600" />
                           </a>
@@ -269,12 +277,22 @@ export const LoansPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           title="Compartilhar"
+                          aria-label="Compartilhar"
                           onClick={() => setShareActor({ id: l.actor_id, name: l.actor?.name ?? `Actor #${l.actor_id}` })}
                         >
                           <Share2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar"><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(l.id)} title="Remover"><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => setEditing(l)} title="Editar" aria-label="Editar"><Pencil className="w-4 h-4" /></Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-11"
+                          onClick={() => handleDelete(l.id)}
+                          title="Remover"
+                          aria-label="Remover empréstimo"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
