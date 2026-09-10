@@ -30,7 +30,7 @@ export const Layout: React.FC = () => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex items-center gap-1 sm:order-2 sm:w-auto justify-center sm:justify-self-center">
+            <nav className="hidden items-center gap-1 sm:flex sm:order-2 sm:w-auto justify-center sm:justify-self-center">
               {navItems.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to}>
                   {({ isActive }) => (
@@ -63,7 +63,7 @@ export const Layout: React.FC = () => {
 
       {/* Page Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0 overflow-x-clip
-                       pb-[calc(3.5rem+env(safe-area-inset-bottom)+2rem)]">
+                       pb-[calc(3.5rem+env(safe-area-inset-bottom)+2rem)] sm:pb-8">
         <Outlet />
       </main>
 

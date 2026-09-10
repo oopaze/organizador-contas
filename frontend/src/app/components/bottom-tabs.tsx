@@ -8,7 +8,7 @@ export const BottomTabs: React.FC = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 flex border-t border-gray-200 bg-white
+      className="fixed bottom-0 inset-x-0 z-40 flex border-t border-gray-200 bg-white sm:hidden
                  pb-[env(safe-area-inset-bottom)]"
       aria-label="Navegação principal"
     >
