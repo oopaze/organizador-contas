@@ -15,8 +15,10 @@
 
 Run this command from your local machine:
 
+> Use autenticação por chave SSH. Nunca coloque a senha em texto neste arquivo.
+
 ```bash
-sshpass -p 'Antonia94032028@' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password root@76.13.227.236 "cd /root/organizador-contas && git pull && docker compose -f docker-compose.api.yml down && docker compose -f docker-compose.api.yml build --no-cache && docker compose -f docker-compose.api.yml up -d"
+ssh -o StrictHostKeyChecking=no root@76.13.227.236 "cd /root/organizador-contas && git pull && docker compose -f docker-compose.api.yml down && docker compose -f docker-compose.api.yml build --no-cache && docker compose -f docker-compose.api.yml up -d"
 ```
 
 ---
@@ -38,7 +40,7 @@ After running the command, check status:
 
 ```bash
 # Check all services are running
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml ps"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml ps"
 ```
 
 You should see **4 services running**:
@@ -53,15 +55,15 @@ You should see **4 services running**:
 
 ```bash
 # Check Redis
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml exec redis redis-cli ping"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml exec redis redis-cli ping"
 # Expected: PONG
 
 # Check Celery Worker
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs celery-worker --tail 50"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs celery-worker --tail 50"
 # Should see: "celery@hostname ready"
 
 # Check Backend Logs
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs backend --tail 50"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs backend --tail 50"
 ```
 
 ---
@@ -99,17 +101,17 @@ After deployment:
 
 ### Rollback (if needed):
 ```bash
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && git checkout HEAD~1 && docker compose -f docker-compose.api.yml up -d --build"
+ssh root@76.13.227.236 "cd /root/organizador-contas && git checkout HEAD~1 && docker compose -f docker-compose.api.yml up -d --build"
 ```
 
 ### View Logs:
 ```bash
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs -f"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml logs -f"
 ```
 
 ### Restart Services:
 ```bash
-sshpass -p 'Antonia94032028@' ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml restart"
+ssh root@76.13.227.236 "cd /root/organizador-contas && docker compose -f docker-compose.api.yml restart"
 ```
 
 ---
