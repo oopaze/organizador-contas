@@ -131,7 +131,7 @@ O usuário escolheu abas embaixo sem restringir a celular; no desktop a barra ta
 - `actor-sub-transactions-table.tsx:208` e `transactions-list.tsx` — mesmo padrão.
 - `ui/dialog.tsx:66` — o X de fechar tem 16px.
 
-**D2 — Substituir três popovers artesanais** por `DropdownMenu` do Radix (já instalado): `transactions-list.tsx:363`, `actors-page.tsx:61`, `loans-page.tsx:66`. Nenhum tem clamp de viewport; o de `transactions-list` tem estouro vertical confirmado (menu de ~112px numa linha cujo topo fica abaixo de ~540px).
+**D2 — Substituir três popovers artesanais** por `DropdownMenu` do Radix (`ui/dropdown-menu.tsx` já existe e nunca foi usado): `transactions-list.tsx:361`, `actor-sub-transactions-table.tsx:61`, `loans-page.tsx:62`. Os três são o mesmo padrão copiado — `getBoundingClientRect()`, depois `{ top: rect.bottom + 4, left: rect.right - largura }` num portal com `position: fixed`, sem clamp em nenhum eixo. O de `transactions-list` tem estouro vertical confirmado (menu de ~112px numa linha cujo topo fica abaixo de ~540px).
 
 **D3 — Diálogos.**
 
