@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/button';
 import { LogOut, Wallet } from 'lucide-react';
 import { visibleNavItems } from '@/app/components/nav-items';
 import { useStandalone } from '@/lib/use-standalone';
+import { BottomTabs } from '@/app/components/bottom-tabs';
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -61,9 +62,12 @@ export const Layout: React.FC = () => {
       </header>
 
       {/* Page Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0 overflow-x-clip">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0 overflow-x-clip
+                       pb-[calc(3.5rem+env(safe-area-inset-bottom)+2rem)]">
         <Outlet />
       </main>
+
+      <BottomTabs />
     </div>
   );
 };
