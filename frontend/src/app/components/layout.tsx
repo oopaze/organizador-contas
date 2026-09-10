@@ -23,9 +23,9 @@ export const Layout: React.FC = () => {
               <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <div className="hidden sm:block">
+              <div className={standalone ? 'block' : 'hidden sm:block'}>
                 <h1 className="text-xl font-semibold text-gray-900">Poupix</h1>
-                <p className="text-sm text-gray-500">Bem-vindo, {user?.profile?.first_name}!</p>
+                <p className="hidden text-sm text-gray-500 sm:block">Bem-vindo, {user?.profile?.first_name}!</p>
               </div>
             </div>
 
