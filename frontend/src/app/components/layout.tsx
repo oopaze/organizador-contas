@@ -2,10 +2,14 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/app/components/ui/button';
-import { LogOut, Wallet, Home, Users, MessageSquare, Brain, Plug, HandCoins } from 'lucide-react';
+import { LogOut, Wallet } from 'lucide-react';
+import { visibleNavItems } from '@/app/components/nav-items';
+import { useStandalone } from '@/lib/use-standalone';
 
 export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
+  const standalone = useStandalone();
+  const navItems = visibleNavItems(standalone);
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-clip">
@@ -26,72 +30,20 @@ export const Layout: React.FC = () => {
 
             {/* Navigation Links */}
             <nav className="flex items-center gap-1 sm:order-2 sm:w-auto justify-center sm:justify-self-center">
-              <NavLink to="/">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="Dashboard"
-                  >
-                    <Home className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/loans">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="Empréstimos"
-                  >
-                    <HandCoins className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/actors">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="Atores"
-                  >
-                    <Users className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/chat">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="Assistente IA"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/integrations">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="Integrações"
-                  >
-                    <Plug className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/ai-insights">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    size="icon"
-                    title="AI Insights"
-                  >
-                    <Brain className="w-5 h-5" />
-                  </Button>
-                )}
-              </NavLink>
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to}>
+                  {({ isActive }) => (
+                    <Button
+                      variant={isActive ? 'secondary' : 'ghost'}
+                      size="icon"
+                      title={label}
+                      aria-label={label}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </Button>
+                  )}
+                </NavLink>
+              ))}
             </nav>
 
             {/* Logout Button */}
