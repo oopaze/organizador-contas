@@ -240,6 +240,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                       size="sm"
                       onClick={() => handleDeleteClick(subTransaction)}
                       title="Excluir subtransação"
+                      aria-label="Excluir subtransação"
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>
@@ -253,6 +254,7 @@ export const SubTransactionsTable: React.FC<SubTransactionsTableProps> = ({
                       }}
                       onPointerDown={(e) => e.stopPropagation()}
                       title="Mais opções"
+                      aria-label="Mais opções"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </Button>

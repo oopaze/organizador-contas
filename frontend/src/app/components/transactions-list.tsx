@@ -310,6 +310,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                                   size="sm"
                                   onClick={(e) => handleDeleteClick(transaction, e)}
                                   title="Excluir transação"
+                                  aria-label="Excluir transação"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
                                 </Button>

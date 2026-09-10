@@ -15,7 +15,7 @@ export const Layout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-clip">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4 sm:grid sm:grid-cols-[1fr_auto_1fr]">
             {/* Logo and Title */}

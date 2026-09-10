@@ -19,5 +19,5 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export function visibleNavItems(standalone: boolean): NavItem[] {
-  return standalone ? NAV_ITEMS.filter((i) => !i.hideWhenInstalled) : NAV_ITEMS;
+  return standalone ? NAV_ITEMS.filter((i) => !i.hideWhenInstalled) : [...NAV_ITEMS];
 }
