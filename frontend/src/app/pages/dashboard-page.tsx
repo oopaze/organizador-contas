@@ -18,6 +18,7 @@ import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
 import { QuickAddDialog } from '@/app/components/quick-add-dialog';
 import { LedgerList } from '@/app/components/ledger-list';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
+import { ReconcileBillDialog } from '@/app/components/reconcile-bill-dialog';
 import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
 import { TransactionStatsFilters } from '@/services/transactions/getTransactionStats';
@@ -35,6 +36,8 @@ export const DashboardPage: React.FC = () => {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showUploadBill, setShowUploadBill] = useState(false);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [showReconcile, setShowReconcile] = useState(false);
+  const [reconcileBillIds, setReconcileBillIds] = useState<number[]>([]);
 
   // Month/Year filter
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -122,10 +125,15 @@ export const DashboardPage: React.FC = () => {
     toast.success('Receita adicionada com sucesso!');
   };
 
-  const handleBillUploaded = () => {
+  const handleBillUploaded = (transactionIds: number[]) => {
     setShowUploadBill(false);
     loadData();
-    toast.success('Fatura enviada com sucesso!');
+    if (transactionIds.length > 0) {
+      setReconcileBillIds(transactionIds);
+      setShowReconcile(true);
+    } else {
+      toast.success('Fatura enviada com sucesso!');
+    }
   };
 
   const handleSheetUploaded = () => {
@@ -384,6 +392,16 @@ export const DashboardPage: React.FC = () => {
         open={showUploadBill}
         onOpenChange={setShowUploadBill}
         onSuccess={handleBillUploaded}
+      />
+      <ReconcileBillDialog
+        open={showReconcile}
+        onOpenChange={setShowReconcile}
+        billTransactionIds={reconcileBillIds}
+        onSuccess={() => {
+          setShowReconcile(false);
+          loadData();
+          toast.success('Conciliação concluída!');
+        }}
       />
       <UploadSheetDialog
         open={showUploadSheet}
