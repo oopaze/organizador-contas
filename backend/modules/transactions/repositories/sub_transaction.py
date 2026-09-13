@@ -132,6 +132,7 @@ class SubTransactionRepository:
             category=sub_transaction.category,
             paid_at=sub_transaction.paid_at,
         )
+        sub_transaction_instance.refresh_from_db()
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
     def create_many(self, sub_transactions: list["SubTransactionDomain"]) -> list["SubTransactionDomain"]:

@@ -93,6 +93,7 @@ class TransactionRepository:
             category=transaction.category,
             paid_at=transaction.paid_at,
         )
+        transaction_instance.refresh_from_db()
         return self.transaction_factory.build_from_model(transaction_instance)
     
     def update(self, transaction: "TransactionDomain") -> "TransactionDomain":
