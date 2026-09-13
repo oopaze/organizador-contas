@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users, FileSpreadsheet, CheckCircle2, Clock } from 'lucide-react';
 import { TransactionsList } from '@/app/components/transactions-list';
 import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
+import { QuickAddDialog } from '@/app/components/quick-add-dialog';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
 import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ export const DashboardPage: React.FC = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showUploadBill, setShowUploadBill] = useState(false);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
 
@@ -224,6 +226,11 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-4 mb-8">
+        <Button onClick={() => setShowQuickAdd(true)} className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Lançamento
+        </Button>
+
         <Button onClick={() => setShowAddTransaction(true)} variant="outline" className="flex-1 sm:flex-none">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Receita
@@ -318,6 +325,15 @@ export const DashboardPage: React.FC = () => {
       </Card>
 
       {/* Dialogs */}
+      <QuickAddDialog
+        open={showQuickAdd}
+        onOpenChange={setShowQuickAdd}
+        onSuccess={() => {
+          setShowQuickAdd(false);
+          loadData();
+          toast.success('Lançamento criado!');
+        }}
+      />
       <AddTransactionDialog
         open={showAddTransaction}
         onOpenChange={setShowAddTransaction}
