@@ -74,6 +74,17 @@ class SubTransactionRepository:
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
         ]
+
+    def get_by_date_range(self, user_id: int, start, end) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.queryset.filter(
+            transaction__user_id=user_id,
+            date__gte=start,
+            date__lte=end,
+        )
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
     
     def get_all_by_actor_ids(self, actor_ids: list[str], due_date: str = None) -> list["SubTransactionDomain"]:
         sub_transaction_instances = self.queryset.filter(actor_id__in=actor_ids)
