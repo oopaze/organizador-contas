@@ -67,6 +67,7 @@ class TransactionRepository:
             main_transaction_id=transaction.main_transaction,
             recurrence_count=transaction.recurrence_count,
             category=transaction.category,
+            paid_at=transaction.paid_at,
         )
         return self.transaction_factory.build_from_model(transaction_instance)
     

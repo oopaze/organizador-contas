@@ -119,6 +119,7 @@ class SubTransactionRepository:
             actor_id=actor_id,
             user_provided_description=sub_transaction.user_provided_description,
             category=sub_transaction.category,
+            paid_at=sub_transaction.paid_at,
         )
         return self.sub_transaction_factory.build_from_model(sub_transaction_instance)
     
