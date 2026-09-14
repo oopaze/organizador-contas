@@ -101,7 +101,7 @@ export const PlanningPage: React.FC = () => {
     await ensureCardBills(startMonth).catch(() => undefined);
     Promise.all([
       getIntentions({ start: startMonth, end: endMonth }),
-      getLedger({ start: `${startMonth}-01`, end: `${startMonth}-${String(lastDayOf(startMonth)).padStart(2, '0')}` }),
+      getLedger({ start: `${startMonth}-01`, end: `${endMonth}-${String(lastDayOf(endMonth)).padStart(2, '0')}` }),
       getProjection({ start: startMonth, end: endMonth }),
     ])
       .then(([list, ledgerResult, projectionResult]) => {
@@ -271,13 +271,13 @@ export const PlanningPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Saldo projetado ({shortMonth(startMonth)})</CardTitle>
+            <CardTitle className="text-sm font-medium">Saldo do período</CardTitle>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${projected < 0 ? 'text-red-600' : 'text-blue-600'}`}>
               {formatMoney(projected)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Salário e contas já incluídos</p>
+            <p className="text-xs text-muted-foreground mt-1">Salário e contas do período já incluídos</p>
           </CardContent>
         </Card>
 
@@ -288,8 +288,13 @@ export const PlanningPage: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold text-amber-600">{formatMoney(intentionsImpactTotal)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {intentions.filter((intention) => intention.status === 'planned').length} planejada(s) em{' '}
-              {projection?.total_months || 0} mês(es)
+              {intentions.filter(
+                (intention) =>
+                  intention.status === 'planned' &&
+                  intention.month.slice(0, 7) >= startMonth &&
+                  intention.month.slice(0, 7) <= endMonth,
+              ).length}{' '}
+              planejada(s) em {projection?.total_months || 0} mês(es)
             </p>
           </CardContent>
         </Card>
@@ -308,18 +313,23 @@ export const PlanningPage: React.FC = () => {
       </div>
 
       {projection?.goals && (
-        <GoalsProgressCard goals={projection.goals} ledger={ledger!} salary={salary} />
+        <GoalsProgressCard
+          goals={projection.goals}
+          ledger={ledger!}
+          salary={salary}
+          months={projection?.total_months || 1}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Gastos de {shortMonth(startMonth)} por categoria</CardTitle>
-            <CardDescription>O que já foi lançado neste mês, como % da sua renda fixa</CardDescription>
+            <CardTitle>Gastos por categoria no período</CardTitle>
+            <CardDescription>O que já foi lançado no período, como % da renda do período</CardDescription>
           </CardHeader>
           <CardContent>
             {spendingByCategory.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">Nenhum gasto no mês</p>
+              <p className="py-10 text-center text-sm text-muted-foreground">Nenhum gasto no período</p>
             ) : (
               <div className="space-y-3">
                 <div className="h-[190px] sm:h-[220px]">
@@ -339,7 +349,7 @@ export const PlanningPage: React.FC = () => {
                       </Pie>
                       <Tooltip
                         formatter={(value: number) =>
-                          `${formatMoney(value)}${salary > 0 ? ` (${((value / salary) * 100).toFixed(1)}% da renda)` : ''}`
+                          `${formatMoney(value)}${periodIncome > 0 ? ` (${((value / periodIncome) * 100).toFixed(1)}% da renda do período)` : ''}`
                         }
                       />
                     </PieChart>

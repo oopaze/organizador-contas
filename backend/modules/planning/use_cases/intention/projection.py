@@ -34,7 +34,9 @@ class ProjectionUseCase:
         start_date = self._parse_month(start) if start else date.today().replace(day=1)
         end_date = self._parse_month(end) if end else start_date + relativedelta(months=months - 1)
 
-        planned = self.intention_repository.filter({"user_id": user_id, "status": "planned"})
+        planned = self.intention_repository.filter(
+            {"user_id": user_id, "status": "planned", "month__gte": start_date}
+        )
         salary = self._salary(user_id)
         expenses = self._average_monthly_expenses(user_id)
 

@@ -60,3 +60,53 @@ class TestGoalsFullFlow(TransactionTestCase):
         self.assertIsNone(result["goals"]["monthly_spending_goal"])
         self.assertIsNone(result["goals"]["monthly_savings_goal"])
         self.assertIsNone(result["goals"]["monthly_essentials_goal"])
+
+
+class TestProjectionRangeIntegration(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="range@test.com", password="pass")
+        Profile.objects.create(user=self.user)
+        self.intention_repository = PurchaseIntentionRepository(
+            model=PurchaseIntention,
+            intention_factory=PurchaseIntentionFactory(),
+        )
+        self.profile_repository = ProfileRepository(
+            model=Profile, profile_factory=ProfileFactory()
+        )
+        self.sub_transaction_repository = Mock()
+        self.sub_transaction_repository.get_by_date_range.return_value = []
+        self.use_case = ProjectionUseCase(
+            self.intention_repository,
+            self.profile_repository,
+            self.sub_transaction_repository,
+        )
+
+    def _create_intention(self, name: str, amount: str, month: str, installments: int):
+        PurchaseIntention.objects.create(
+            user_id=self.user.id,
+            name=name,
+            amount=amount,
+            month=month,
+            installments=installments,
+            status="planned",
+        )
+
+    def test_ignores_installments_from_intentions_started_before_range(self):
+        self._create_intention("Celular", "5000.00", "2026-08-01", 10)
+
+        result = self.use_case.execute(self.user.id, start="2026-09", end="2026-10")
+
+        self.assertEqual(
+            [month["intentions_total"] for month in result["months"]],
+            ["0.00", "0.00"],
+        )
+
+    def test_counts_intentions_started_inside_range(self):
+        self._create_intention("Notebook", "1000.00", "2026-09-01", 2)
+
+        result = self.use_case.execute(self.user.id, start="2026-09", end="2026-10")
+
+        self.assertEqual(
+            [month["intentions_total"] for month in result["months"]],
+            ["500.00", "500.00"],
+        )

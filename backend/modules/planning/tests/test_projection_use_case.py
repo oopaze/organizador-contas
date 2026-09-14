@@ -50,7 +50,10 @@ class TestProjectionUseCase(SimpleTestCase):
         self.assertEqual(months[0]["leftover"], "4966.67")
         self.assertEqual(months[3]["leftover"], "4125.00")
         filters = self.intention_repository.filter.call_args[0][0]
-        self.assertEqual(filters, {"user_id": 7, "status": "planned"})
+        self.assertEqual(
+            filters,
+            {"user_id": 7, "status": "planned", "month__gte": date(2026, 9, 1)},
+        )
 
     def test_subtracts_average_monthly_expenses(self):
         self.profile_repository.get_by_user_id.return_value = ProfileDomain(salary="5000")
