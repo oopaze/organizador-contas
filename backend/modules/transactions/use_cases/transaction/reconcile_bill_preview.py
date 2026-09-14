@@ -64,6 +64,12 @@ class ReconcileBillPreviewUseCase:
             due_date_start=bill.due_date - timedelta(days=62),
             due_date_end=bill.due_date + timedelta(days=31),
         )
+        bill_card_id = getattr(bill, "card_id", None)
+        if bill_card_id is not None:
+            candidates = [
+                candidate for candidate in candidates
+                if getattr(candidate, "card_id", None) == bill_card_id
+            ]
         bill_subs = self.sub_transaction_repository.get_all_by_transaction_id(bill.id, user_id)
         candidate_ids = [candidate.id for candidate in candidates]
         real_subs = self.sub_transaction_repository.get_all_by_transaction_ids(candidate_ids)

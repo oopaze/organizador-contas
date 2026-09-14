@@ -64,6 +64,19 @@ class TransactionRepository:
             return None
         return self.transaction_factory.build_from_model(instance)
 
+    def get_open_bill_by_card(self, user_id: int, card_id: int, year: int, month: int) -> "TransactionDomain | None":
+        instance = self.queryset.filter(
+            user_id=user_id,
+            card_id=card_id,
+            file__isnull=True,
+            category=TransactionCategory.CREDIT_CARD.name,
+            due_date__year=year,
+            due_date__month=month,
+        ).first()
+        if instance is None:
+            return None
+        return self.transaction_factory.build_from_model(instance)
+
     def get_open_bills(self, user_id: int, due_date_start, due_date_end) -> list["TransactionDomain"]:
         queryset = self.queryset.filter(
             user_id=user_id,
@@ -92,6 +105,7 @@ class TransactionRepository:
             recurrence_count=transaction.recurrence_count,
             category=transaction.category,
             paid_at=transaction.paid_at,
+            card_id=transaction.card_id,
         )
         transaction_instance.refresh_from_db()
         return self.transaction_factory.build_from_model(transaction_instance)
@@ -105,6 +119,7 @@ class TransactionRepository:
         transaction_instance.is_salary = transaction.is_salary
         transaction_instance.is_recurrent = transaction.is_recurrent
         transaction_instance.category = transaction.category
+        transaction_instance.card_id = transaction.card_id
         transaction_instance.save()
         return self.transaction_factory.build_from_model(transaction_instance)
     

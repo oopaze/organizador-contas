@@ -1,6 +1,9 @@
 from dependency_injector import containers, providers
 from django.conf import settings
 
+from modules.cards.factories.card import CardFactory
+from modules.cards.models import Card
+from modules.cards.repositories.card import CardRepository
 from modules.file_reader.factories.ai_call import AICallFactory
 from modules.file_reader.factories.bill import BillFactory
 from modules.file_reader.factories.bill_sub_transaction import BillSubTransactionFactory
@@ -36,6 +39,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
     file_factory = providers.Factory(FileFactory, ai_call_factory=ai_call_factory)
     bill_factory = providers.Factory(BillFactory, file_factory=file_factory)
     bill_sub_transaction_factory = providers.Factory(BillSubTransactionFactory)
+    card_factory = providers.Factory(CardFactory)
 
     # REPOSITORIES
     ai_call_repository = providers.Factory(AICallRepository, model=AICall, ai_call_factory=ai_call_factory)
@@ -46,6 +50,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
         model=SubTransaction,
         bill_sub_transaction_factory=bill_sub_transaction_factory,
     )
+    card_repository = providers.Factory(CardRepository, model=Card, card_factory=card_factory)
 
     # USE CASES
     recalculate_amount_use_case = providers.Dependency(default=None)
@@ -74,6 +79,7 @@ class FileReaderContainer(containers.DeclarativeContainer):
         ai_call_factory=ai_call_factory,
         ask_use_case=ask_use_case,
         remove_pdf_password_use_case=remove_pdf_password_use_case,
+        card_repository=card_repository,
     )
 
     load_bills_with_transactions_use_case = providers.Factory(

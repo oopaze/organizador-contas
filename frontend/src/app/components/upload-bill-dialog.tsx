@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { uploadBill } from '@/services';
+import React, { useState, useRef, useEffect } from 'react';
+import { uploadBill, getCards, createCard, Card } from '@/services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
@@ -40,7 +40,43 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [pdfPassword, setPdfPassword] = useState('');
   const [selectedModel, setSelectedModel] = useState<AIModelKey>('gemini-2.5-flash-lite');
   const [createInFutureMonths, setCreateInFutureMonths] = useState(false);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [cardId, setCardId] = useState('none');
+  const [cardTouched, setCardTouched] = useState(false);
+  const [creatingCard, setCreatingCard] = useState(false);
+  const [newCardName, setNewCardName] = useState('');
+  const [newCardDueDay, setNewCardDueDay] = useState('1');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    getCards().then(setCards).catch(() => setCards([]));
+  }, [open]);
+
+  useEffect(() => {
+    if (!selectedFile || cards.length === 0 || cardId !== 'none' || cardTouched) return;
+    const fileName = selectedFile.name.toLowerCase();
+    const match = cards
+      .filter((card) => card.is_active)
+      .find((card) => fileName.includes(card.name.toLowerCase()));
+    if (match) setCardId(String(match.id));
+  }, [selectedFile, cards, cardId, cardTouched]);
+
+  const handleCreateCard = async () => {
+    try {
+      const created = await createCard({
+        name: newCardName.trim(),
+        due_day: Math.min(31, Math.max(1, parseInt(newCardDueDay, 10) || 1)),
+      });
+      setCards((current) => [...current, created]);
+      setCardId(String(created.id));
+      setCreatingCard(false);
+      setNewCardName('');
+      toast.success('Cartão adicionado!');
+    } catch {
+      toast.error('Falha ao criar o cartão');
+    }
+  };
 
   const handleFileSelect = (file: File) => {
     if (file.type === 'application/pdf') {
@@ -84,13 +120,24 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
 
     setLoading(true);
     const password = hasPassword ? pdfPassword : undefined;
-    await uploadBill(selectedFile, password, selectedModel, createInFutureMonths).then((result) => {
+    await uploadBill(
+      selectedFile,
+      password,
+      selectedModel,
+      createInFutureMonths,
+      cardId === 'none' || cardId === '__new__' ? undefined : Number(cardId)
+    ).then((result) => {
       toast.success('Fatura enviada com sucesso!');
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
+      setCardId('none');
+      setCardTouched(false);
+      setCreatingCard(false);
+      setNewCardName('');
+      setNewCardDueDay('1');
       onSuccess(result?.transaction_ids || []);
     }).catch((error) => {
       toast.error(error?.response?.data?.error || 'Falha ao enviar fatura. Verifique se a senha está correta.');
@@ -106,6 +153,11 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
+      setCardId('none');
+      setCardTouched(false);
+      setCreatingCard(false);
+      setNewCardName('');
+      setNewCardDueDay('1');
     }
     onOpenChange(isOpen);
   };
@@ -190,6 +242,64 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                 Criar transações também nos meses futuros?
               </Label>
             </div>
+
+            <div className="space-y-2">
+              <Label>Cartão</Label>
+              <Select
+                value={cardId}
+                onValueChange={(value) => {
+                  setCardTouched(true);
+                  if (value === '__new__') {
+                    setCreatingCard(true);
+                    setNewCardName(selectedFile?.name?.replace(/\.pdf$/i, '') ?? '');
+                    setNewCardDueDay('1');
+                  } else {
+                    setCardId(value);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cartão" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem cartão</SelectItem>
+                  {cards.filter((card) => card.is_active).map((card) => (
+                    <SelectItem key={card.id} value={String(card.id)}>
+                      {card.name} (vence dia {card.due_day})
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__new__">+ novo cartão</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {creatingCard && (
+              <div className="space-y-3 rounded-md border p-3">
+                <div className="space-y-2">
+                  <Label htmlFor="new-card-name">Nome do cartão</Label>
+                  <Input id="new-card-name" value={newCardName} onChange={(e) => setNewCardName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-card-due">Dia de vencimento</Label>
+                  <Input
+                    id="new-card-due"
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={newCardDueDay}
+                    onChange={(e) => setNewCardDueDay(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => { setCreatingCard(false); setCardTouched(false); }}>
+                    Cancelar
+                  </Button>
+                  <Button type="button" size="sm" onClick={handleCreateCard} disabled={!newCardName.trim()}>
+                    Criar cartão
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center space-x-2">
               <Checkbox

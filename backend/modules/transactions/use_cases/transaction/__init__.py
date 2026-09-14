@@ -12,6 +12,7 @@ from modules.transactions.use_cases.transaction.ledger import LedgerUseCase
 from modules.transactions.use_cases.transaction.reconcile_bill_preview import ReconcileBillPreviewUseCase
 from modules.transactions.use_cases.transaction.apply_reconciliation import ApplyReconciliationUseCase
 from modules.transactions.use_cases.transaction.ensure_salary import EnsureMonthlySalaryUseCase
+from modules.transactions.use_cases.transaction.ensure_card_bills import EnsureMonthlyCardBillsUseCase
 from modules.transactions.use_cases.transaction.infer_category import InferTransactionCategoryUseCase
 
 __all__ = [
@@ -29,5 +30,6 @@ __all__ = [
     "ReconcileBillPreviewUseCase",
     "ApplyReconciliationUseCase",
     "EnsureMonthlySalaryUseCase",
+    "EnsureMonthlyCardBillsUseCase",
     "InferTransactionCategoryUseCase",
 ]

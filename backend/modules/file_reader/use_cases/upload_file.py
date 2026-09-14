@@ -114,6 +114,7 @@ class UploadFileUseCase:
         ai_call_factory: AICallFactory,
         ask_use_case: AskUseCase,
         remove_pdf_password_use_case: RemovePDFPasswordUseCase,
+        card_repository=None,
     ):
         self.file_repository = file_repository
         self.file_factory = file_factory
@@ -123,6 +124,7 @@ class UploadFileUseCase:
         self.ai_call_factory = ai_call_factory
         self.ask_use_case = ask_use_case
         self.remove_pdf_password_use_case = remove_pdf_password_use_case
+        self.card_repository = card_repository
 
     @transaction.atomic
     def execute(
@@ -132,7 +134,12 @@ class UploadFileUseCase:
       password: str = None, 
       model = LlmModels.DEEPSEEK_CHAT.name,
       create_in_future_months: bool = False,
+      card_id: int = None,
     ):
+        card_id = card_id or None
+        if card_id and self.card_repository is not None:
+            card = self.card_repository.get_or_none(card_id, user_id)
+            card_id = card.id if card else None
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
 
@@ -147,7 +154,7 @@ class UploadFileUseCase:
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
 
-        transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months)
+        transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months, card_id=card_id)
         serialized_file = self.file_serializer.serialize(updated_file)
         return {**serialized_file, "transaction_ids": transaction_ids}
 

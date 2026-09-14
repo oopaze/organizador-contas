@@ -169,3 +169,35 @@ class TestCreateTransactionUseCase(TestCase):
         next_date = self.use_case.calculate_next_due_date("2026-12-31")
         self.assertEqual(next_date, "2027-01-31")
 
+    def test_direct_path_ignores_client_supplied_card_id(self):
+        """The direct path never forwards card_id to the factory."""
+        data = {
+            "due_date": "2026-03-15",
+            "total_amount": 150.00,
+            "transaction_identifier": "Electricity Bill",
+            "transaction_type": "outgoing",
+            "user_id": 1,
+            "is_recurrent": False,
+            "is_salary": True,
+            "card_id": 3,
+        }
+        mock_transaction = TransactionDomain(
+            id=1,
+            due_date="2026-03-15",
+            total_amount=150.00,
+            transaction_identifier="Electricity Bill",
+            transaction_type="outgoing",
+            user_id=1,
+            is_recurrent=False,
+            is_salary=True,
+        )
+        self.mock_transaction_factory.build.return_value = mock_transaction
+        self.mock_transaction_repository.create.return_value = mock_transaction
+        self.mock_transaction_serializer.serialize.return_value = {"id": 1}
+
+        self.use_case.execute(data)
+
+        built_data = self.mock_transaction_factory.build.call_args[0][0]
+        self.assertNotIn("card_id", built_data)
+        self.assertEqual(data["card_id"], 3)
+

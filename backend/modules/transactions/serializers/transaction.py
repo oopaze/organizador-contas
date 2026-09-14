@@ -41,6 +41,7 @@ class TransactionSerializer:
             "subtransactions_paid": transaction.subtransactions_paid,
             "is_paid": transaction.is_paid,
             "category": getattr(TransactionCategory.get_by_name(transaction.category), "value", None),
+            "card_id": transaction.card_id,
         }
     
     def serialize_for_tool(self, transaction: "TransactionDomain") -> str:

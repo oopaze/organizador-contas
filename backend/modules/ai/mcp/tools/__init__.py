@@ -65,6 +65,7 @@ TOOLS = [
                 "transaction_type": {"type": "string", "enum": ["incoming", "outgoing"]},
                 "payment_method": {"type": "string", "enum": ["cash", "credit"]},
                 "card_label": {"type": "string"},
+                "card_id": {"type": "integer"},
                 "installments": {"type": "integer", "minimum": 1},
                 "category": {"type": "string"},
                 "is_salary": {"type": "boolean"},

@@ -65,6 +65,7 @@ export interface Transaction {
   subtransactions_paid?: boolean;
   is_paid?: boolean;
   category?: string;
+  card_id?: number | null;
 }
 
 export interface SubTransaction {
@@ -431,4 +432,21 @@ export interface ProjectionMonth {
 export interface ProjectionResult {
   months: ProjectionMonth[];
   total_months: number;
+}
+
+// Card types
+export interface Card {
+  id: number;
+  name: string;
+  due_day: number;
+  is_active: boolean;
+}
+
+export interface CardInput {
+  name: string;
+  due_day: number;
+}
+
+export interface EnsureCardBillsResult {
+  bills: TransactionDetail[];
 }

@@ -20,7 +20,7 @@ async function uploadBillMock(file: File): Promise<UploadBillResult> {
   return { message: 'Fatura enviada com sucesso!', transaction_ids: [] };
 }
 
-async function uploadBillReal(file: File, password?: string, model?: string, createInFutureMonths?: boolean): Promise<UploadBillResult> {
+async function uploadBillReal(file: File, password?: string, model?: string, createInFutureMonths?: boolean, cardId?: number): Promise<UploadBillResult> {
   const formData = new FormData();
   formData.append('file', file);
   if (password) {
@@ -32,9 +32,12 @@ async function uploadBillReal(file: File, password?: string, model?: string, cre
   if (createInFutureMonths) {
     formData.append('create_in_future_months', 'true');
   }
+  if (cardId) {
+    formData.append('card_id', String(cardId));
+  }
   return apiUploadRequest<UploadBillResult>('/file_reader/upload/', formData);
 }
 
-export async function uploadBill(file: File, password?: string, model?: string, createInFutureMonths?: boolean): Promise<UploadBillResult> {
-  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file, password, model, createInFutureMonths);
+export async function uploadBill(file: File, password?: string, model?: string, createInFutureMonths?: boolean, cardId?: number): Promise<UploadBillResult> {
+  return USE_MOCK_API ? await uploadBillMock(file) : await uploadBillReal(file, password, model, createInFutureMonths, cardId);
 }

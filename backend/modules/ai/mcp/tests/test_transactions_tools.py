@@ -101,6 +101,24 @@ class TestCreateTransactionTool(SimpleTestCase):
         use_case.execute.assert_not_called()
         self.assertEqual(result, {"ok": True})
 
+    def test_create_routes_card_id_to_quick_add(self):
+        quick_add = Mock()
+        quick_add.execute.return_value = {"ok": True}
+        transactions.call_create_transaction(
+            arguments={
+                "transaction_identifier": "Padaria",
+                "total_amount": "10",
+                "due_date": "2026-09-13",
+                "payment_method": "credit",
+                "card_id": 3,
+            },
+            use_case=Mock(),
+            quick_add_use_case=quick_add,
+            user_id=7,
+        )
+        data = quick_add.execute.call_args[0][0]
+        self.assertEqual(data["card_id"], 3)
+
     def test_creates_directly_without_payment_method(self):
         use_case = Mock()
         use_case.execute.return_value = {"id": 1}
