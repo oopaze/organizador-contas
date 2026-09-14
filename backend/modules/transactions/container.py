@@ -1,5 +1,8 @@
 from dependency_injector import containers, providers
 
+from modules.cards.factories.card import CardFactory
+from modules.cards.models import Card
+from modules.cards.repositories.card import CardRepository
 from modules.loans.repositories import LoanRepository
 from modules.loans.factories import LoanFactory, LoanPaymentFactory
 from modules.loans.serializers import LoanSerializer, LoanPaymentSerializer
@@ -50,6 +53,7 @@ from modules.transactions.use_cases import (
     ReconcileBillPreviewUseCase,
     ApplyReconciliationUseCase,
     EnsureMonthlySalaryUseCase,
+    EnsureMonthlyCardBillsUseCase,
     InferTransactionCategoryUseCase,
 )
 
@@ -81,6 +85,8 @@ class TransactionsContainer(containers.DeclarativeContainer):
     # REPOSITORIES
     actor_repository = providers.Factory(ActorRepository, model=Actor, actor_factory=actor_factory)
     transaction_repository = providers.Factory(TransactionRepository, model=Transaction, transaction_factory=transaction_factory)
+    card_factory = providers.Factory(CardFactory)
+    card_repository = providers.Factory(CardRepository, model=Card, card_factory=card_factory)
     sub_transaction_repository = providers.Factory(SubTransactionRepository, model=SubTransaction, sub_transaction_factory=sub_transaction_factory)
     profile_repository = providers.Factory(
         ProfileRepository, model=Profile, profile_factory=providers.Factory(ProfileFactory)
@@ -361,4 +367,13 @@ class TransactionsContainer(containers.DeclarativeContainer):
         transaction_factory=transaction_factory,
         transaction_serializer=transaction_serializer,
         profile_repository=profile_repository,
+    )
+
+    ensure_monthly_card_bills_use_case = providers.Factory(
+        EnsureMonthlyCardBillsUseCase,
+        card_repository=card_repository,
+        transaction_repository=transaction_repository,
+        transaction_factory=transaction_factory,
+        transaction_serializer=transaction_serializer,
+        recalculate_amount_use_case=recalculate_amount_use_case,
     )

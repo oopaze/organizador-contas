@@ -184,6 +184,17 @@ class TransactionViewSet(viewsets.ViewSet):
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_200_OK)
 
+    @decorators.action(detail=False, methods=["POST"], url_path="ensure_card_bills")
+    def ensure_card_bills(self, request):
+        month = request.data.get("month")
+        if not month:
+            return Response({"error": "month é obrigatório (YYYY-MM)"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            result = self.container.ensure_monthly_card_bills_use_case().execute(request.user.id, month)
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_200_OK)
+
     @decorators.action(detail=True, methods=["POST"])
     def pay(self, request, pk: str):
         update_sub_transactions = request.data.get("update_sub_transactions", False)
