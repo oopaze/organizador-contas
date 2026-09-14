@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
+from django.conf import settings
+
 from modules.ai.mcp.oauth.exceptions import InvalidGrantError
 
 
-ACCESS_TOKEN_TTL = timedelta(days=7)
+ACCESS_TOKEN_TTL = timedelta(days=getattr(settings, "MCP_OAUTH_ACCESS_TOKEN_TTL_DAYS", 365))
 
 
 class ExchangeCodeUseCase:
