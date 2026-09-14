@@ -8,15 +8,15 @@ class JWTGateway:
     def __init__(self, secret_key: str, algorithm: str = "HS256"):
         self.secret_key = secret_key
         self.algorithm = algorithm
-        self.access_token_expiry_minutes = 15
-        self.refresh_token_expiry_days = 7
+        self.access_token_expiry_days = 7
+        self.refresh_token_expiry_days = 30
 
     def generate_access_token(self, user_id: int, email: str) -> str:
         payload = {
             "user_id": user_id,
             "email": email,
             "type": "access",
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expiry_minutes),
+            "exp": datetime.now(timezone.utc) + timedelta(days=self.access_token_expiry_days),
             "iat": datetime.now(timezone.utc),
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
