@@ -42,6 +42,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [createInFutureMonths, setCreateInFutureMonths] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
   const [cardId, setCardId] = useState('none');
+  const [cardTouched, setCardTouched] = useState(false);
   const [creatingCard, setCreatingCard] = useState(false);
   const [newCardName, setNewCardName] = useState('');
   const [newCardDueDay, setNewCardDueDay] = useState('1');
@@ -53,13 +54,13 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   }, [open]);
 
   useEffect(() => {
-    if (!selectedFile || cards.length === 0 || cardId !== 'none') return;
+    if (!selectedFile || cards.length === 0 || cardId !== 'none' || cardTouched) return;
     const fileName = selectedFile.name.toLowerCase();
     const match = cards
       .filter((card) => card.is_active)
       .find((card) => fileName.includes(card.name.toLowerCase()));
     if (match) setCardId(String(match.id));
-  }, [selectedFile, cards, cardId]);
+  }, [selectedFile, cards, cardId, cardTouched]);
 
   const handleCreateCard = async () => {
     try {
@@ -133,6 +134,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
       setCardId('none');
+      setCardTouched(false);
       setCreatingCard(false);
       setNewCardName('');
       setNewCardDueDay('1');
@@ -152,6 +154,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
       setCardId('none');
+      setCardTouched(false);
       setCreatingCard(false);
       setNewCardName('');
       setNewCardDueDay('1');
@@ -245,6 +248,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
               <Select
                 value={cardId}
                 onValueChange={(value) => {
+                  setCardTouched(true);
                   if (value === '__new__') {
                     setCreatingCard(true);
                     setNewCardName(selectedFile?.name?.replace(/\.pdf$/i, '') ?? '');
