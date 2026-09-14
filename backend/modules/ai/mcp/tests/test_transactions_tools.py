@@ -1,0 +1,204 @@
+from unittest.mock import Mock
+
+from django.test import SimpleTestCase
+
+from modules.ai.mcp.tools import dispatch_tool, transactions
+
+
+class TestListTransactionsTool(SimpleTestCase):
+    def test_builds_user_scoped_filters_and_limit(self):
+        use_case = Mock()
+        use_case.execute.return_value = [{"id": 1}, {"id": 2}, {"id": 3}]
+
+        result = transactions.call_list_transactions(
+            arguments={
+                "month": "2026-09",
+                "transaction_type": "outgoing",
+                "paid": False,
+                "search": "padaria",
+                "limit": 2,
+            },
+            use_case=use_case,
+            user_id=7,
+        )
+
+        filters = use_case.execute.call_args[0][0]
+        self.assertEqual(filters["user_id"], 7)
+        self.assertEqual(filters["due_date__year"], 2026)
+        self.assertEqual(filters["due_date__month"], 9)
+        self.assertEqual(filters["transaction_type"], "outgoing")
+        self.assertEqual(filters["paid_at__isnull"], True)
+        self.assertEqual(filters["transaction_identifier__icontains"], "padaria")
+        self.assertEqual(result["transactions"], [{"id": 1}, {"id": 2}])
+        self.assertEqual(result["count"], 2)
+
+    def test_range_filters(self):
+        use_case = Mock()
+        use_case.execute.return_value = []
+
+        transactions.call_list_transactions(
+            arguments={"start": "2026-09-01", "end": "2026-09-30"},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        filters = use_case.execute.call_args[0][0]
+        self.assertEqual(filters["due_date__gte"], "2026-09-01")
+        self.assertEqual(filters["due_date__lte"], "2026-09-30")
+
+
+class TestGetTransactionTool(SimpleTestCase):
+    def test_scopes_by_user(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"id": 10}
+
+        result = transactions.call_get_transaction(
+            arguments={"transaction_id": 10}, use_case=use_case, user_id=7
+        )
+
+        use_case.execute.assert_called_once_with(10, 7)
+        self.assertEqual(result, {"id": 10})
+
+
+class TestCreateTransactionTool(SimpleTestCase):
+    def test_routes_to_quick_add_when_payment_method_given(self):
+        quick_add = Mock()
+        quick_add.execute.return_value = {"ok": True}
+        use_case = Mock()
+
+        result = transactions.call_create_transaction(
+            arguments={
+                "transaction_identifier": "Padaria",
+                "total_amount": "10",
+                "due_date": "2026-09-13",
+                "payment_method": "credit",
+                "card_label": "Nubank",
+                "installments": 3,
+                "is_paid": False,
+            },
+            use_case=use_case,
+            quick_add_use_case=quick_add,
+            user_id=7,
+        )
+
+        data = quick_add.execute.call_args[0][0]
+        self.assertEqual(data["payment_method"], "credit")
+        self.assertEqual(data["amount"], "10")
+        self.assertEqual(data["description"], "Padaria")
+        self.assertEqual(data["date"], "2026-09-13")
+        self.assertEqual(data["installments"], 3)
+        self.assertEqual(data["is_paid"], False)
+        use_case.execute.assert_not_called()
+        self.assertEqual(result, {"ok": True})
+
+    def test_creates_directly_without_payment_method(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"id": 1}
+
+        transactions.call_create_transaction(
+            arguments={
+                "transaction_identifier": "Salário",
+                "total_amount": "5000",
+                "due_date": "2026-09-05",
+                "transaction_type": "incoming",
+                "is_salary": True,
+                "paid_at": "2026-09-05",
+            },
+            use_case=use_case,
+            quick_add_use_case=Mock(),
+            user_id=7,
+        )
+
+        data = use_case.execute.call_args[0][0]
+        self.assertEqual(data["user_id"], 7)
+        self.assertEqual(data["transaction_type"], "incoming")
+        self.assertTrue(data["is_salary"])
+        self.assertEqual(data["paid_at"], "2026-09-05")
+
+
+class TestUpdateTransactionTool(SimpleTestCase):
+    def test_passes_fields_and_user(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"id": 10}
+
+        transactions.call_update_transaction(
+            arguments={"transaction_id": 10, "transaction_identifier": "Novo"},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        transaction_id, data = use_case.execute.call_args[0]
+        self.assertEqual(transaction_id, 10)
+        self.assertEqual(data["transaction_identifier"], "Novo")
+        self.assertEqual(data["user_id"], 7)
+        self.assertNotIn("transaction_id", data)
+
+
+class TestSubTransactionTools(SimpleTestCase):
+    def test_create_sub_maps_actor(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"id": 55}
+
+        transactions.call_create_sub_transaction(
+            arguments={
+                "transaction_id": 10,
+                "description": "Café",
+                "amount": "8.50",
+                "date": "2026-09-14",
+                "actor_id": 3,
+            },
+            use_case=use_case,
+            user_id=7,
+        )
+
+        data, user_id = use_case.execute.call_args[0]
+        self.assertEqual(data["transaction_id"], 10)
+        self.assertEqual(data["actor"], 3)
+        self.assertEqual(user_id, 7)
+
+    def test_update_sub_passes_fields(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"id": 55}
+
+        transactions.call_update_sub_transaction(
+            arguments={"sub_transaction_id": 55, "amount": "9.00"},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        sub_id, data, user_id = use_case.execute.call_args[0]
+        self.assertEqual(sub_id, 55)
+        self.assertEqual(data, {"amount": "9.00"})
+        self.assertEqual(user_id, 7)
+
+
+class TestDispatchTool(SimpleTestCase):
+    def test_unknown_tool(self):
+        result = dispatch_tool("nao_existe", {}, Mock(), user_id=7)
+
+        self.assertEqual(result["error"]["code"], "UNKNOWN_TOOL")
+
+    def test_wraps_use_case_errors(self):
+        transaction_use_case = Mock()
+        transaction_use_case.execute.side_effect = Exception("boom")
+        container = Mock()
+        container.transactions_container().list_transactions_use_case.return_value = (
+            transaction_use_case
+        )
+
+        result = dispatch_tool("list_transactions", {}, container, user_id=7)
+
+        self.assertEqual(result["error"]["code"], "TOOL_ERROR")
+        self.assertEqual(result["error"]["message"], "boom")
+
+    def test_routes_list_transactions(self):
+        use_case = Mock()
+        use_case.execute.return_value = [{"id": 1}]
+        container = Mock()
+        container.transactions_container().list_transactions_use_case.return_value = (
+            use_case
+        )
+
+        result = dispatch_tool("list_transactions", {"limit": 1}, container, user_id=7)
+
+        self.assertEqual(result["transactions"], [{"id": 1}])

@@ -66,7 +66,20 @@ class TestMCPView(TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         names = sorted(t["name"] for t in body["result"]["tools"])
-        self.assertEqual(names, ["describe_schema", "execute_sql", "list_enums"])
+        self.assertEqual(
+            names,
+            sorted(
+                [
+                    "list_transactions",
+                    "get_transaction",
+                    "create_transaction",
+                    "update_transaction",
+                    "create_sub_transaction",
+                    "update_sub_transaction",
+                    "list_enums",
+                ]
+            ),
+        )
 
     def test_invalid_token(self):
         resp = self._post({"jsonrpc": "2.0", "id": 1, "method": "ping"}, token="bad-token")

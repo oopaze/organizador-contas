@@ -1,19 +1,5 @@
-from modules.ai.mcp.exceptions.mcp import (
-    MCPError,
-    SqlNotAllowedError,
-    SqlMultipleStatementsError,
-    SqlTimeoutError,
-    SqlPermissionDeniedError,
-    SqlInvalidError,
-    SchemaIntrospectionError,
-)
+from modules.ai.mcp.exceptions.mcp import MCPError
 
 __all__ = [
     "MCPError",
-    "SqlNotAllowedError",
-    "SqlMultipleStatementsError",
-    "SqlTimeoutError",
-    "SqlPermissionDeniedError",
-    "SqlInvalidError",
-    "SchemaIntrospectionError",
 ]
