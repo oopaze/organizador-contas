@@ -125,14 +125,6 @@ export const DashboardPage: React.FC = () => {
   const totalExpenses = stats?.outgoing_total || 0;
   const totalIncome = stats?.incoming_total || 0;
   const balance = stats?.balance || 0;
-  const totalPaid = stats?.outgoing_total_paid || 0;
-  const totalPending = totalExpenses - totalPaid;
-
-  // Use ledger summary for realized/projected balance
-  const realizedBalance = parseFloat(ledger?.summary.realized_balance || '0');
-  const projectedBalance = parseFloat(ledger?.summary.projected_balance || '0');
-  const payable = parseFloat(ledger?.summary.payable || '0');
-  const receivable = parseFloat(ledger?.summary.receivable || '0');
 
   const handleTransactionAdded = () => {
     setShowAddTransaction(false);
@@ -197,7 +189,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Saldo</CardTitle>
@@ -205,10 +197,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {(modoOn ? projectedBalance : balance).toFixed(2)}
+              R$ {balance.toFixed(2)}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              R$ {(modoOn ? realizedBalance : balance - (stats?.outgoing_from_actors || 0)).toFixed(2)} <span className="text-xs">seu saldo real</span>
+              R$ {(balance - (stats?.outgoing_from_actors || 0)).toFixed(2)} <span className="text-xs">seu saldo real</span>
             </p>
           </CardContent>
         </Card>
@@ -223,37 +215,22 @@ export const DashboardPage: React.FC = () => {
               R$ {totalIncome.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-700 font-medium">R$ {(stats?.incoming_total_paid || 0).toFixed(2)}</span> recebido
+              No período selecionado
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pago</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Despesas</CardTitle>
+            <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              R$ {totalPaid.toFixed(2)}
+            <div className="text-2xl font-bold text-red-600">
+              R$ {totalExpenses.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Contas já pagas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Falta Pagar</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              R$ {(modoOn ? payable : totalPending).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Contas pendentes
+              No período selecionado
             </p>
           </CardContent>
         </Card>
@@ -265,16 +242,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              R$ {(modoOn ? receivable : (stats?.outgoing_from_actors || 0)).toFixed(2)}
+              R$ {(stats?.outgoing_from_actors || 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {modoOn ? (
-                'Valores ainda não recebidos'
-              ) : (
-                <>
-                  <span className="text-green-600 font-medium">R$ {(stats?.outgoing_from_actors_paid || 0).toFixed(2)}</span> já recebido
-                </>
-              )}
+              Gastos de terceiros no seu cartão
             </p>
           </CardContent>
         </Card>
