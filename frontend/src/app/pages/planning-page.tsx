@@ -67,6 +67,12 @@ const shortMonth = (monthValue: string) => {
   return `${String(month).padStart(2, '0')}/${String(year).slice(2)}`;
 };
 
+const addMonths = (monthValue: string, offset: number) => {
+  const [year, month] = monthValue.split('-').map(Number);
+  const date = new Date(year, month - 1 + offset, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
 const statusLabel: Record<PurchaseIntention['status'], string> = {
   planned: 'Planejada',
   bought: 'Comprada',
@@ -77,6 +83,7 @@ const PIE_COLORS = ['#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899', '#f97
 
 export const PlanningPage: React.FC = () => {
   const [month, setMonth] = useState(currentMonth());
+  const [projectionMonths, setProjectionMonths] = useState(12);
   const [intentions, setIntentions] = useState<PurchaseIntention[]>([]);
   const [ledger, setLedger] = useState<LedgerResult | null>(null);
   const [projection, setProjection] = useState<ProjectionResult | null>(null);
@@ -96,7 +103,7 @@ export const PlanningPage: React.FC = () => {
     Promise.all([
       getIntentions(month),
       getLedger({ start: `${month}-01`, end: `${month}-${String(lastDayOf(month)).padStart(2, '0')}` }),
-      getProjection({ start: month }),
+      getProjection({ start: month, end: addMonths(month, projectionMonths - 1) }),
     ])
       .then(([list, ledgerResult, projectionResult]) => {
         setIntentions(list);
@@ -109,7 +116,7 @@ export const PlanningPage: React.FC = () => {
 
   useEffect(() => {
     load();
-  }, [month]);
+  }, [month, projectionMonths]);
 
   const resetForm = () => {
     setName('');
@@ -207,9 +214,17 @@ export const PlanningPage: React.FC = () => {
   const projectionData = (projection?.months || []).map((monthData) => ({
     month: shortMonth(monthData.month),
     salário: parseFloat(monthData.salary),
+    gastos: parseFloat(monthData.expenses),
     intenções: parseFloat(monthData.intentions_total),
     sobra: parseFloat(monthData.leftover),
   }));
+
+  const intentionsImpactTotal = (projection?.months || []).reduce(
+    (sum, monthData) => sum + parseFloat(monthData.intentions_total),
+    0,
+  );
+  const periodIncome = salary * (projection?.total_months || 0);
+  const impactPercent = periodIncome > 0 ? (intentionsImpactTotal / periodIncome) * 100 : 0;
 
   const goToMonth = (offset: number) => {
     const [year, monthNumber] = month.split('-').map(Number);
@@ -326,11 +341,26 @@ export const PlanningPage: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Projeção dos próximos 12 meses</CardTitle>
-            <CardDescription>
-              Tudo comparado à sua renda fixa: salário (azul), parcelas (amarelo) e sobra (verde)
-            </CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+            <div>
+              <CardTitle>Projeção</CardTitle>
+              <CardDescription>
+                {formatMonthDisplay(month)} + {projectionMonths - 1} meses, na sua renda fixa
+              </CardDescription>
+            </div>
+            <div className="flex gap-1 shrink-0">
+              {[3, 6, 12, 24].map((option) => (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={projectionMonths === option ? 'default' : 'outline'}
+                  className={`px-2 h-8 text-xs ${projectionMonths === option ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
+                  onClick={() => setProjectionMonths(option)}
+                >
+                  {option}m
+                </Button>
+              ))}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[240px] sm:h-[260px]">
@@ -342,11 +372,19 @@ export const PlanningPage: React.FC = () => {
                   <Tooltip formatter={(value: number) => formatMoney(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="salário" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="gastos" stroke="#ef4444" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="intenções" stroke="#f59e0b" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="sobra" stroke="#10b981" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
+            {intentionsImpactTotal > 0 && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Em {projection?.total_months} mês(es), as intenções somam{' '}
+                <span className="font-semibold text-amber-700">{formatMoney(intentionsImpactTotal)}</span> (
+                {impactPercent.toFixed(1)}% da sua renda do período)
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -397,6 +435,11 @@ export const PlanningPage: React.FC = () => {
                         >
                           {statusLabel[intention.status]}
                         </Badge>
+                        {intention.carry_over && (
+                          <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">
+                            Parcela de intenção anterior
+                          </Badge>
+                        )}
                         <span className="text-sm font-semibold text-amber-700">
                           {formatMoney(intention.amount)}
                         </span>
