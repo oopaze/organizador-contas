@@ -260,18 +260,37 @@ export const PlanningPage: React.FC = () => {
             {spendingByCategory.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">Nenhum gasto no mês</p>
             ) : (
-              <div className="h-[220px] sm:h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85}>
-                      {spendingByCategory.map((entry, index) => (
-                        <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => formatMoney(value)} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="space-y-3">
+                <div className="h-[190px] sm:h-[220px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={spendingByCategory}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius="48%"
+                        outerRadius="72%"
+                        cy="50%"
+                      >
+                        {spendingByCategory.map((entry, index) => (
+                          <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => formatMoney(value)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {spendingByCategory.map((entry, index) => (
+                    <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                      />
+                      <span>{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
