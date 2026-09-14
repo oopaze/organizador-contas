@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime
 from decimal import ROUND_DOWN, Decimal
 
@@ -20,6 +21,7 @@ class QuickAddTransactionUseCase:
         create_sub_transaction_use_case: CreateSubTransactionUseCase,
         recalculate_amount_use_case: RecalculateAmountUseCase,
         infer_category_use_case=None,
+        card_repository=None,
     ):
         self.transaction_repository = transaction_repository
         self.transaction_factory = transaction_factory
@@ -27,6 +29,7 @@ class QuickAddTransactionUseCase:
         self.create_sub_transaction_use_case = create_sub_transaction_use_case
         self.recalculate_amount_use_case = recalculate_amount_use_case
         self.infer_category_use_case = infer_category_use_case
+        self.card_repository = card_repository
 
     def _resolve_category(self, data: dict, user_id: int) -> str:
         category = data.get("category")
@@ -38,6 +41,16 @@ class QuickAddTransactionUseCase:
             except Exception:
                 return TransactionCategory.OTHER.name
         return TransactionCategory.OTHER.name
+
+    def _resolve_card(self, data: dict, user_id: int):
+        if self.card_repository is None:
+            return None
+        if data.get("card_id"):
+            return self.card_repository.get(data["card_id"], user_id)
+        card_label = (data.get("card_label") or "").strip()
+        if card_label:
+            return self.card_repository.get_by_name(user_id, card_label)
+        return None
 
     def execute(self, data: dict, user_id: int) -> dict:
         installments = self._installments(data)
@@ -142,23 +155,38 @@ class QuickAddTransactionUseCase:
             "open_bill_total": None,
         }
 
+    def _get_open_bill(self, user_id: int, card, identifier: str, year: int, month: int):
+        if card is not None:
+            return self.transaction_repository.get_open_bill_by_card(
+                user_id, card.id, year, month
+            )
+        return self.transaction_repository.get_open_bill(user_id, identifier, year, month)
+
+    def _bill_due_date(self, anchor, card) -> str:
+        if card is None:
+            return anchor.replace(day=1).isoformat()
+        last_day = calendar.monthrange(anchor.year, anchor.month)[1]
+        due_day = min(max(int(card.due_day or 1), 1), last_day)
+        return anchor.replace(day=due_day).isoformat()
+
     def _execute_credit(self, data: dict, user_id: int, installments: int = 1) -> dict:
         if installments > 1:
             return self._execute_credit_installments(data, user_id, installments)
 
-        card_label = (data.get("card_label") or "").strip()
+        card = self._resolve_card(data, user_id)
+        card_label = card.name if card else (data.get("card_label") or "").strip()
         if not card_label:
             raise ValueError("card_label é obrigatório para lançamento no cartão")
 
         purchase_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
         identifier = f"Fatura {card_label} {purchase_date.month:02d}/{purchase_date.year}"
-        open_bill = self.transaction_repository.get_open_bill(
-            user_id, identifier, purchase_date.year, purchase_date.month
+        open_bill = self._get_open_bill(
+            user_id, card, identifier, purchase_date.year, purchase_date.month
         )
         if open_bill is None:
             open_bill = self.transaction_factory.build(
                 {
-                    "due_date": purchase_date.replace(day=1).isoformat(),
+                    "due_date": self._bill_due_date(purchase_date, card),
                     "total_amount": 0,
                     "transaction_identifier": identifier,
                     "transaction_type": "outgoing",
@@ -166,6 +194,7 @@ class QuickAddTransactionUseCase:
                     "user_id": user_id,
                     "is_recurrent": False,
                     "category": TransactionCategory.CREDIT_CARD.name,
+                    "card_id": card.id if card else None,
                 }
             )
             open_bill = self.transaction_repository.create(open_bill)
@@ -185,7 +214,8 @@ class QuickAddTransactionUseCase:
         }
 
     def _execute_credit_installments(self, data: dict, user_id: int, installments: int) -> dict:
-        card_label = (data.get("card_label") or "").strip()
+        card = self._resolve_card(data, user_id)
+        card_label = card.name if card else (data.get("card_label") or "").strip()
         if not card_label:
             raise ValueError("card_label é obrigatório para lançamento no cartão")
 
@@ -198,13 +228,13 @@ class QuickAddTransactionUseCase:
         for index, amount in enumerate(amounts):
             installment_date = purchase_date + relativedelta(months=index)
             identifier = f"Fatura {card_label} {installment_date.month:02d}/{installment_date.year}"
-            open_bill = self.transaction_repository.get_open_bill(
-                user_id, identifier, installment_date.year, installment_date.month
+            open_bill = self._get_open_bill(
+                user_id, card, identifier, installment_date.year, installment_date.month
             )
             if open_bill is None:
                 open_bill = self.transaction_factory.build(
                     {
-                        "due_date": installment_date.replace(day=1).isoformat(),
+                        "due_date": self._bill_due_date(installment_date, card),
                         "total_amount": 0,
                         "transaction_identifier": identifier,
                         "transaction_type": "outgoing",
@@ -212,6 +242,7 @@ class QuickAddTransactionUseCase:
                         "user_id": user_id,
                         "is_recurrent": False,
                         "category": TransactionCategory.CREDIT_CARD.name,
+                        "card_id": card.id if card else None,
                     }
                 )
                 open_bill = self.transaction_repository.create(open_bill)

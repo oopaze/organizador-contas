@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 from django.test import TestCase
 
+from modules.cards.domains.card import CardDomain
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.use_cases.transaction.quick_add import QuickAddTransactionUseCase
 
@@ -346,3 +347,77 @@ class TestQuickAddTransactionUseCase(TestCase):
         self.assertEqual(result["open_bill_total"], "33.33")
         self.assertEqual(result["sub_transaction_id"], 31)
 
+    def test_credit_with_card_id_uses_card_due_day(self):
+        card_repository = Mock()
+        card = CardDomain(id=3, name="Nubank", due_day=10)
+        card_repository.get.return_value = card
+        use_case = QuickAddTransactionUseCase(
+            transaction_repository=self.transaction_repository,
+            transaction_factory=self.transaction_factory,
+            transaction_serializer=self.transaction_serializer,
+            create_sub_transaction_use_case=self.create_sub_transaction_use_case,
+            recalculate_amount_use_case=self.recalculate_amount_use_case,
+            card_repository=card_repository,
+        )
+        bill = TransactionDomain(id=20, total_amount="0", user_id=7)
+        filled = TransactionDomain(id=20, total_amount="54.90", user_id=7)
+        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_factory.build.return_value = bill
+        self.transaction_repository.create.return_value = bill
+        self.transaction_repository.get.return_value = filled
+        self.create_sub_transaction_use_case.execute.return_value = {"id": 60}
+        self.transaction_serializer.serialize.return_value = {"id": 20}
+
+        use_case.execute(
+            {
+                "payment_method": "credit",
+                "amount": "54.90",
+                "description": "Padaria",
+                "date": "2026-09-13",
+                "card_id": 3,
+            },
+            user_id=7,
+        )
+
+        built_data = self.transaction_factory.build.call_args[0][0]
+        self.assertEqual(built_data["card_id"], 3)
+        self.assertEqual(built_data["due_date"], "2026-09-10")
+        self.assertEqual(built_data["transaction_identifier"], "Fatura Nubank 09/2026")
+        self.transaction_repository.get_open_bill_by_card.assert_called_once_with(7, 3, 2026, 9)
+
+    def test_credit_with_unknown_card_label_falls_back_to_legacy(self):
+        card_repository = Mock()
+        card_repository.get_by_name.return_value = None
+        use_case = QuickAddTransactionUseCase(
+            transaction_repository=self.transaction_repository,
+            transaction_factory=self.transaction_factory,
+            transaction_serializer=self.transaction_serializer,
+            create_sub_transaction_use_case=self.create_sub_transaction_use_case,
+            recalculate_amount_use_case=self.recalculate_amount_use_case,
+            card_repository=card_repository,
+        )
+        bill = TransactionDomain(id=20, total_amount="0", user_id=7)
+        self.transaction_repository.get_open_bill.return_value = None
+        self.transaction_factory.build.return_value = bill
+        self.transaction_repository.create.return_value = bill
+        self.transaction_repository.get.return_value = bill
+        self.create_sub_transaction_use_case.execute.return_value = {"id": 60}
+        self.transaction_serializer.serialize.return_value = {"id": 20}
+
+        use_case.execute(
+            {
+                "payment_method": "credit",
+                "amount": "10",
+                "description": "Café",
+                "date": "2026-09-14",
+                "card_label": "Visa",
+            },
+            user_id=7,
+        )
+
+        built_data = self.transaction_factory.build.call_args[0][0]
+        self.assertIsNone(built_data.get("card_id"))
+        self.assertEqual(built_data["due_date"], "2026-09-01")
+        self.transaction_repository.get_open_bill.assert_called_once_with(
+            7, "Fatura Visa 09/2026", 2026, 9
+        )

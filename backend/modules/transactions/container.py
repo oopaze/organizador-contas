@@ -338,6 +338,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         create_sub_transaction_use_case=create_sub_transaction_use_case,
         recalculate_amount_use_case=recalculate_amount_use_case,
         infer_category_use_case=infer_transaction_category_use_case,
+        card_repository=card_repository,
     )
 
     ledger_use_case = providers.Factory(
