@@ -80,10 +80,22 @@ class TestUpdatePurchaseIntentionUseCase(SimpleTestCase):
         repository.update.assert_called_once_with(intention)
         self.assertEqual(result, {"id": 1})
 
+    def test_refuses_status_change_after_bought(self):
+        repository = Mock()
+        intention = PurchaseIntentionDomain(id=1, status="bought", user_id=7)
+        repository.get.return_value = intention
+
+        use_case = UpdatePurchaseIntentionUseCase(repository, Mock())
+        with self.assertRaises(ValueError):
+            use_case.execute(1, {"status": "dismissed"}, user_id=7)
+
+        repository.update.assert_not_called()
+
 
 class TestDeletePurchaseIntentionUseCase(SimpleTestCase):
-    def test_soft_deletes_scoped_to_user(self):
+    def test_soft_deletes_planned_intention(self):
         repository = Mock()
+        repository.get.return_value = PurchaseIntentionDomain(id=1, status="planned", user_id=7)
 
         use_case = DeletePurchaseIntentionUseCase(repository)
         result = use_case.execute(1, user_id=7)
@@ -91,18 +103,33 @@ class TestDeletePurchaseIntentionUseCase(SimpleTestCase):
         repository.delete.assert_called_once_with(1, 7)
         self.assertEqual(result, {"message": "success"})
 
+    def test_refuses_to_delete_bought_intention(self):
+        repository = Mock()
+        repository.get.return_value = PurchaseIntentionDomain(id=1, status="bought", user_id=7)
+
+        use_case = DeletePurchaseIntentionUseCase(repository)
+        with self.assertRaises(ValueError):
+            use_case.execute(1, user_id=7)
+
+        repository.delete.assert_not_called()
+
 
 class TestConvertPurchaseIntentionUseCase(SimpleTestCase):
-    def test_creates_transaction_and_marks_bought(self):
+    def test_creates_installments_and_marks_bought(self):
         repository = Mock()
         serializer = Mock()
         transactions_container = Mock()
-        transaction_use_case = Mock()
-        transactions_container.create_transaction_use_case.return_value = transaction_use_case
-        transaction_use_case.execute.return_value = {"id": 42}
+        quick_add = Mock()
+        transactions_container.quick_add_transaction_use_case.return_value = quick_add
+        quick_add.execute.return_value = {
+            "transaction": {"id": 42},
+            "sub_transaction_id": 1,
+            "open_bill_total": None,
+        }
 
         intention = PurchaseIntentionDomain(
-            id=1, name="Notebook", amount="3500", month=date(2026, 10, 1), user_id=7
+            id=1, name="Notebook", amount="3500", month=date(2026, 10, 1),
+            installments=4, user_id=7,
         )
         repository.get.return_value = intention
         repository.update.return_value = intention
@@ -112,16 +139,24 @@ class TestConvertPurchaseIntentionUseCase(SimpleTestCase):
         result = use_case.execute(1, {"category": "personal_shopping"}, user_id=7)
 
         repository.get.assert_called_once_with(1, 7)
-        transaction_data = transaction_use_case.execute.call_args[0][0]
-        self.assertEqual(transaction_data["transaction_identifier"], "Notebook")
-        self.assertEqual(transaction_data["total_amount"], "3500")
-        self.assertEqual(transaction_data["due_date"], "2026-10-01")
-        self.assertEqual(transaction_data["transaction_type"], "outgoing")
-        self.assertEqual(transaction_data["category"], "personal_shopping")
-        self.assertEqual(transaction_data["user_id"], 7)
-        self.assertIsNone(transaction_data["paid_at"])
+        data = quick_add.execute.call_args[0][0]
+        self.assertEqual(data["payment_method"], "cash")
+        self.assertEqual(data["amount"], "3500")
+        self.assertEqual(data["description"], "Notebook")
+        self.assertEqual(data["date"], "2026-10-01")
+        self.assertEqual(data["installments"], 4)
+        self.assertFalse(data["is_paid"])
+        self.assertEqual(data["category"], "personal_shopping")
 
         self.assertEqual(intention.status, "bought")
         self.assertEqual(intention.transaction_id, 42)
         repository.update.assert_called_once_with(intention)
         self.assertEqual(result["transaction_id"], 42)
+
+    def test_refuses_already_converted(self):
+        repository = Mock()
+        repository.get.return_value = PurchaseIntentionDomain(id=1, status="bought", user_id=7)
+
+        use_case = ConvertPurchaseIntentionUseCase(repository, Mock(), Mock())
+        with self.assertRaises(ValueError):
+            use_case.execute(1, {}, user_id=7)

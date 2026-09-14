@@ -10,6 +10,7 @@ class PurchaseIntentionDomain:
         name: str = None,
         amount: float = None,
         month: str = None,
+        installments: int = 1,
         status: str = "planned",
         transaction_id: int = None,
         id: int = None,
@@ -21,6 +22,7 @@ class PurchaseIntentionDomain:
         self.name = name
         self.amount = amount
         self.month = month
+        self.installments = installments
         self.status = status
         self.transaction_id = transaction_id
         self.id = id
@@ -33,5 +35,6 @@ class PurchaseIntentionDomain:
         self.name = data.get("name", self.name)
         self.amount = data.get("amount", self.amount)
         self.month = data.get("month", self.month)
+        self.installments = data.get("installments", self.installments)
         self.status = data.get("status", self.status)
         self.transaction_id = data.get("transaction_id", self.transaction_id)

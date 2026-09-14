@@ -31,6 +31,7 @@ class PurchaseIntentionRepository:
             name=intention.name,
             amount=intention.amount,
             month=intention.month,
+            installments=intention.installments,
             status=intention.status,
             transaction_id=intention.transaction_id,
             user_id=intention.user_id,
@@ -43,6 +44,7 @@ class PurchaseIntentionRepository:
         instance.name = intention.name
         instance.amount = intention.amount
         instance.month = intention.month
+        instance.installments = intention.installments
         instance.status = intention.status
         instance.transaction_id = intention.transaction_id
         instance.save()
