@@ -138,40 +138,6 @@ class TransactionViewSet(viewsets.ViewSet):
         due_date = request.query_params.get("due_date")
         stats = self.container.transaction_stats_use_case().execute(request.user.id, due_date)
         return Response(stats, status=status.HTTP_200_OK)
-
-    @decorators.action(detail=False, methods=["POST"], url_path="quick_add")
-    def quick_add(self, request):
-        try:
-            result = self.container.quick_add_transaction_use_case().execute(request.data, request.user.id)
-        except ValueError as error:
-            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(result, status=status.HTTP_201_CREATED)
-
-    @decorators.action(detail=False, methods=["GET"])
-    def ledger(self, request):
-        include_unpaid = request.query_params.get("include_unpaid", "true") != "false"
-        result = self.container.ledger_use_case().execute(
-            request.user.id,
-            start=request.query_params.get("start"),
-            end=request.query_params.get("end"),
-            include_unpaid=include_unpaid,
-        )
-        return Response(result, status=status.HTTP_200_OK)
-
-    @decorators.action(detail=False, methods=["POST"], url_path="reconcile/preview")
-    def reconcile_preview(self, request):
-        try:
-            result = self.container.reconcile_bill_preview_use_case().execute(
-                request.data["bill_transaction_id"], request.user.id
-            )
-        except ValueError as error:
-            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(result, status=status.HTTP_200_OK)
-
-    @decorators.action(detail=False, methods=["POST"], url_path="reconcile/apply")
-    def reconcile_apply(self, request):
-        result = self.container.apply_reconciliation_use_case().execute(request.data, request.user.id)
-        return Response(result, status=status.HTTP_200_OK)
     
     @decorators.action(detail=True, methods=["POST"])
     def pay(self, request, pk: str):

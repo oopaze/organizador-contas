@@ -42,10 +42,6 @@ from modules.transactions.use_cases import (
     GetSubTransactionsFromTransactionToolUseCase,
     GetUserGeneralStatsToolUseCase,
     GetTransactionsToolUseCase,
-    QuickAddTransactionUseCase,
-    LedgerUseCase,
-    ReconcileBillPreviewUseCase,
-    ApplyReconciliationUseCase,
 )
 
 
@@ -308,34 +304,4 @@ class TransactionsContainer(containers.DeclarativeContainer):
         get_sub_transactions_from_transaction_tool_use_case=get_sub_transactions_from_transaction_tool_use_case,
         get_user_general_stats_tool_use_case=get_user_general_stats_tool_use_case,
         get_transactions_tool_use_case=get_transactions_tool_use_case,
-    )
-
-    quick_add_transaction_use_case = providers.Factory(
-        QuickAddTransactionUseCase,
-        transaction_repository=transaction_repository,
-        transaction_factory=transaction_factory,
-        transaction_serializer=transaction_serializer,
-        create_sub_transaction_use_case=create_sub_transaction_use_case,
-        recalculate_amount_use_case=recalculate_amount_use_case,
-    )
-
-    ledger_use_case = providers.Factory(
-        LedgerUseCase,
-        transaction_repository=transaction_repository,
-        sub_transaction_repository=sub_transaction_repository,
-    )
-
-    reconcile_bill_preview_use_case = providers.Factory(
-        ReconcileBillPreviewUseCase,
-        transaction_repository=transaction_repository,
-        sub_transaction_repository=sub_transaction_repository,
-        ai_call_repository=ai_call_repository,
-        ask_use_case=ask_use_case,
-    )
-
-    apply_reconciliation_use_case = providers.Factory(
-        ApplyReconciliationUseCase,
-        transaction_repository=transaction_repository,
-        sub_transaction_repository=sub_transaction_repository,
-        recalculate_amount_use_case=recalculate_amount_use_case,
     )

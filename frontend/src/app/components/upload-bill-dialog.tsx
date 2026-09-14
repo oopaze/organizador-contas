@@ -25,7 +25,7 @@ type AIModelKey = keyof typeof AI_MODELS;
 interface UploadBillDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (transactionIds: number[]) => void;
+  onSuccess: () => void;
 }
 
 export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
@@ -84,14 +84,14 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
 
     setLoading(true);
     const password = hasPassword ? pdfPassword : undefined;
-    await uploadBill(selectedFile, password, selectedModel, createInFutureMonths).then((result) => {
+    await uploadBill(selectedFile, password, selectedModel, createInFutureMonths).then(() => {
       toast.success('Fatura enviada com sucesso!');
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
-      onSuccess(result?.transaction_ids || []);
+      onSuccess();
     }).catch((error) => {
       toast.error(error?.response?.data?.error || 'Falha ao enviar fatura. Verifique se a senha está correta.');
     }).finally(() => {

@@ -34,13 +34,11 @@ class SubTransactionFactory:
         return SubTransactionDomain(
             description=data["description"],
             amount=data["amount"],
-            date=data.get("date"),
             installment_info=data.get("installment_info"),
             transaction=transaction,
             actor=actor,
             user_provided_description=data.get("user_provided_description", None),
             category=data.get("category", TransactionCategory.OTHER.name),
-            paid_at=data.get("paid_at"),
         )
     
     def build_from_transaction(self, transaction: TransactionDomain, installment = "1/1") -> SubTransactionDomain:

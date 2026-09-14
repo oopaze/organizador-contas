@@ -59,10 +59,9 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
         self.mock_sub_transaction_factory.build_many_from_file.return_value = []
 
         # Act
-        result = self.use_case.execute(file_id, user_id)
+        self.use_case.execute(file_id, user_id)
 
         # Assert
-        self.assertEqual(result, ["bill_123"])
         self.mock_file_repository.get.assert_called_once_with(file_id)
         self.mock_bill_factory.build_from_file.assert_called_once()
         self.mock_bill_repository.create.assert_called_once_with(mock_bill, user_id)
@@ -127,10 +126,9 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
         self.mock_sub_transaction_factory.build_many_from_file.return_value = []
 
         # Act
-        result = self.use_case.execute(file_id, user_id)
+        self.use_case.execute(file_id, user_id)
 
         # Assert
-        self.assertEqual(result, ["bill_1", "bill_2"])
         self.assertEqual(self.mock_bill_factory.build_from_file.call_count, 2)
         self.assertEqual(self.mock_bill_repository.create.call_count, 2)
         self.assertEqual(self.mock_sub_transaction_repository.create_many.call_count, 2)

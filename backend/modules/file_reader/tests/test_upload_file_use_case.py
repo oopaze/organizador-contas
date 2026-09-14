@@ -64,7 +64,6 @@ class TestUploadFileUseCase(TestCase):
         self.mock_ai_call_repository.get.return_value = mock_ai_call
         self.mock_file_repository.update.return_value = mock_updated_file
         self.mock_file_serializer.serialize.return_value = {"id": "123"}
-        self.mock_transpose_use_case.execute.return_value = [55]
 
         # Act
         result = self.use_case.execute(uploaded_file, user_id)
@@ -79,7 +78,6 @@ class TestUploadFileUseCase(TestCase):
         self.mock_file_repository.update.assert_called_once_with(mock_saved_file)
         self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, False)
         self.assertEqual(result["id"], "123")
-        self.assertEqual(result["transaction_ids"], [55])
 
     def test_execute_with_password_removes_password_first(self):
         """Test that execute removes password before processing if provided."""

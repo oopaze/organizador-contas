@@ -34,7 +34,7 @@ class TransposeFileBillToModelsUseCase:
         self.file_repository = file_repository
         self.recalculate_amount_use_case = recalculate_amount_use_case
 
-    def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False) -> list[int]:
+    def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False):
         file = self.file_repository.get(file_id)
         response = file.get_response()
 
@@ -42,11 +42,9 @@ class TransposeFileBillToModelsUseCase:
             return self._execute_for_many(file, response, user_id, create_in_future_months)
         return self._execute_for_one(file, response, user_id, create_in_future_months)
 
-    def _execute_for_one(self, file: FileDomain, response: dict, user_id: int, create_in_future_months: bool = False) -> list[int]:
-        created_ids = []
+    def _execute_for_one(self, file: FileDomain, response: dict, user_id: int, create_in_future_months: bool = False):
         bill = self.bill_factory.build_from_file(file, response)
         saved_bill = self.bill_repository.create(bill, user_id)
-        created_ids.append(saved_bill.id)
         bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, response)
         self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
 
@@ -54,11 +52,9 @@ class TransposeFileBillToModelsUseCase:
         for future_transaction in future_transactions:
             bill = self.bill_factory.build_from_file(file, future_transaction)
             saved_bill = self.bill_repository.create(bill, user_id)
-            created_ids.append(saved_bill.id)
             bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, ai_response=future_transaction)
             self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
             self.recalculate_amount_use_case.execute(saved_bill.id, user_id)
-        return created_ids
 
     def _get_future_transactions(self, response: dict, bill: BillDomain) -> list:
         base_due_date = datetime.strptime(bill.due_date, "%Y-%m-%d")
@@ -105,8 +101,7 @@ class TransposeFileBillToModelsUseCase:
 
         return result
 
-    def _execute_for_many(self, file: FileDomain, response: list, user_id: int, create_in_future_months: bool = False) -> list[int]:
-        created_ids = []
+    def _execute_for_many(self, file: FileDomain, response: list, user_id: int, create_in_future_months: bool = False):
         if response and "despesas" in response[0]:
             logger.info(f"[Transpose] Detected monthly format, flattening {len(response)} months")
             response = self._flatten_monthly_response(response)
@@ -116,13 +111,12 @@ class TransposeFileBillToModelsUseCase:
             try:
                 bill = self.bill_factory.build_from_file(file, r)
                 saved_bill = self.bill_repository.create(bill, user_id)
-                created_ids.append(saved_bill.id)
                 bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, r)
                 self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
             except Exception as e:
                 logger.warning(f"[Transpose] Skipping item due to error: {e}")
                 continue
-        return created_ids
+        return
 
     def _flatten_monthly_response(self, response: list) -> list:
         flattened = []

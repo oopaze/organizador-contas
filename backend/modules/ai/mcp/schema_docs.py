@@ -9,18 +9,13 @@ column metadata from `Model._meta`.
 TABLE_DESCRIPTIONS = {
     "transactions_transaction": (
         "Transação principal — uma conta, um pagamento, uma fatura, ou um "
-        "salário. Uma fatura em aberto (compras de cartão lançadas em tempo "
-        "real) é identificada por file_id IS NULL, category = 'credit_card' e "
-        "transaction_type = 'outgoing', com due_date no dia 1 do mês da "
-        "compra. Linhas soft-deleted (deleted_at IS NOT NULL) já são "
+        "salário. Linhas soft-deleted (deleted_at IS NOT NULL) já são "
         "filtradas automaticamente."
     ),
     "transactions_subtransaction": (
         "Itens individuais que compõem uma transação principal "
         "(ex: linhas de uma fatura de cartão). Sempre ligados a uma "
-        "transactions_transaction via transaction_id. Ao somar extrato, conte "
-        "as subtransações quando existirem; senão conte a transação principal "
-        "(ex: salário), para não dobrar."
+        "transactions_transaction via transaction_id."
     ),
     "transactions_actor": (
         "Pessoa ou entidade envolvida em uma sub-transação (ex: alguém "
