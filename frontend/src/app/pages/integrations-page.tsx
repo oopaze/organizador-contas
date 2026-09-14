@@ -3,11 +3,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Plug, Copy, Check, Trash2 } from 'lucide-react';
+import { Plug, Copy, Check, Trash2, Settings, Link2, ShieldCheck, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { listMCPConnections, revokeMCPConnection, MCPConnection } from '@/services/mcp/mcpConnections';
 
 const MCP_URL = 'https://api.poupix.connectakit.com.br/mcp';
+
+const SETUP_STEPS = [
+  {
+    icon: Settings,
+    title: 'Abra os conectores do seu assistente',
+    description: 'Claude, ChatGPT, Cursor… em Configurações → Conectores, escolha adicionar conector personalizado / MCP.',
+  },
+  {
+    icon: Link2,
+    title: 'Cole a URL do MCP',
+    description: 'Dê o nome Poupix e cole a URL abaixo no campo de endereço do servidor.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Autorize o acesso',
+    description: 'O Poupix abre a tela de consentimento: entre na sua conta e clique em Autorizar.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Pronto para conversar',
+    description: 'As ferramentas de transações, subtransações e projeção já ficam disponíveis no assistente.',
+  },
+];
 
 export const IntegrationsPage: React.FC = () => {
   const [connections, setConnections] = useState<MCPConnection[]>([]);
@@ -101,26 +124,32 @@ export const IntegrationsPage: React.FC = () => {
         <CardHeader>
           <CardTitle>Como configurar</CardTitle>
           <CardDescription>
-            Funciona com qualquer cliente que suporte MCP via HTTP (Claude, ChatGPT, Cursor…).
+            Funciona com qualquer cliente que suporte MCP via HTTP.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ol className="text-sm space-y-3 list-decimal list-inside text-muted-foreground">
-            <li>
-              No seu assistente, abra as configurações de conectores e escolha{' '}
-              <strong>adicionar conector personalizado / MCP</strong>.
-            </li>
-            <li>
-              Dê o nome <strong>Poupix</strong> e cole a <strong>URL do MCP</strong> acima.
-            </li>
-            <li>
-              O Poupix vai abrir a tela de autorização — entre na sua conta e clique em{' '}
-              <strong>Autorizar</strong>. O acesso é por usuário e você pode revogar quando quiser.
-            </li>
-            <li>
-              Volte ao assistente: as ferramentas de transações, subtransações e projeção já
-              aparecem para ele usar.
-            </li>
+          <ol className="relative space-y-6 before:absolute before:left-4 before:top-2 before:bottom-2 before:w-px before:bg-border">
+            {SETUP_STEPS.map((step, index) => (
+              <li key={step.title} className="relative flex gap-4">
+                <div className="z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
+                  {index + 1}
+                </div>
+                <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                    <step.icon className="h-4 w-4 shrink-0 text-emerald-600" />
+                    {step.title}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                  {index === 1 && (
+                    <div className="pt-1">
+                      <code className="block break-all rounded-md bg-muted px-3 py-2 font-mono text-xs text-gray-800">
+                        {MCP_URL}
+                      </code>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
           </ol>
         </CardContent>
       </Card>

@@ -17,12 +17,14 @@ export const BottomTabs: React.FC = () => {
           key={to}
           to={to}
           end={to === '/'}
-          className="flex flex-1 flex-col items-center justify-center gap-1 py-2 min-h-14"
+          className="flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-1 px-1 py-1.5 min-h-14"
         >
           {({ isActive }) => (
             <>
-              <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-500'}`} />
-              <span className={`w-full truncate text-center text-[11px] leading-none ${isActive ? 'text-emerald-600 font-medium' : 'text-gray-500'}`}>
+              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-emerald-600' : 'text-gray-500'}`} />
+              <span
+                className={`w-full truncate text-center text-[10px] leading-tight ${isActive ? 'text-emerald-600 font-medium' : 'text-gray-500'}`}
+              >
                 {label}
               </span>
             </>
