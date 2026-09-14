@@ -8,6 +8,7 @@ import {
   getTransactionStats,
   getLedger,
   ensureSalary,
+  ensureCardBills,
 } from '@/services';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -94,6 +95,7 @@ export const DashboardPage: React.FC = () => {
   const loadData = async () => {
     try {
       await ensureSalary(selectedMonth).catch(() => undefined);
+      await ensureCardBills(selectedMonth).catch(() => undefined);
 
       const filters: TransactionFilters = {
         due_date: selectedMonth,

@@ -4,6 +4,7 @@ import {
   createIntention,
   deleteIntention,
   ensureSalary,
+  ensureCardBills,
   getIntentions,
   getLedger,
   getProjection,
@@ -90,6 +91,7 @@ export const PlanningPage: React.FC = () => {
   const load = async () => {
     setLoading(true);
     await ensureSalary(month).catch(() => undefined);
+    await ensureCardBills(month).catch(() => undefined);
     Promise.all([
       getIntentions(month),
       getLedger({ start: `${month}-01`, end: `${month}-${String(lastDayOf(month)).padStart(2, '0')}` }),
