@@ -406,6 +406,7 @@ export interface PurchaseIntention {
   name: string;
   amount: string;
   month: string;
+  installments: number;
   status: IntentionStatus;
   transaction_id: number | null;
   created_at?: string | null;
@@ -416,5 +417,18 @@ export interface PurchaseIntentionInput {
   name: string;
   amount: string;
   month: string;
+  installments?: number;
   status?: IntentionStatus;
+}
+
+export interface ProjectionMonth {
+  month: string;
+  salary: string;
+  intentions_total: string;
+  leftover: string;
+}
+
+export interface ProjectionResult {
+  months: ProjectionMonth[];
+  total_months: number;
 }
