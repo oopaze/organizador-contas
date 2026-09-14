@@ -26,6 +26,7 @@ export { getLedger, type LedgerFilters } from './transactions/getLedger';
 export { previewReconciliation } from './transactions/previewReconciliation';
 export { applyReconciliation, type ApplyReconciliationResult } from './transactions/applyReconciliation';
 export { ensureSalary, type EnsureSalaryResult } from './transactions/ensureSalary';
+export { ensureCardBills } from './transactions/ensureCardBills';
 
 // Planning services
 export { getIntentions } from './planning/getIntentions';
@@ -56,6 +57,12 @@ export { getBills } from './bills/getBills';
 export { getBill } from './bills/getBill';
 export { uploadBill } from './bills/uploadBill';
 export { uploadSheet } from './bills/uploadSheet';
+
+// Card services
+export { getCards } from './cards/getCards';
+export { createCard } from './cards/createCard';
+export { updateCard } from './cards/updateCard';
+export { setCardActive } from './cards/setCardActive';
 
 // Chat services
 export { startChat } from './chat/startChat';
