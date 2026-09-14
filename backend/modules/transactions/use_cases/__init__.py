@@ -19,6 +19,10 @@ from modules.transactions.use_cases.transaction import (
     PayTransactionUseCase,
     RecalculateAmountUseCase,
     GuessSubTransactionsCategoryUseCase,
+    QuickAddTransactionUseCase,
+    LedgerUseCase,
+    ReconcileBillPreviewUseCase,
+    ApplyReconciliationUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
@@ -68,4 +72,8 @@ __all__ = [
     "GetSubTransactionsFromTransactionToolUseCase",
     "GetUserGeneralStatsToolUseCase",
     "GetTransactionsToolUseCase",
+    "QuickAddTransactionUseCase",
+    "LedgerUseCase",
+    "ReconcileBillPreviewUseCase",
+    "ApplyReconciliationUseCase",
 ]

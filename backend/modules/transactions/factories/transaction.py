@@ -58,4 +58,5 @@ class TransactionFactory:
             main_transaction=data.get("main_transaction", None),
             recurrence_count=data.get("recurrence_count", None),
             category=data.get("category", TransactionCategory.OTHER.name),
+            paid_at=data.get("paid_at"),
         )

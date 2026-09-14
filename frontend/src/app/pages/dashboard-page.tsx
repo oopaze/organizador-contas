@@ -3,8 +3,10 @@ import {
   Transaction,
   TransactionFilters,
   TransactionStats,
+  LedgerResult,
   getTransactions,
   getTransactionStats,
+  getLedger,
 } from '@/services';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -13,7 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { Plus, TrendingUp, TrendingDown, Wallet, Upload, ChevronLeft, ChevronRight, Users, FileSpreadsheet, CheckCircle2, Clock } from 'lucide-react';
 import { TransactionsList } from '@/app/components/transactions-list';
 import { AddTransactionDialog } from '@/app/components/add-transaction-dialog';
+import { QuickAddDialog } from '@/app/components/quick-add-dialog';
+import { LedgerList } from '@/app/components/ledger-list';
 import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
+import { ReconcileBillDialog } from '@/app/components/reconcile-bill-dialog';
 import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
 import { TransactionStatsFilters } from '@/services/transactions/getTransactionStats';
@@ -21,12 +26,18 @@ import { TransactionStatsFilters } from '@/services/transactions/getTransactionS
 export const DashboardPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<TransactionStats | null>(null);
+  const [ledger, setLedger] = useState<LedgerResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [ledgerLoading, setLedgerLoading] = useState(true);
+  const [includeUnpaid, setIncludeUnpaid] = useState(true);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showUploadBill, setShowUploadBill] = useState(false);
   const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [showReconcile, setShowReconcile] = useState(false);
+  const [reconcileBillIds, setReconcileBillIds] = useState<number[]>([]);
 
   // Month/Year filter
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -59,6 +70,23 @@ export const DashboardPage: React.FC = () => {
     });
   }
 
+  const loadLedger = async () => {
+    setLedgerLoading(true);
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const lastDay = new Date(year, month, 0).getDate();
+    getLedger({
+      start: `${selectedMonth}-01`,
+      end: `${selectedMonth}-${String(lastDay).padStart(2, '0')}`,
+      include_unpaid: includeUnpaid,
+    }).then(data => {
+      setLedger(data);
+    }).catch(error => {
+      toast.error('Falha ao carregar extrato');
+    }).finally(() => {
+      setLedgerLoading(false);
+    });
+  }
+
   const loadData = async () => {
     try {
       const filters: TransactionFilters = {
@@ -70,6 +98,7 @@ export const DashboardPage: React.FC = () => {
       await Promise.all([
         loadTransactions(filters),
         loadStats({ due_date: dueDate }),
+        loadLedger(),
       ]);
     } catch (error) {
       toast.error('Falha ao carregar dados');
@@ -78,14 +107,17 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedMonth, paymentStatus]);
+  }, [selectedMonth, paymentStatus, includeUnpaid]);
 
   // Use stats from API
-  const totalExpenses = stats?.outgoing_total || 0;
   const totalIncome = stats?.incoming_total || 0;
-  const balance = stats?.balance || 0;
   const totalPaid = stats?.outgoing_total_paid || 0;
-  const totalPending = totalExpenses - totalPaid;
+
+  // Use ledger summary for realized/projected balance
+  const realizedBalance = parseFloat(ledger?.summary.realized_balance || '0');
+  const projectedBalance = parseFloat(ledger?.summary.projected_balance || '0');
+  const payable = parseFloat(ledger?.summary.payable || '0');
+  const receivable = parseFloat(ledger?.summary.receivable || '0');
 
   const handleTransactionAdded = () => {
     setShowAddTransaction(false);
@@ -93,10 +125,15 @@ export const DashboardPage: React.FC = () => {
     toast.success('Receita adicionada com sucesso!');
   };
 
-  const handleBillUploaded = () => {
+  const handleBillUploaded = (transactionIds: number[]) => {
     setShowUploadBill(false);
     loadData();
-    toast.success('Fatura enviada com sucesso!');
+    if (transactionIds.length > 0) {
+      setReconcileBillIds(transactionIds);
+      setShowReconcile(true);
+    } else {
+      toast.success('Fatura enviada com sucesso!');
+    }
   };
 
   const handleSheetUploaded = () => {
@@ -153,10 +190,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {balance.toFixed(2)}
+              R$ {projectedBalance.toFixed(2)}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              R$ {(balance - (stats?.outgoing_from_actors || 0)).toFixed(2)} <span className="text-xs">seu saldo real</span>
+              R$ {realizedBalance.toFixed(2)} <span className="text-xs">seu saldo real</span>
             </p>
           </CardContent>
         </Card>
@@ -198,7 +235,7 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              R$ {totalPending.toFixed(2)}
+              R$ {payable.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Contas pendentes
@@ -213,10 +250,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              R$ {(stats?.outgoing_from_actors || 0).toFixed(2)}
+              R$ {receivable.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-600 font-medium">R$ {(stats?.outgoing_from_actors_paid || 0).toFixed(2)}</span> já recebido
+              Valores ainda não recebidos
             </p>
           </CardContent>
         </Card>
@@ -224,6 +261,11 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-4 mb-8">
+        <Button onClick={() => setShowQuickAdd(true)} className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Lançamento
+        </Button>
+
         <Button onClick={() => setShowAddTransaction(true)} variant="outline" className="flex-1 sm:flex-none">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Receita
@@ -285,6 +327,7 @@ export const DashboardPage: React.FC = () => {
               <TabsTrigger value="all">Todas</TabsTrigger>
               <TabsTrigger value="expenses">Despesas</TabsTrigger>
               <TabsTrigger value="income">Receitas</TabsTrigger>
+              <TabsTrigger value="ledger">Extrato</TabsTrigger>
             </TabsList>
 
             <TabsContent value="expenses">
@@ -313,11 +356,33 @@ export const DashboardPage: React.FC = () => {
                 loading={transactionsLoading}
               />
             </TabsContent>
+
+            <TabsContent value="ledger">
+              <div className="flex justify-end mb-3">
+                <Button
+                  variant={includeUnpaid ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setIncludeUnpaid((value) => !value)}
+                >
+                  {includeUnpaid ? 'Incluindo previsto' : 'Só realizado'}
+                </Button>
+              </div>
+              <LedgerList entries={ledger?.entries || []} loading={ledgerLoading} />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
 
       {/* Dialogs */}
+      <QuickAddDialog
+        open={showQuickAdd}
+        onOpenChange={setShowQuickAdd}
+        onSuccess={() => {
+          setShowQuickAdd(false);
+          loadData();
+          toast.success('Lançamento criado!');
+        }}
+      />
       <AddTransactionDialog
         open={showAddTransaction}
         onOpenChange={setShowAddTransaction}
@@ -327,6 +392,16 @@ export const DashboardPage: React.FC = () => {
         open={showUploadBill}
         onOpenChange={setShowUploadBill}
         onSuccess={handleBillUploaded}
+      />
+      <ReconcileBillDialog
+        open={showReconcile}
+        onOpenChange={setShowReconcile}
+        billTransactionIds={reconcileBillIds}
+        onSuccess={() => {
+          setShowReconcile(false);
+          loadData();
+          toast.success('Conciliação concluída!');
+        }}
       />
       <UploadSheetDialog
         open={showUploadSheet}

@@ -21,6 +21,10 @@ export { getTransactionStats } from './transactions/getTransactionStats';
 export { payTransaction } from './transactions/payTransaction';
 export { recalculateTransactionAmount } from './transactions/recalculateTransactionAmount';
 export { guessSubTransactionsCategory } from './transactions/guessSubTransactionsCategory';
+export { quickAddTransaction } from './transactions/quickAddTransaction';
+export { getLedger, type LedgerFilters } from './transactions/getLedger';
+export { previewReconciliation } from './transactions/previewReconciliation';
+export { applyReconciliation, type ApplyReconciliationResult } from './transactions/applyReconciliation';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';

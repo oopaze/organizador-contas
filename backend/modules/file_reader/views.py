@@ -40,7 +40,7 @@ class UploadFileView(APIView):
         create_in_future_months = request.data.get("create_in_future_months", False)
 
         try:
-            self.container.upload_file_use_case().execute(
+            result = self.container.upload_file_use_case().execute(
                 file, 
                 request.user.id, 
                 password, 
@@ -48,7 +48,10 @@ class UploadFileView(APIView):
                 create_in_future_months=create_in_future_months,
             )
             return Response(
-                {"message": "Fatura enviada com sucesso!"},
+                {
+                    "message": "Fatura enviada com sucesso!",
+                    "transaction_ids": result.get("transaction_ids", []),
+                },
                 status=status.HTTP_201_CREATED,
             )
         except InvalidPasswordException as e:

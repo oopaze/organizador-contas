@@ -51,7 +51,7 @@ class SubTransactionDomain:
         self.installment_info = data.get("installment_info", self.installment_info)
         self.transaction = data.get("transaction", self.transaction)
         self.actor = data.get("actor", self.actor)
-        self.actor_id = data.get("actor_id", self.actor_id)
+        self.actor_id = data.get("actor_id", self.actor.id if isinstance(self.actor, ActorDomain) else self.actor_id)
         self.user_provided_description = data.get("user_provided_description", self.user_provided_description)
         self.category = data.get("category", self.category)
 
