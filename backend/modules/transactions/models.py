@@ -25,6 +25,9 @@ class Transaction(TimedModel, UserOwnedModel, SoftDeleteModel):
     main_transaction = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="installments")
     paid_at = models.DateField(null=True, blank=True)
     category = models.CharField(choices=TransactionCategory.get_all_as_options(), default=TransactionCategory.OTHER.name)
+    card = models.ForeignKey(
+        "cards.Card", on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions"
+    )
 
     class Meta:
         ordering = ["-due_date"]

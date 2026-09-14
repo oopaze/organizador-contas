@@ -24,6 +24,7 @@ class TransactionFactory:
             paid_at=model.paid_at,
             subtransactions_paid=getattr(model, "subtransactions_paid", None),
             category=model.category,
+            card_id=model.card_id,
         )
     
     def build_from_serialized(self, serialized_transaction: dict) -> TransactionDomain:
@@ -59,4 +60,5 @@ class TransactionFactory:
             recurrence_count=data.get("recurrence_count", None),
             category=data.get("category", TransactionCategory.OTHER.name),
             paid_at=data.get("paid_at"),
+            card_id=data.get("card_id"),
         )

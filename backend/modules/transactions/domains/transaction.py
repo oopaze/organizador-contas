@@ -28,6 +28,7 @@ class TransactionDomain:
         paid_at: str = None,
         subtransactions_paid: bool = None,
         category: str = TransactionCategory.OTHER.name,
+        card_id: int = None,
     ):
         self.due_date = due_date
         self.total_amount = total_amount
@@ -49,6 +50,7 @@ class TransactionDomain:
         self.subtransactions_paid = subtransactions_paid
         self.is_paid = paid_at is not None
         self.category = category
+        self.card_id = card_id
 
     def is_paying(self):
         return self.paid_at is None

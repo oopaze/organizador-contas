@@ -92,6 +92,7 @@ class TransactionRepository:
             recurrence_count=transaction.recurrence_count,
             category=transaction.category,
             paid_at=transaction.paid_at,
+            card_id=transaction.card_id,
         )
         transaction_instance.refresh_from_db()
         return self.transaction_factory.build_from_model(transaction_instance)
@@ -105,6 +106,7 @@ class TransactionRepository:
         transaction_instance.is_salary = transaction.is_salary
         transaction_instance.is_recurrent = transaction.is_recurrent
         transaction_instance.category = transaction.category
+        transaction_instance.card_id = transaction.card_id
         transaction_instance.save()
         return self.transaction_factory.build_from_model(transaction_instance)
     
