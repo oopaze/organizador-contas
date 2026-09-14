@@ -50,6 +50,7 @@ from modules.transactions.use_cases import (
     ReconcileBillPreviewUseCase,
     ApplyReconciliationUseCase,
     EnsureMonthlySalaryUseCase,
+    InferTransactionCategoryUseCase,
 )
 
 
@@ -317,6 +318,12 @@ class TransactionsContainer(containers.DeclarativeContainer):
         get_transactions_tool_use_case=get_transactions_tool_use_case,
     )
 
+    infer_transaction_category_use_case = providers.Factory(
+        InferTransactionCategoryUseCase,
+        ai_call_repository=ai_call_repository,
+        ask_use_case=ask_use_case,
+    )
+
     quick_add_transaction_use_case = providers.Factory(
         QuickAddTransactionUseCase,
         transaction_repository=transaction_repository,
@@ -324,6 +331,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         transaction_serializer=transaction_serializer,
         create_sub_transaction_use_case=create_sub_transaction_use_case,
         recalculate_amount_use_case=recalculate_amount_use_case,
+        infer_category_use_case=infer_transaction_category_use_case,
     )
 
     ledger_use_case = providers.Factory(

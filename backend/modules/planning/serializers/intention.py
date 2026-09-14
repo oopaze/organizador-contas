@@ -8,6 +8,7 @@ class PurchaseIntentionSerializer:
             "name": intention.name,
             "amount": str(intention.amount),
             "month": intention.month.isoformat() if hasattr(intention.month, "isoformat") else intention.month,
+            "installments": intention.installments,
             "status": intention.status,
             "transaction_id": intention.transaction_id,
             "created_at": intention.created_at.strftime("%Y-%m-%d %H:%M:%S") if intention.created_at else None,

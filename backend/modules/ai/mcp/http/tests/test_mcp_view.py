@@ -77,6 +77,7 @@ class TestMCPView(TestCase):
                     "create_sub_transaction",
                     "update_sub_transaction",
                     "list_enums",
+                    "get_projection",
                 ]
             ),
         )

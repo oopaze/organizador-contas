@@ -137,6 +137,49 @@ class TestUploadFileUseCase(TestCase):
         # Assert
         self.mock_remove_password_use_case.execute.assert_not_called()
 
+    def test_retries_with_fallback_model_when_extraction_is_empty(self):
+        """Empty extraction with the requested model triggers one retry with the fallback model."""
+        user_id = 1
+        uploaded_file = SimpleUploadedFile("test.pdf", b"fake pdf content")
+
+        mock_file_domain = Mock(spec=FileDomain)
+        mock_saved_file = Mock(spec=FileDomain)
+        mock_saved_file.id = "123"
+        mock_saved_file.extract_text_from_pdf.return_value = "Extracted PDF text"
+        mock_updated_file = Mock(spec=FileDomain)
+        mock_updated_file.id = "123"
+
+        empty_call = Mock(spec=AICallDomain)
+        empty_call.response = {
+            "bill_identifier": "C&A Pay",
+            "due_date": None,
+            "total_amount": None,
+            "transactions": [],
+        }
+        good_call = Mock(spec=AICallDomain)
+        good_call.response = {
+            "bill_identifier": "C&A Pay",
+            "due_date": "2026-09-20",
+            "total_amount": 100.0,
+            "transactions": [],
+        }
+
+        self.mock_file_factory.build.return_value = mock_file_domain
+        self.mock_file_repository.create.return_value = mock_saved_file
+        self.mock_ask_use_case.execute.return_value = "ai_123"
+        self.mock_ai_call_repository.get.side_effect = [empty_call, good_call]
+        self.mock_file_repository.update.return_value = mock_updated_file
+        self.mock_file_serializer.serialize.return_value = {"id": "123"}
+
+        self.use_case.execute(uploaded_file, user_id, model="gemini-2.5-flash-lite")
+
+        self.assertEqual(self.mock_ask_use_case.execute.call_count, 2)
+        first_model = self.mock_ask_use_case.execute.call_args_list[0][1]["model"]
+        second_model = self.mock_ask_use_case.execute.call_args_list[1][1]["model"]
+        self.assertEqual(first_model, "gemini-2.5-flash-lite")
+        self.assertEqual(second_model, "gemini-2.5-pro")
+        mock_saved_file.update_ai_info.assert_called_once_with(good_call)
+
     def test_execute_with_create_in_future_months(self):
         """Test that execute passes create_in_future_months flag to transpose use case."""
         # Arrange

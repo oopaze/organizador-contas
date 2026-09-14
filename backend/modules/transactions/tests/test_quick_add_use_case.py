@@ -175,6 +175,44 @@ class TestQuickAddTransactionUseCase(TestCase):
                 user_id=7,
             )
 
+    def test_infers_category_when_missing(self):
+        infer = Mock()
+        infer.execute.return_value = "food_grocery"
+        use_case = QuickAddTransactionUseCase(
+            transaction_repository=self.transaction_repository,
+            transaction_factory=self.transaction_factory,
+            transaction_serializer=self.transaction_serializer,
+            create_sub_transaction_use_case=self.create_sub_transaction_use_case,
+            recalculate_amount_use_case=self.recalculate_amount_use_case,
+            infer_category_use_case=infer,
+        )
+        created = TransactionDomain(
+            id=10, due_date="2026-09-13", total_amount="10", transaction_identifier="Padaria",
+            transaction_type="outgoing", user_id=7,
+        )
+        self.transaction_factory.build.return_value = created
+        self.transaction_repository.create.return_value = created
+        self.create_sub_transaction_use_case.execute.return_value = {"id": 55}
+        self.transaction_serializer.serialize.return_value = {"id": 10}
+
+        use_case.execute(
+            {
+                "direction": "outgoing",
+                "payment_method": "cash",
+                "amount": "10",
+                "description": "Padaria",
+                "date": "2026-09-13",
+                "is_paid": False,
+            },
+            user_id=7,
+        )
+
+        infer.execute.assert_called_once_with("Padaria", 7)
+        built_data = self.transaction_factory.build.call_args[0][0]
+        self.assertEqual(built_data["category"], "food_grocery")
+        sub_data = self.create_sub_transaction_use_case.execute.call_args[0][0]
+        self.assertEqual(sub_data["category"], "food_grocery")
+
     def test_installments_below_one_raises(self):
         with self.assertRaises(ValueError):
             self.use_case.execute(

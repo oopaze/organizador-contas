@@ -9,12 +9,20 @@ from modules.planning.use_cases import (
     CreatePurchaseIntentionUseCase,
     DeletePurchaseIntentionUseCase,
     ListPurchaseIntentionsUseCase,
+    ProjectionUseCase,
     UpdatePurchaseIntentionUseCase,
 )
 from modules.transactions.container import TransactionsContainer
+from modules.userdata.factories import ProfileFactory
+from modules.userdata.models import Profile
+from modules.userdata.repositories.profile import ProfileRepository
 
 
 class PlanningContainer(containers.DeclarativeContainer):
+    # DEPENDENCIES (AI bits injected from views for intention conversion)
+    ask_use_case = providers.Dependency()
+    ai_call_repository = providers.Dependency()
+
     # FACTORIES
     intention_factory = providers.Factory(PurchaseIntentionFactory)
 
@@ -28,8 +36,16 @@ class PlanningContainer(containers.DeclarativeContainer):
     # SERIALIZERS
     intention_serializer = providers.Factory(PurchaseIntentionSerializer)
 
+    profile_repository = providers.Factory(
+        ProfileRepository, model=Profile, profile_factory=providers.Factory(ProfileFactory)
+    )
+
     # Cross-module: converting an intention creates a real transaction
-    transactions_container = providers.Singleton(TransactionsContainer)
+    transactions_container = providers.Singleton(
+        TransactionsContainer,
+        ask_use_case=ask_use_case,
+        ai_call_repository=ai_call_repository,
+    )
 
     # USE CASES
     create_intention_use_case = providers.Factory(
@@ -61,4 +77,10 @@ class PlanningContainer(containers.DeclarativeContainer):
         intention_repository=intention_repository,
         intention_serializer=intention_serializer,
         transactions_container=transactions_container,
+    )
+
+    projection_use_case = providers.Factory(
+        ProjectionUseCase,
+        intention_repository=intention_repository,
+        profile_repository=profile_repository,
     )

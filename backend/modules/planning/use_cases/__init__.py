@@ -1,8 +1,11 @@
-from modules.planning.use_cases.intention.create import CreatePurchaseIntentionUseCase
-from modules.planning.use_cases.intention.list import ListPurchaseIntentionsUseCase
-from modules.planning.use_cases.intention.update import UpdatePurchaseIntentionUseCase
-from modules.planning.use_cases.intention.delete import DeletePurchaseIntentionUseCase
-from modules.planning.use_cases.intention.convert import ConvertPurchaseIntentionUseCase
+from modules.planning.use_cases.intention import (
+    ConvertPurchaseIntentionUseCase,
+    CreatePurchaseIntentionUseCase,
+    DeletePurchaseIntentionUseCase,
+    ListPurchaseIntentionsUseCase,
+    ProjectionUseCase,
+    UpdatePurchaseIntentionUseCase,
+)
 
 __all__ = [
     "CreatePurchaseIntentionUseCase",
@@ -10,4 +13,5 @@ __all__ = [
     "UpdatePurchaseIntentionUseCase",
     "DeletePurchaseIntentionUseCase",
     "ConvertPurchaseIntentionUseCase",
+    "ProjectionUseCase",
 ]

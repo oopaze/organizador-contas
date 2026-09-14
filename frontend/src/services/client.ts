@@ -113,7 +113,12 @@ export async function apiUploadRequest<T>(
   });
 
   if (!response.ok) {
-    throw new Error('Upload failed');
+    const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    const err = new Error(
+      (data.error as string) || (data.detail as string) || 'Upload failed'
+    ) as Error & { response?: { status: number; data: Record<string, unknown> } };
+    err.response = { status: response.status, data };
+    throw err;
   }
 
   return response.json();

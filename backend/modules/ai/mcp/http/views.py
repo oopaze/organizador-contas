@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.http.auth import user_id_from_bearer_token
 from modules.ai.mcp.tools import TOOLS, dispatch_tool
@@ -12,7 +13,11 @@ from modules.ai.mcp.tools import TOOLS, dispatch_tool
 
 logger = logging.getLogger("modules.ai.mcp")
 
-_mcp_container = MCPContainer()
+_ai_container = AIContainer()
+_mcp_container = MCPContainer(
+    ask_use_case=_ai_container.ask_use_case(),
+    ai_call_repository=_ai_container.ai_call_repository(),
+)
 
 
 PROTOCOL_VERSION = "2025-06-18"

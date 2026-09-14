@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 
 from django.core.files.uploadedfile import UploadedFile
@@ -11,6 +13,10 @@ from modules.file_reader.use_cases.transpose_file_bill_to_models import Transpos
 from modules.ai.use_cases.ask import AskUseCase
 from modules.file_reader.use_cases.remover_pdf_password import RemovePDFPasswordUseCase
 from modules.ai.types import LlmModels
+
+logger = logging.getLogger(__name__)
+
+FALLBACK_BILL_MODEL = LlmModels.GOOGLE_GEMINI_2_5_PRO.name
 
 PROMPT = """
 Aja como um extrator de dados financeiros de alta precisão. 
@@ -137,12 +143,38 @@ class UploadFileUseCase:
         pdf_text = saved_file.extract_text_from_pdf(password)
 
         prompt = [PROMPT, f"Here is the PDF content: name: {file.name}, text: {pdf_text}"]
-        ai_call_id = self.ask_use_case.execute(prompt, user_id, response_format="json_object", model=model)
-
-        ai_call = self.ai_call_repository.get(ai_call_id)
+        ai_call = self._ask_for_bill(prompt, user_id, model)
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
 
         transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months)
         serialized_file = self.file_serializer.serialize(updated_file)
         return {**serialized_file, "transaction_ids": transaction_ids}
+
+    def _ask_for_bill(self, prompt: list, user_id: int, model: str):
+        ai_call_id = self.ask_use_case.execute(prompt, user_id, response_format="json_object", model=model)
+        ai_call = self.ai_call_repository.get(ai_call_id)
+
+        if model != FALLBACK_BILL_MODEL and not self._has_bill_data(
+            getattr(ai_call, "response", None)
+        ):
+            logger.warning(
+                "[UploadFileUseCase] Empty extraction with %s, retrying with %s",
+                model,
+                FALLBACK_BILL_MODEL,
+            )
+            ai_call_id = self.ask_use_case.execute(
+                prompt, user_id, response_format="json_object", model=FALLBACK_BILL_MODEL
+            )
+            ai_call = self.ai_call_repository.get(ai_call_id)
+
+        return ai_call
+
+    def _has_bill_data(self, response) -> bool:
+        if isinstance(response, dict):
+            return bool(response.get("due_date")) and (
+                bool(response.get("transactions")) or response.get("total_amount") not in (None, "")
+            )
+        if isinstance(response, list):
+            return any(isinstance(item, dict) and item.get("due_date") for item in response)
+        return True

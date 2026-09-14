@@ -4,11 +4,11 @@ from modules.transactions.container import TransactionsContainer
 
 
 class ConvertPurchaseIntentionUseCase:
-    """Turns a planned intention into a real (unpaid) transaction.
+    """Turns a planned intention into real (unpaid) transaction(s).
 
-    The intention month becomes the transaction due date; the created
-    transaction id is stored on the intention and its status becomes
-    ``bought``.
+    Uses the quick-add flow, so an installment intention creates one
+    transaction per month. Once converted the intention is `bought` and
+    stops being counted as an intention (and can no longer be deleted).
     """
 
     def __init__(
@@ -23,21 +23,29 @@ class ConvertPurchaseIntentionUseCase:
 
     def execute(self, intention_id: int, data: dict, user_id: int) -> dict:
         intention = self.intention_repository.get(intention_id, user_id)
+        if intention.status == "bought":
+            raise ValueError("Intenção já virou transação")
 
-        transaction = self.transactions_container.create_transaction_use_case().execute(
+        result = self.transactions_container.quick_add_transaction_use_case().execute(
             {
-                "transaction_identifier": intention.name,
-                "total_amount": str(intention.amount),
-                "due_date": intention.month.isoformat(),
-                "transaction_type": "outgoing",
+                "direction": "outgoing",
+                "payment_method": "cash",
+                "amount": str(intention.amount),
+                "description": intention.name,
+                "date": intention.month.isoformat(),
+                "installments": intention.installments,
+                "is_paid": False,
                 "category": data.get("category"),
-                "is_salary": False,
-                "is_recurrent": False,
-                "user_id": user_id,
-                "paid_at": data.get("paid_at"),
-            }
+                "actor_id": data.get("actor_id"),
+            },
+            user_id,
         )
 
-        intention.update({"status": "bought", "transaction_id": transaction["id"]})
+        intention.update(
+            {
+                "status": "bought",
+                "transaction_id": result["transaction"]["id"],
+            }
+        )
         updated = self.intention_repository.update(intention)
         return self.intention_serializer.serialize(updated)

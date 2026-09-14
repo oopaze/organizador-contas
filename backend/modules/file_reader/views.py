@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
@@ -61,8 +62,20 @@ class UploadFileView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        except ValueError:
+            logger.error(f"[UploadFileView] Could not parse bill: {file.name}")
+            logger.error(traceback.format_exc())
+            return Response(
+                {
+                    "error": (
+                        "Não consegui ler os dados dessa fatura. "
+                        "Tente de novo ou escolha outro modelo de IA."
+                    )
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
         except Exception as e:
-            import traceback
             logger.error(traceback.format_exc())
             return Response(
                 {"error": "Erro ao processar o arquivo."},

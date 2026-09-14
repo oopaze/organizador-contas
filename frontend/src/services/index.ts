@@ -33,6 +33,7 @@ export { createIntention } from './planning/createIntention';
 export { updateIntention } from './planning/updateIntention';
 export { deleteIntention } from './planning/deleteIntention';
 export { convertIntention } from './planning/convertIntention';
+export { getProjection } from './planning/getProjection';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';

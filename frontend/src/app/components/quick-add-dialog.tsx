@@ -5,10 +5,8 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
-import { Switch } from '@/app/components/ui/switch';
-import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
 import { toast } from 'sonner';
-import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
 interface QuickAddDialogProps {
   open: boolean;
@@ -26,15 +24,11 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [actors, setActors] = useState<Actor[]>([]);
   const [direction, setDirection] = useState<TransactionType>('outgoing');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('cash');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(today());
-  const [category, setCategory] = useState('');
-  const [actorId, setActorId] = useState('none');
-  const [isPaid, setIsPaid] = useState(true);
-  const [cardLabel, setCardLabel] = useState('');
   const [installments, setInstallments] = useState('1');
+  const [actorId, setActorId] = useState('none');
 
   useEffect(() => {
     if (!open) return;
@@ -43,15 +37,11 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
 
   const reset = () => {
     setDirection('outgoing');
-    setPaymentMethod('cash');
     setAmount('');
     setDescription('');
     setDate(today());
-    setCategory('');
-    setActorId('none');
-    setIsPaid(true);
-    setCardLabel('');
     setInstallments('1');
+    setActorId('none');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,15 +51,12 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
     try {
       await quickAddTransaction({
         direction,
-        payment_method: paymentMethod,
         amount,
         description,
         date,
-        category: category || undefined,
-        actor_id: actorId === 'none' ? undefined : Number(actorId),
-        is_paid: paymentMethod === 'cash' ? isPaid : undefined,
-        card_label: paymentMethod === 'credit' ? cardLabel.trim() : undefined,
         installments: Math.max(1, parseInt(installments, 10) || 1),
+        actor_id: actorId === 'none' ? undefined : Number(actorId),
+        is_paid: false,
       });
       reset();
       onSuccess();
@@ -87,28 +74,29 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Novo Lançamento</DialogTitle>
           <DialogDescription>
-            Lance agora; a fatura depois só confere.
+            Entra como não pago; a categoria é sugerida pela IA e você paga depois.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Tipo</Label>
-              <RadioGroup
-                value={direction}
-                onValueChange={(value) => setDirection(value as TransactionType)}
-                className="flex gap-4"
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={direction === 'outgoing' ? 'default' : 'outline'}
+                onClick={() => setDirection('outgoing')}
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="outgoing" id="direction-outgoing" />
-                  <Label htmlFor="direction-outgoing" className="cursor-pointer">Despesa</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="incoming" id="direction-incoming" />
-                  <Label htmlFor="direction-incoming" className="cursor-pointer">Receita</Label>
-                </div>
-              </RadioGroup>
+                <TrendingDown className="w-4 h-4 mr-2" />
+                Despesa
+              </Button>
+              <Button
+                type="button"
+                variant={direction === 'incoming' ? 'default' : 'outline'}
+                onClick={() => setDirection('incoming')}
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Receita
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -136,101 +124,29 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="quick-date">Data</Label>
-              <Input
-                id="quick-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quick-installments">Parcelas</Label>
-              <Input
-                id="quick-installments"
-                type="number"
-                min="1"
-                max="48"
-                inputMode="numeric"
-                value={installments}
-                onChange={(e) => setInstallments(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                1 = à vista. No cartão, as parcelas caem nas faturas dos próximos meses.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Pagamento</Label>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as 'cash' | 'credit')}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="cash" id="payment-cash" />
-                  <Label htmlFor="payment-cash" className="cursor-pointer">Dinheiro/Débito/Pix</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="credit" id="payment-credit" />
-                  <Label htmlFor="payment-credit" className="cursor-pointer">Cartão</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            {paymentMethod === 'credit' ? (
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="quick-card">Cartão</Label>
+                <Label htmlFor="quick-date">Data</Label>
                 <Input
-                  id="quick-card"
-                  placeholder="Ex: Nubank"
-                  value={cardLabel}
-                  onChange={(e) => setCardLabel(e.target.value)}
+                  id="quick-date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Compra entra na fatura em aberto; nasce não paga.
-                </p>
               </div>
-            ) : (
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="quick-paid" className="cursor-pointer">
-                    Já paguei/recebi
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    desligue para agendar (previsão)
-                  </p>
-                </div>
-                <Switch
-                  id="quick-paid"
-                  checked={isPaid}
-                  onCheckedChange={setIsPaid}
+              <div className="space-y-2">
+                <Label htmlFor="quick-installments">Parcelas</Label>
+                <Input
+                  id="quick-installments"
+                  type="number"
+                  min="1"
+                  max="48"
+                  inputMode="numeric"
+                  value={installments}
+                  onChange={(e) => setInstallments(e.target.value)}
                 />
               </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="quick-category">Categoria (opcional)</Label>
-              <Select
-                value={category || 'none'}
-                onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
-              >
-                <SelectTrigger id="quick-category">
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {TRANSACTION_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.key} value={cat.key}>
-                      {cat.value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="space-y-2">
