@@ -134,6 +134,7 @@ class UploadFileUseCase:
       create_in_future_months: bool = False,
       card_id: int = None,
     ):
+        card_id = card_id or None
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
 
