@@ -17,6 +17,9 @@ class ProfileDomain:
         updated_at: str = None, 
         modo_on: bool = False,
         salary_day: int = 1,
+        monthly_spending_goal = None,
+        monthly_savings_goal = None,
+        monthly_essentials_goal = None,
     ):
         self.bio = bio
         self.salary = salary
@@ -28,6 +31,9 @@ class ProfileDomain:
         self.updated_at = updated_at
         self.modo_on = modo_on
         self.salary_day = salary_day
+        self.monthly_spending_goal = monthly_spending_goal
+        self.monthly_savings_goal = monthly_savings_goal
+        self.monthly_essentials_goal = monthly_essentials_goal
 
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
@@ -39,3 +45,6 @@ class ProfileDomain:
         self.last_name = data.get("last_name", self.last_name)
         self.modo_on = data.get("modo_on", self.modo_on)
         self.salary_day = data.get("salary_day", self.salary_day)
+        self.monthly_spending_goal = data.get("monthly_spending_goal", self.monthly_spending_goal)
+        self.monthly_savings_goal = data.get("monthly_savings_goal", self.monthly_savings_goal)
+        self.monthly_essentials_goal = data.get("monthly_essentials_goal", self.monthly_essentials_goal)
