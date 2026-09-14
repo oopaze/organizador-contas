@@ -72,7 +72,7 @@ const statusLabel: Record<PurchaseIntention['status'], string> = {
   dismissed: 'Descartada',
 };
 
-const PIE_COLORS = ['#d97706', '#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#b45309', '#92400e', '#fef3c7'];
+const PIE_COLORS = ['#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899', '#f97316', '#06b6d4', '#84cc16'];
 
 export const PlanningPage: React.FC = () => {
   const [month, setMonth] = useState(currentMonth());
@@ -196,7 +196,7 @@ export const PlanningPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Target className="w-6 h-6 text-amber-500" />
+          <Target className="w-6 h-6 text-gray-700" />
           <h1 className="text-2xl font-bold text-gray-900">Planejamento</h1>
         </div>
         <div className="flex items-center gap-4">
@@ -213,17 +213,19 @@ export const PlanningPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-amber-200">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Saldo projetado do mês</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatMoney(projected)}</div>
+            <div className={`text-2xl font-bold ${projected < 0 ? 'text-red-600' : 'text-blue-600'}`}>
+              {formatMoney(projected)}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">Salário e contas já incluídos</p>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200">
+        <Card className="border-amber-300 bg-amber-50/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Parcelas das intenções no mês</CardTitle>
           </CardHeader>
@@ -235,12 +237,12 @@ export const PlanningPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Sobra depois de comprar</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${afterIntentions < 0 ? 'text-red-600' : 'text-amber-600'}`}>
+            <div className={`text-2xl font-bold ${afterIntentions < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
               {formatMoney(afterIntentions)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Saldo projetado − parcelas</p>
@@ -249,7 +251,7 @@ export const PlanningPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-amber-200">
+        <Card>
           <CardHeader>
             <CardTitle>Gastos do mês por categoria</CardTitle>
             <CardDescription>O que já foi lançado neste mês</CardDescription>
@@ -258,44 +260,48 @@ export const PlanningPage: React.FC = () => {
             {spendingByCategory.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">Nenhum gasto no mês</p>
             ) : (
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90}>
-                    {spendingByCategory.map((entry, index) => (
-                      <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => formatMoney(value)} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="h-[220px] sm:h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85}>
+                      {spendingByCategory.map((entry, index) => (
+                        <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => formatMoney(value)} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200">
+        <Card>
           <CardHeader>
             <CardTitle>Projeção dos próximos 12 meses</CardTitle>
-            <CardDescription>Parcelas planejadas e sobra do salário mês a mês</CardDescription>
+            <CardDescription>Parcelas planejadas (amarelo) e sobra do salário (verde) mês a mês</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={projectionData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip formatter={(value: number) => formatMoney(value)} />
-                <Legend />
-                <Bar dataKey="intenções" fill="#d97706" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="sobra" fill="#fcd34d" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="h-[240px] sm:h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={projectionData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" fontSize={11} />
+                  <YAxis fontSize={11} width={45} />
+                  <Tooltip formatter={(value: number) => formatMoney(value)} />
+                  <Legend />
+                  <Bar dataKey="intenções" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sobra" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-amber-200">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <Card className="border-amber-300">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
           <div>
             <CardTitle>Intenções do mês</CardTitle>
             <CardDescription>Vire transação quando decidir comprar</CardDescription>
@@ -305,10 +311,11 @@ export const PlanningPage: React.FC = () => {
               setWhen(month);
               setShowForm(true);
             }}
-            className="bg-amber-500 hover:bg-amber-600 text-white"
+            size="sm"
+            className="bg-amber-500 hover:bg-amber-600 text-white shrink-0"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova intenção
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nova intenção</span>
           </Button>
         </CardHeader>
         <CardContent>
@@ -323,15 +330,15 @@ export const PlanningPage: React.FC = () => {
               {intentions.map((intention) => {
                 const perInstallment = parseFloat(intention.amount || '0') / Math.max(1, intention.installments);
                 return (
-                  <div key={intention.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div key={intention.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate text-sm font-medium text-gray-900">{intention.name}</span>
                         <Badge
                           variant="outline"
                           className={
                             intention.status === 'bought'
-                              ? 'border-amber-400 text-amber-700'
+                              ? 'border-emerald-400 text-emerald-700'
                               : intention.status === 'dismissed'
                                 ? 'text-muted-foreground'
                                 : 'border-amber-300 bg-amber-50 text-amber-700'
@@ -339,6 +346,9 @@ export const PlanningPage: React.FC = () => {
                         >
                           {statusLabel[intention.status]}
                         </Badge>
+                        <span className="text-sm font-semibold text-amber-700">
+                          {formatMoney(intention.amount)}
+                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {new Date(`${intention.month}T00:00:00`).toLocaleDateString('pt-BR')}
@@ -347,24 +357,21 @@ export const PlanningPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-amber-700">{formatMoney(intention.amount)}</span>
-                      {intention.status === 'planned' && (
-                        <>
-                          <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white" onClick={() => handleConvert(intention)}>
-                            <Wand2 className="w-4 h-4 mr-1" />
-                            Virar transação
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleDismiss(intention)}>
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Descartar
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => handleDelete(intention)} title="Excluir">
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                    {intention.status === 'planned' && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white" onClick={() => handleConvert(intention)}>
+                          <Wand2 className="w-4 h-4 mr-1" />
+                          Virar transação
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDismiss(intention)}>
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Descartar
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleDelete(intention)} title="Excluir">
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
