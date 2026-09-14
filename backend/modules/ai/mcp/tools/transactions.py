@@ -17,7 +17,9 @@ CREATE_TRANSACTION_DESCRIPTION = (
     "(dinheiro/débito/pix) ou credit (cartão, exige card_label) usa o "
     "lançamento rápido; cartão entra na fatura em aberto e aceita "
     "installments. Sem payment_method cria direto (aceita is_salary e "
-    "is_recurrent com recurrence_count). paid_at/is_paid opcionais."
+    "is_recurrent com recurrence_count). paid_at/is_paid opcionais. "
+    "cartão pode ser referenciado por card_id (cadastrado em /cards/) ou "
+    "card_label."
 )
 
 UPDATE_TRANSACTION_DESCRIPTION = (
@@ -82,6 +84,7 @@ def call_create_transaction(
             "category": arguments.get("category"),
             "actor_id": arguments.get("actor_id"),
             "card_label": arguments.get("card_label"),
+            "card_id": arguments.get("card_id"),
         }
         if arguments.get("installments") is not None:
             data["installments"] = arguments["installments"]
