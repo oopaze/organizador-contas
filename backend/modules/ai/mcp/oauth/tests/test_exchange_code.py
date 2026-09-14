@@ -48,7 +48,7 @@ class TestExchangeCodeUseCase(SimpleTestCase):
         )
         self.assertEqual(result["access_token"], "mcp_at_plain")
         self.assertEqual(result["token_type"], "Bearer")
-        self.assertEqual(result["expires_in"], 7 * 24 * 3600)
+        self.assertEqual(result["expires_in"], 365 * 24 * 3600)
         self.assertEqual(result["scope"], "mcp:read")
 
     def test_unknown_code_raises(self):
