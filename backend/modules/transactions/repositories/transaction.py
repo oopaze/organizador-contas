@@ -46,6 +46,9 @@ class TransactionRepository:
     def get(self, transaction_id: str, user_id: int) -> "TransactionDomain":
         transaction_instance = self.queryset.get(id=transaction_id, user_id=user_id)
         return self.transaction_factory.build_from_model(transaction_instance)
+
+    def exists_including_deleted(self, **filters) -> bool:
+        return self.model.objects.filter(**filters).exists()
     
     def get_children_transactions(self, transaction_id: str, user_id: int) -> list["TransactionDomain"]:
         transaction_instances = self.queryset.filter(main_transaction_id=transaction_id, user_id=user_id)
