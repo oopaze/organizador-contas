@@ -18,6 +18,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
         self.card_repository.get_for_update.side_effect = (
             lambda card_id, user_id: CardDomain(id=card_id)
         )
+        self.transaction_repository.exists_including_deleted.return_value = False
         self.use_case = EnsureMonthlyCardBillsUseCase(
             card_repository=self.card_repository,
             transaction_repository=self.transaction_repository,
@@ -115,6 +116,24 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
         self.transaction_repository.update.assert_called_once_with(legacy)
         self.recalculate_amount_use_case.execute.assert_called_once_with(60, 7)
         self.assertEqual(result, {"bills": [{"id": 60}]})
+
+    def test_does_not_recreate_bill_deleted_by_user(self):
+        self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
+        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_open_bill.return_value = None
+        self.transaction_repository.exists_including_deleted.return_value = True
+
+        result = self.use_case.execute(7, "2026-09")
+
+        self.transaction_repository.create.assert_not_called()
+        self.assertEqual(result, {"bills": []})
+        self.transaction_repository.exists_including_deleted.assert_called_once_with(
+            user_id=7,
+            card_id=3,
+            category="credit_card",
+            due_date__year=2026,
+            due_date__month=9,
+        )
 
     def test_does_not_adopt_legacy_bill_linked_to_another_card(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]

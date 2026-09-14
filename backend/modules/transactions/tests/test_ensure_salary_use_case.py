@@ -14,6 +14,8 @@ class TestEnsureMonthlySalaryUseCase(SimpleTestCase):
         self.transaction_serializer = Mock()
         self.profile_repository = Mock()
 
+        self.transaction_repository.exists_including_deleted.return_value = False
+
         self.use_case = EnsureMonthlySalaryUseCase(
             transaction_repository=self.transaction_repository,
             transaction_factory=self.transaction_factory,
@@ -104,6 +106,21 @@ class TestEnsureMonthlySalaryUseCase(SimpleTestCase):
         self.assertEqual(str(existing.total_amount), "5500")
         self.transaction_repository.update.assert_called_once_with(existing)
         self.transaction_repository.create.assert_not_called()
+
+    def test_does_not_recreate_salary_deleted_by_user(self):
+        self.profile_repository.get_by_user_id.return_value = ProfileDomain(
+            salary="5000", salary_day=5
+        )
+        self.transaction_repository.filter.return_value = []
+        self.transaction_repository.exists_including_deleted.return_value = True
+
+        result = self.use_case.execute(7, "2026-09")
+
+        self.assertEqual(result, {"salary": None})
+        self.transaction_repository.create.assert_not_called()
+        self.transaction_repository.exists_including_deleted.assert_called_once_with(
+            user_id=7, is_salary=True, due_date__year=2026, due_date__month=9
+        )
 
     def test_keeps_paid_salary_untouched(self):
         existing = TransactionDomain(

@@ -64,6 +64,14 @@ class EnsureMonthlySalaryUseCase:
                 salary = self.transaction_repository.update(salary)
             return {"salary": self.transaction_serializer.serialize(salary)}
 
+        if self.transaction_repository.exists_including_deleted(
+            user_id=user_id,
+            is_salary=True,
+            due_date__year=year,
+            due_date__month=month_number,
+        ):
+            return {"salary": None}
+
         today = date.today()
         paid_at = due_date if (year, month_number) <= (today.year, today.month) else None
         transaction = self.transaction_factory.build(

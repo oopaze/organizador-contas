@@ -50,6 +50,14 @@ class EnsureMonthlyCardBillsUseCase:
                 )
                 created_now = False
                 if bill is None:
+                    if self.transaction_repository.exists_including_deleted(
+                        user_id=user_id,
+                        card_id=locked_card.id,
+                        category=TransactionCategory.CREDIT_CARD.name,
+                        due_date__year=year,
+                        due_date__month=month_number,
+                    ):
+                        continue
                     legacy = self.transaction_repository.get_open_bill(
                         user_id, identifier, year, month_number
                     )
