@@ -22,6 +22,16 @@ class CardRepository:
         instance = self.queryset.get(id=card_id, user_id=user_id)
         return self.card_factory.build_from_model(instance)
 
+    def get_or_none(self, card_id: int, user_id: int) -> "CardDomain | None":
+        try:
+            return self.get(card_id, user_id)
+        except Card.DoesNotExist:
+            return None
+
+    def get_for_update(self, card_id: int, user_id: int) -> "CardDomain":
+        instance = self.queryset.select_for_update().get(id=card_id, user_id=user_id)
+        return self.card_factory.build_from_model(instance)
+
     def get_by_name(self, user_id: int, name: str) -> "CardDomain | None":
         instance = (
             self.queryset

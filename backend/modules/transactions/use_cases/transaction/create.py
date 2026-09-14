@@ -23,6 +23,8 @@ class CreateTransactionUseCase:
         self.sub_transaction_repository = sub_transaction_repository
 
     def execute(self, data: dict) -> dict:
+        data = {**data}
+        data.pop("card_id", None)
         if data.get("is_recurrent", False):
             return self.execute_if_recurrent(data)
         return self.execute_if_not_recurrent(data)

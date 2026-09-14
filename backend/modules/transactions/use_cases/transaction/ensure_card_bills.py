@@ -1,6 +1,8 @@
 import calendar
 from datetime import date
 
+from django.db import transaction
+
 from modules.cards.repositories.card import CardRepository
 from modules.transactions.factories import TransactionFactory
 from modules.transactions.repositories import TransactionRepository
@@ -41,27 +43,39 @@ class EnsureMonthlyCardBillsUseCase:
             due_date = date(year, month_number, due_day).isoformat()
             identifier = f"Fatura {card.name} {month_number:02d}/{year}"
 
-            bill = self.transaction_repository.get_open_bill_by_card(
-                user_id, card.id, year, month_number
-            )
-            if bill is None:
-                bill = self.transaction_factory.build(
-                    {
-                        "due_date": due_date,
-                        "total_amount": 0,
-                        "transaction_identifier": identifier,
-                        "transaction_type": "outgoing",
-                        "is_salary": False,
-                        "user_id": user_id,
-                        "is_recurrent": False,
-                        "category": TransactionCategory.CREDIT_CARD.name,
-                        "card_id": card.id,
-                    }
+            with transaction.atomic():
+                locked_card = self.card_repository.get_for_update(card.id, user_id)
+                bill = self.transaction_repository.get_open_bill_by_card(
+                    user_id, locked_card.id, year, month_number
                 )
-                bill = self.transaction_repository.create(bill)
-            elif str(bill.due_date) != due_date:
-                bill.due_date = due_date
-                bill = self.transaction_repository.update(bill)
+                created_now = False
+                if bill is None:
+                    legacy = self.transaction_repository.get_open_bill(
+                        user_id, identifier, year, month_number
+                    )
+                    if legacy is not None:
+                        legacy.card_id = locked_card.id
+                        bill = self.transaction_repository.update(legacy)
+                    else:
+                        bill = self.transaction_factory.build(
+                            {
+                                "due_date": due_date,
+                                "total_amount": 0,
+                                "transaction_identifier": identifier,
+                                "transaction_type": "outgoing",
+                                "is_salary": False,
+                                "user_id": user_id,
+                                "is_recurrent": False,
+                                "category": TransactionCategory.CREDIT_CARD.name,
+                                "card_id": locked_card.id,
+                            }
+                        )
+                        bill = self.transaction_repository.create(bill)
+                        created_now = True
+
+                if not created_now and str(bill.due_date) != due_date:
+                    bill.due_date = due_date
+                    bill = self.transaction_repository.update(bill)
 
             self.recalculate_amount_use_case.execute(bill.id, user_id)
             updated = self.transaction_repository.get(bill.id, user_id)
