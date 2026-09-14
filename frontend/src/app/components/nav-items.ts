@@ -14,7 +14,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/planning', label: 'Planejamento', icon: Target },
   { to: '/loans', label: 'Empréstimos', icon: HandCoins },
   { to: '/actors', label: 'Atores', icon: Users },
-  { to: '/integrations', label: 'Integrações', icon: Plug, hideWhenInstalled: true },
+  { to: '/integrations', label: 'Conectores', icon: Plug },
 ];
 
 export function visibleNavItems(standalone: boolean): NavItem[] {

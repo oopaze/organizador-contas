@@ -194,12 +194,12 @@ export const PlanningPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-4">
         <div className="flex items-center gap-2">
           <Target className="w-6 h-6 text-gray-700" />
           <h1 className="text-2xl font-bold text-gray-900">Planejamento</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center gap-4">
           <Button variant="outline" size="icon" onClick={() => goToMonth(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>

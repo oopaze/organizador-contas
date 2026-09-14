@@ -22,7 +22,7 @@ export const BottomTabs: React.FC = () => {
           {({ isActive }) => (
             <>
               <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-500'}`} />
-              <span className={`text-[11px] leading-none ${isActive ? 'text-emerald-600 font-medium' : 'text-gray-500'}`}>
+              <span className={`w-full truncate text-center text-[11px] leading-none ${isActive ? 'text-emerald-600 font-medium' : 'text-gray-500'}`}>
                 {label}
               </span>
             </>

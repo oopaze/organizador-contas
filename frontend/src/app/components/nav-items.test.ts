@@ -6,9 +6,9 @@ describe('visibleNavItems', () => {
     expect(visibleNavItems(false)).toHaveLength(NAV_ITEMS.length);
   });
 
-  it('esconde apenas integrations no app instalado', () => {
+  it('mostra os mesmos destinos no app instalado', () => {
     const rotas = visibleNavItems(true).map((i) => i.to);
-    expect(rotas).toEqual(['/', '/planning', '/loans', '/actors']);
+    expect(rotas).toEqual(['/', '/planning', '/loans', '/actors', '/integrations']);
   });
 
   it('nunca esconde as telas de dinheiro', () => {
@@ -18,7 +18,7 @@ describe('visibleNavItems', () => {
     }
   });
 
-  it('não expõe mais os destinos de IA no menu (só integrations)', () => {
+  it('expõe conectores e não expõe chat/ai-insights', () => {
     const rotas = NAV_ITEMS.map((i) => i.to);
     expect(rotas).toEqual([
       '/', '/planning', '/loans', '/actors', '/integrations',
