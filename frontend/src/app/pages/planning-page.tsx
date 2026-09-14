@@ -32,6 +32,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { getCategoryLabel } from '@/lib/category-colors';
 import { ProjectionChart } from '@/app/components/planning/projection-chart';
 import { GoalsProgressCard } from '@/app/components/planning/goals-progress-card';
+import { MonthPicker } from '@/app/components/planning/month-picker';
 
 const currentMonth = () => {
   const now = new Date();
@@ -99,7 +100,8 @@ export const PlanningPage: React.FC = () => {
   };
 
   useEffect(() => {
-    load();
+    const timer = setTimeout(load, 400);
+    return () => clearTimeout(timer);
   }, [startMonth, endMonth]);
 
   const resetForm = () => {
@@ -241,21 +243,9 @@ export const PlanningPage: React.FC = () => {
           <Button variant="outline" size="icon" onClick={() => shiftRange(-1)} title="Período anterior">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Input
-            type="month"
-            aria-label="Mês inicial"
-            value={startMonth}
-            onChange={(event) => changeStart(event.target.value)}
-            className="w-[140px]"
-          />
+          <MonthPicker value={startMonth} onChange={changeStart} ariaLabel="Mês inicial" />
           <span className="text-sm text-muted-foreground">→</span>
-          <Input
-            type="month"
-            aria-label="Mês final"
-            value={endMonth}
-            onChange={(event) => changeEnd(event.target.value)}
-            className="w-[140px]"
-          />
+          <MonthPicker value={endMonth} onChange={changeEnd} ariaLabel="Mês final" />
           <Button variant="outline" size="icon" onClick={() => shiftRange(1)} title="Próximo período">
             <ChevronRight className="h-4 w-4" />
           </Button>
