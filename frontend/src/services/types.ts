@@ -325,6 +325,7 @@ export interface QuickAddInput {
   actor_id?: number;
   is_paid?: boolean;
   card_label?: string;
+  installments?: number;
 }
 
 export interface QuickAddResult {
