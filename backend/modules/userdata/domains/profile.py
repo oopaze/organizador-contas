@@ -15,6 +15,7 @@ class ProfileDomain:
         id: int = None, 
         created_at: str = None, 
         updated_at: str = None, 
+        modo_on: bool = False,
     ):
         self.bio = bio
         self.salary = salary
@@ -24,6 +25,7 @@ class ProfileDomain:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
+        self.modo_on = modo_on
 
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
@@ -33,3 +35,4 @@ class ProfileDomain:
         self.salary = data.get("salary", self.salary)
         self.first_name = data.get("first_name", self.first_name)
         self.last_name = data.get("last_name", self.last_name)
+        self.modo_on = data.get("modo_on", self.modo_on)

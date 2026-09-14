@@ -13,4 +13,5 @@ class ProfileFactory:
             id=model.id,
             created_at=model.created_at,
             updated_at=model.updated_at,
+            modo_on=model.modo_on,
         )
