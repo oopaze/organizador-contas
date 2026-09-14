@@ -214,6 +214,29 @@ class TestGetProjectionTool(SimpleTestCase):
         use_case.execute.assert_called_once_with(7, start="2026-09", end="2026-12", months=6)
         self.assertEqual(result, {"months": []})
 
+    def test_get_projection_includes_goals(self):
+        use_case = Mock()
+        use_case.execute.return_value = {
+            "months": [{"month": "2026-09", "salary": "5000.00"}],
+            "total_months": 1,
+            "goals": {
+                "monthly_spending_goal": "3000.00",
+                "monthly_savings_goal": "1000.00",
+                "monthly_essentials_goal": "2000.00",
+            },
+        }
+
+        result = transactions.call_get_projection(
+            arguments={"months": 1},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        self.assertIn("goals", result)
+        self.assertEqual(result["goals"]["monthly_spending_goal"], "3000.00")
+        self.assertEqual(result["goals"]["monthly_savings_goal"], "1000.00")
+        self.assertEqual(result["goals"]["monthly_essentials_goal"], "2000.00")
+
 
 class TestDispatchTool(SimpleTestCase):
     def test_unknown_tool(self):
