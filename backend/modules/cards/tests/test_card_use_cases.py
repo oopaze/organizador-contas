@@ -27,6 +27,48 @@ class TestCreateCardUseCase(SimpleTestCase):
         self.assertEqual(built["name"], "Nubank")
         self.assertEqual(result, {"id": 1})
 
+    def test_rejects_blank_name(self):
+        repository = Mock()
+        factory = Mock()
+        serializer = Mock()
+
+        with self.assertRaises(ValueError):
+            CreateCardUseCase(repository, factory, serializer).execute(
+                {"name": "   ", "due_day": 10}, user_id=7
+            )
+
+        factory.build.assert_not_called()
+        repository.create.assert_not_called()
+
+    def test_rejects_non_integer_due_day(self):
+        with self.assertRaises(ValueError):
+            CreateCardUseCase(Mock(), Mock(), Mock()).execute(
+                {"name": "Nubank", "due_day": "abc"}, user_id=7
+            )
+
+    def test_rejects_due_day_out_of_range(self):
+        use_case = CreateCardUseCase(Mock(), Mock(), Mock())
+
+        with self.assertRaises(ValueError):
+            use_case.execute({"name": "Nubank", "due_day": 0}, user_id=7)
+        with self.assertRaises(ValueError):
+            use_case.execute({"name": "Nubank", "due_day": 32}, user_id=7)
+
+    def test_normalizes_name_and_due_day(self):
+        repository = Mock()
+        factory = Mock()
+        serializer = Mock()
+        factory.build.return_value = CardDomain(name="Nubank", due_day=10, user_id=7)
+        repository.create.return_value = CardDomain(id=1, name="Nubank", due_day=10, user_id=7)
+
+        CreateCardUseCase(repository, factory, serializer).execute(
+            {"name": "  Nubank  ", "due_day": "10"}, user_id=7
+        )
+
+        built = factory.build.call_args[0][0]
+        self.assertEqual(built["name"], "Nubank")
+        self.assertEqual(built["due_day"], 10)
+
 
 class TestListCardsUseCase(SimpleTestCase):
     def test_lists_scoped_to_user(self):
@@ -54,6 +96,40 @@ class TestUpdateCardUseCase(SimpleTestCase):
 
         self.assertEqual(card.due_day, 12)
         repository.update.assert_called_once_with(card)
+
+    def test_rejects_blank_name(self):
+        repository = Mock()
+        card = CardDomain(id=1, name="Nubank", due_day=10, user_id=7)
+        repository.get.return_value = card
+
+        with self.assertRaises(ValueError):
+            UpdateCardUseCase(repository, Mock()).execute(1, {"name": "  "}, user_id=7)
+
+        repository.update.assert_not_called()
+
+    def test_rejects_due_day_out_of_range(self):
+        repository = Mock()
+        card = CardDomain(id=1, name="Nubank", due_day=10, user_id=7)
+        repository.get.return_value = card
+
+        with self.assertRaises(ValueError):
+            UpdateCardUseCase(repository, Mock()).execute(1, {"due_day": 42}, user_id=7)
+
+        repository.update.assert_not_called()
+
+    def test_normalizes_name_on_update(self):
+        repository = Mock()
+        serializer = Mock()
+        card = CardDomain(id=1, name="Nubank", due_day=10, user_id=7)
+        repository.get.return_value = card
+        repository.update.return_value = card
+
+        UpdateCardUseCase(repository, serializer).execute(
+            1, {"name": "  Nubank  ", "due_day": 12}, user_id=7
+        )
+
+        self.assertEqual(card.name, "Nubank")
+        self.assertEqual(card.due_day, 12)
 
 
 class TestSetCardActiveUseCase(SimpleTestCase):
