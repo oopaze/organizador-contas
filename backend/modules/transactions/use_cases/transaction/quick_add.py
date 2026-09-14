@@ -19,12 +19,25 @@ class QuickAddTransactionUseCase:
         transaction_serializer: TransactionSerializer,
         create_sub_transaction_use_case: CreateSubTransactionUseCase,
         recalculate_amount_use_case: RecalculateAmountUseCase,
+        infer_category_use_case=None,
     ):
         self.transaction_repository = transaction_repository
         self.transaction_factory = transaction_factory
         self.transaction_serializer = transaction_serializer
         self.create_sub_transaction_use_case = create_sub_transaction_use_case
         self.recalculate_amount_use_case = recalculate_amount_use_case
+        self.infer_category_use_case = infer_category_use_case
+
+    def _resolve_category(self, data: dict, user_id: int) -> str:
+        category = data.get("category")
+        if category:
+            return category
+        if self.infer_category_use_case is not None:
+            try:
+                return self.infer_category_use_case.execute(data["description"], user_id)
+            except Exception:
+                return TransactionCategory.OTHER.name
+        return TransactionCategory.OTHER.name
 
     def execute(self, data: dict, user_id: int) -> dict:
         installments = self._installments(data)
@@ -57,7 +70,7 @@ class QuickAddTransactionUseCase:
             return self._execute_cash_installments(data, user_id, installments)
 
         paid_at = data["date"] if data.get("is_paid", True) else None
-        category = data.get("category") or TransactionCategory.OTHER.name
+        category = self._resolve_category(data, user_id)
         transaction = self.transaction_factory.build(
             {
                 "due_date": data["date"],
@@ -84,7 +97,7 @@ class QuickAddTransactionUseCase:
 
     def _execute_cash_installments(self, data: dict, user_id: int, installments: int) -> dict:
         paid_at = data["date"] if data.get("is_paid", True) else None
-        category = data.get("category") or TransactionCategory.OTHER.name
+        category = self._resolve_category(data, user_id)
         amounts = self._amounts(data["amount"], installments)
         first_transaction = None
         first_sub_transaction_id = None
@@ -157,7 +170,7 @@ class QuickAddTransactionUseCase:
             )
             open_bill = self.transaction_repository.create(open_bill)
 
-        category = data.get("category") or TransactionCategory.OTHER.name
+        category = self._resolve_category(data, user_id)
         sub_transaction = self.create_sub_transaction_use_case.execute(
             self._sub_data(open_bill.id, data, category, paid_at=None),
             user_id,
@@ -177,7 +190,7 @@ class QuickAddTransactionUseCase:
             raise ValueError("card_label é obrigatório para lançamento no cartão")
 
         purchase_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
-        category = data.get("category") or TransactionCategory.OTHER.name
+        category = self._resolve_category(data, user_id)
         amounts = self._amounts(data["amount"], installments)
         first_bill = None
         first_sub_transaction_id = None
