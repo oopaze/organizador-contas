@@ -4,6 +4,7 @@ from modules.ai.mcp.factories.enum_listing import EnumListingFactory
 from modules.ai.mcp.use_cases.list_enums import ListEnumsUseCase
 from modules.planning.container import PlanningContainer
 from modules.transactions.container import TransactionsContainer
+from modules.userdata.container import UserDataContainer
 
 
 class MCPContainer(containers.DeclarativeContainer):
@@ -27,6 +28,7 @@ class MCPContainer(containers.DeclarativeContainer):
         ask_use_case=ask_use_case,
         ai_call_repository=ai_call_repository,
     )
+    userdata_container = providers.Singleton(UserDataContainer)
 
     # USE CASES
     list_enums_use_case = providers.Singleton(

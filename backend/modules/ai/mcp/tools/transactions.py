@@ -42,6 +42,19 @@ GET_PROJECTION_DESCRIPTION = (
     "sobra de cada mês. Aceita start/end (YYYY-MM) e months."
 )
 
+SET_GOALS_DESCRIPTION = (
+    "Atualiza as metas financeiras mensais do usuário: monthly_spending_goal "
+    "(meta de gasto por mês), monthly_savings_goal (meta de quanto guardar) "
+    "e monthly_essentials_goal (meta de gastos essenciais). Valores em R$. "
+    "Retorna o perfil atualizado com as metas salvas."
+)
+
+GOAL_FIELDS = (
+    "monthly_spending_goal",
+    "monthly_savings_goal",
+    "monthly_essentials_goal",
+)
+
 
 def call_list_transactions(*, arguments: dict, use_case, user_id: int) -> dict:
     filters: dict[str, Any] = {"user_id": user_id}
@@ -144,3 +157,13 @@ def call_get_projection(*, arguments: dict, use_case, user_id: int) -> dict:
         end=arguments.get("end"),
         months=int(arguments.get("months") or 12),
     )
+
+
+def call_set_goals(*, arguments: dict, update_profile_use_case, profile_repository, user_id: int) -> dict:
+    profile = profile_repository.get_by_user_id(user_id)
+    data = {
+        field: str(arguments[field])
+        for field in GOAL_FIELDS
+        if arguments.get(field) is not None
+    }
+    return update_profile_use_case.execute(profile.id, data)

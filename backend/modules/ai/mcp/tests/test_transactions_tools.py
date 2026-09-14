@@ -238,6 +238,40 @@ class TestGetProjectionTool(SimpleTestCase):
         self.assertEqual(result["goals"]["monthly_essentials_goal"], "2000.00")
 
 
+class TestSetGoalsTool(SimpleTestCase):
+    def test_updates_only_provided_goals(self):
+        profile_repository = Mock()
+        profile_repository.get_by_user_id.return_value = Mock(id=42)
+        update_use_case = Mock()
+        update_use_case.execute.return_value = {"id": 42, "monthly_spending_goal": "3500.00"}
+
+        result = transactions.call_set_goals(
+            arguments={"monthly_spending_goal": 3500},
+            update_profile_use_case=update_use_case,
+            profile_repository=profile_repository,
+            user_id=7,
+        )
+
+        profile_repository.get_by_user_id.assert_called_once_with(7)
+        update_use_case.execute.assert_called_once_with(42, {"monthly_spending_goal": "3500"})
+        self.assertEqual(result["monthly_spending_goal"], "3500.00")
+
+    def test_ignores_none_goals(self):
+        profile_repository = Mock()
+        profile_repository.get_by_user_id.return_value = Mock(id=42)
+        update_use_case = Mock()
+        update_use_case.execute.return_value = {}
+
+        transactions.call_set_goals(
+            arguments={"monthly_savings_goal": None, "monthly_essentials_goal": 1500},
+            update_profile_use_case=update_use_case,
+            profile_repository=profile_repository,
+            user_id=7,
+        )
+
+        update_use_case.execute.assert_called_once_with(42, {"monthly_essentials_goal": "1500"})
+
+
 class TestDispatchTool(SimpleTestCase):
     def test_unknown_tool(self):
         result = dispatch_tool("nao_existe", {}, Mock(), user_id=7)
@@ -278,3 +312,19 @@ class TestDispatchTool(SimpleTestCase):
         result = dispatch_tool("get_projection", {"start": "2026-09"}, container, user_id=7)
 
         self.assertEqual(result["months"][0]["month"], "2026-09")
+
+    def test_routes_set_goals(self):
+        profile_repository = Mock()
+        profile_repository.get_by_user_id.return_value = Mock(id=42)
+        update_use_case = Mock()
+        update_use_case.execute.return_value = {"id": 42}
+        container = Mock()
+        container.userdata_container().update_profile_use_case.return_value = update_use_case
+        container.planning_container().profile_repository.return_value = profile_repository
+
+        result = dispatch_tool(
+            "set_goals", {"monthly_spending_goal": 3000}, container, user_id=7
+        )
+
+        self.assertEqual(result["id"], 42)
+        update_use_case.execute.assert_called_once_with(42, {"monthly_spending_goal": "3000"})
