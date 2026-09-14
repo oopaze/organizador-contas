@@ -27,7 +27,7 @@ import {
   DialogTitle,
 } from '@/app/components/ui/dialog';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Pencil, Plus, Target, Trash2, Wand2, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pencil, Plus, Target, Trash2, Wand2 } from 'lucide-react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { getCategoryLabel } from '@/lib/category-colors';
 import { ProjectionChart } from '@/app/components/planning/projection-chart';
@@ -160,15 +160,6 @@ export const PlanningPage: React.FC = () => {
     } catch (error) {
       const apiError = error as { response?: { data?: { error?: string } } };
       toast.error(apiError?.response?.data?.error || 'Falha ao converter a intenção');
-    }
-  };
-
-  const handleDismiss = async (intention: PurchaseIntention) => {
-    try {
-      await updateIntention(intention.id, { status: 'dismissed' });
-      load();
-    } catch {
-      toast.error('Falha ao descartar a intenção');
     }
   };
 
@@ -440,10 +431,6 @@ export const PlanningPage: React.FC = () => {
                         <Button size="sm" variant="outline" onClick={() => openEdit(intention)}>
                           <Pencil className="w-4 h-4 mr-1" />
                           Editar
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleDismiss(intention)}>
-                          <XCircle className="w-4 h-4 mr-1" />
-                          Descartar
                         </Button>
                         <Button size="icon" variant="ghost" onClick={() => handleDelete(intention)} title="Excluir">
                           <Trash2 className="w-4 h-4 text-red-500" />
