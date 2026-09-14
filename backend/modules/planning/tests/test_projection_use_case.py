@@ -104,15 +104,15 @@ class TestProjectionUseCase(SimpleTestCase):
     def test_get_projection_includes_goals(self):
         self.profile_repository.get_by_user_id.return_value = ProfileDomain(
             salary="5000",
-            monthly_spending_goal="3000.00",
-            monthly_savings_goal="1000.00",
-            monthly_essentials_goal="2000.00",
+            spending_goal_percent="60.00",
+            savings_goal_percent="20.00",
+            essentials_goal_percent="40.00",
         )
         self.intention_repository.filter.return_value = []
 
         result = self.use_case.execute(7, start="2026-09", end="2026-09")
 
         self.assertIn("goals", result)
-        self.assertEqual(result["goals"]["monthly_spending_goal"], "3000.00")
-        self.assertEqual(result["goals"]["monthly_savings_goal"], "1000.00")
-        self.assertEqual(result["goals"]["monthly_essentials_goal"], "2000.00")
+        self.assertEqual(result["goals"]["spending_goal_percent"], "60.00")
+        self.assertEqual(result["goals"]["savings_goal_percent"], "20.00")
+        self.assertEqual(result["goals"]["essentials_goal_percent"], "40.00")

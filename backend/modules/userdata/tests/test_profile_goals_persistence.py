@@ -23,17 +23,17 @@ class TestProfileGoalsPersistence(TransactionTestCase):
         result = self.use_case.execute(
             self.profile.id,
             data={
-                "monthly_spending_goal": Decimal("3000.00"),
-                "monthly_savings_goal": Decimal("1000.00"),
-                "monthly_essentials_goal": Decimal("1500.00"),
+                "spending_goal_percent": Decimal("60.00"),
+                "savings_goal_percent": Decimal("20.00"),
+                "essentials_goal_percent": Decimal("30.00"),
             },
         )
 
-        self.assertEqual(result["monthly_spending_goal"], Decimal("3000.00"))
-        self.assertEqual(result["monthly_savings_goal"], Decimal("1000.00"))
-        self.assertEqual(result["monthly_essentials_goal"], Decimal("1500.00"))
+        self.assertEqual(result["spending_goal_percent"], Decimal("60.00"))
+        self.assertEqual(result["savings_goal_percent"], Decimal("20.00"))
+        self.assertEqual(result["essentials_goal_percent"], Decimal("30.00"))
 
         domain = self.repository.get_by_user_id(self.user.id)
-        self.assertEqual(domain.monthly_spending_goal, Decimal("3000.00"))
-        self.assertEqual(domain.monthly_savings_goal, Decimal("1000.00"))
-        self.assertEqual(domain.monthly_essentials_goal, Decimal("1500.00"))
+        self.assertEqual(domain.spending_goal_percent, Decimal("60.00"))
+        self.assertEqual(domain.savings_goal_percent, Decimal("20.00"))
+        self.assertEqual(domain.essentials_goal_percent, Decimal("30.00"))

@@ -154,9 +154,9 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "monthly_spending_goal": {"type": "number", "description": "Meta de gasto mensal em R$"},
-                "monthly_savings_goal": {"type": "number", "description": "Meta de quanto guardar por mês em R$"},
-                "monthly_essentials_goal": {"type": "number", "description": "Meta de gastos essenciais mensal em R$"},
+                  "spending_goal_percent": {"type": "number", "minimum": 0, "maximum": 100, "description": "Teto de gasto em % da renda"},
+                  "savings_goal_percent": {"type": "number", "minimum": 0, "maximum": 100, "description": "Quanto guardar em % da renda"},
+                  "essentials_goal_percent": {"type": "number", "minimum": 0, "maximum": 100, "description": "Teto de gastos essenciais em % da renda"},
             },
         },
     },

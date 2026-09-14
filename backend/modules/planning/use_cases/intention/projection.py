@@ -65,9 +65,9 @@ class ProjectionUseCase:
             profile = None
         
         goals = {
-            "monthly_spending_goal": str(profile.monthly_spending_goal) if profile and profile.monthly_spending_goal else None,
-            "monthly_savings_goal": str(profile.monthly_savings_goal) if profile and profile.monthly_savings_goal else None,
-            "monthly_essentials_goal": str(profile.monthly_essentials_goal) if profile and profile.monthly_essentials_goal else None,
+            "spending_goal_percent": str(profile.spending_goal_percent) if profile and profile.spending_goal_percent else None,
+            "savings_goal_percent": str(profile.savings_goal_percent) if profile and profile.savings_goal_percent else None,
+            "essentials_goal_percent": str(profile.essentials_goal_percent) if profile and profile.essentials_goal_percent else None,
         }
 
         return {"months": projection, "total_months": len(projection), "goals": goals}

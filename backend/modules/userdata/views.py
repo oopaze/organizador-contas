@@ -117,8 +117,11 @@ class UpdateProfileView(APIView):
         self.container = UserDataContainer()
 
     def patch(self, request: Request) -> Response:
-        updated_profile = self.container.update_profile_use_case().execute(
-            request.user.profile.id,
-            request.data,
-        )
+        try:
+            updated_profile = self.container.update_profile_use_case().execute(
+                request.user.profile.id,
+                request.data,
+            )
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(updated_profile, status=status.HTTP_200_OK)

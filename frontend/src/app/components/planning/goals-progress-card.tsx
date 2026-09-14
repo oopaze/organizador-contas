@@ -12,18 +12,19 @@ interface GoalBarProps {
   current: number;
   goal: number;
   colorClass: string;
+  direction: 'max' | 'min';
 }
 
-const GoalBar: React.FC<GoalBarProps> = ({ label, current, goal, colorClass }) => {
+const GoalBar: React.FC<GoalBarProps> = ({ label, current, goal, colorClass, direction }) => {
   const percent = goal > 0 ? Math.min(100, (current / goal) * 100) : 0;
-  const over = goal > 0 && current > goal;
+  const offTrack = goal > 0 && (direction === 'max' ? current > goal : current < goal);
   return (
     <div>
       <div className="flex justify-between mb-1">
         <span className="text-sm font-medium">{label}</span>
-        <span className={`text-sm ${over ? 'font-semibold text-red-600' : 'text-muted-foreground'}`}>
+        <span className={`text-sm ${offTrack ? 'font-semibold text-red-600' : 'text-muted-foreground'}`}>
           {formatMoney(current)} / {formatMoney(goal)}
-          {over && ' (acima da meta)'}
+          {offTrack && (direction === 'max' ? ' (acima da meta)' : ' (abaixo da meta)')}
         </span>
       </div>
       <Progress value={percent} className={`h-2 ${colorClass}`} />
@@ -38,51 +39,62 @@ export const GoalsProgressCard: React.FC<{
   months: number;
 }> = ({ goals, ledger, salary, months }) => {
   const periodMonths = Math.max(1, months);
+  const periodIncome = salary * periodMonths;
+
   const entries = (ledger?.entries || []).filter((entry) => entry.direction === 'outgoing');
-  const totalSpending =
-    entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0) / periodMonths;
-  const essentialSpending =
-    entries
-      .filter((entry) => ESSENTIAL_PREFIXES.some((prefix) => (entry.category || '').startsWith(prefix)))
-      .reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0) / periodMonths;
-  const saved = salary - totalSpending;
+  const totalSpending = entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0);
+  const essentialSpending = entries
+    .filter((entry) => ESSENTIAL_PREFIXES.some((prefix) => (entry.category || '').startsWith(prefix)))
+    .reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0);
+  const saved = periodIncome - totalSpending;
 
-  const spendingGoal = parseFloat(goals?.monthly_spending_goal || '0');
-  const savingsGoal = parseFloat(goals?.monthly_savings_goal || '0');
-  const essentialsGoal = parseFloat(goals?.monthly_essentials_goal || '0');
+  const spendingPercent = parseFloat(goals?.spending_goal_percent || '0');
+  const savingsPercent = parseFloat(goals?.savings_goal_percent || '0');
+  const essentialsPercent = parseFloat(goals?.essentials_goal_percent || '0');
 
-  if (!spendingGoal && !savingsGoal && !essentialsGoal) {
+  if (!spendingPercent && !savingsPercent && !essentialsPercent) {
     return null;
   }
+
+  if (periodIncome <= 0) {
+    return null;
+  }
+
+  const target = (percent: number) => (periodIncome * percent) / 100;
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Metas do mês</CardTitle>
+        <CardTitle className="text-sm font-medium">
+          Metas do período{periodMonths > 1 ? ` (${periodMonths} meses)` : ''}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {spendingGoal > 0 && (
+        {spendingPercent > 0 && (
           <GoalBar
-            label="Gasto do mês"
+            label={`Gasto (teto ${spendingPercent}%)`}
             current={totalSpending}
-            goal={spendingGoal}
+            goal={target(spendingPercent)}
             colorClass="bg-red-500"
+            direction="max"
           />
         )}
-        {savingsGoal > 0 && (
+        {savingsPercent > 0 && (
           <GoalBar
-            label="Guardado"
+            label={`Guardado (meta ${savingsPercent}%)`}
             current={saved}
-            goal={savingsGoal}
+            goal={target(savingsPercent)}
             colorClass="bg-emerald-500"
+            direction="min"
           />
         )}
-        {essentialsGoal > 0 && (
+        {essentialsPercent > 0 && (
           <GoalBar
-            label="Essenciais"
+            label={`Essenciais (teto ${essentialsPercent}%)`}
             current={essentialSpending}
-            goal={essentialsGoal}
+            goal={target(essentialsPercent)}
             colorClass="bg-blue-500"
+            direction="max"
           />
         )}
       </CardContent>

@@ -46,9 +46,9 @@ class Profile(TimedModel):
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     salary_day = models.PositiveSmallIntegerField(default=1)
     modo_on = models.BooleanField(default=False)
-    monthly_spending_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
-    monthly_savings_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
-    monthly_essentials_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
+    spending_goal_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=None)
+    savings_goal_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=None)
+    essentials_goal_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=None)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} #{self.id}"

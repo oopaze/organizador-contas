@@ -229,8 +229,8 @@ export const PlanningPage: React.FC = () => {
   );
   const periodIncome = salary * (projection?.total_months || 0);
   const impactPercent = periodIncome > 0 ? (intentionsImpactTotal / periodIncome) * 100 : 0;
-  const spendingGoal = projection?.goals?.monthly_spending_goal
-    ? parseFloat(projection.goals.monthly_spending_goal)
+  const spendingGoal = projection?.goals?.spending_goal_percent
+    ? (salary * parseFloat(projection.goals.spending_goal_percent)) / 100
     : null;
   const changeStart = (value: string) => {
     if (!value) return;
