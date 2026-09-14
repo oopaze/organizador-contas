@@ -59,7 +59,7 @@ export const IntegrationsPage: React.FC = () => {
       <div className="flex items-center gap-3">
         <Plug className="h-8 w-8 text-emerald-600" />
         <div>
-          <h1 className="text-2xl font-semibold">Integrações</h1>
+          <h1 className="text-2xl font-semibold">Conectores</h1>
           <p className="text-muted-foreground">Conecte assistentes de IA para conversar com seus dados financeiros.</p>
         </div>
       </div>
