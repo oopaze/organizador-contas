@@ -26,6 +26,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Pencil, Plus, Target, Trash2, Wand2 } from 'lucide-react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
@@ -80,6 +90,10 @@ export const PlanningPage: React.FC = () => {
   const [when, setWhen] = useState(currentMonth());
   const [installments, setInstallments] = useState('1');
   const [editing, setEditing] = useState<PurchaseIntention | null>(null);
+  const [confirming, setConfirming] = useState<{
+    action: 'convert' | 'delete';
+    intention: PurchaseIntention;
+  } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -170,6 +184,17 @@ export const PlanningPage: React.FC = () => {
     } catch (error) {
       const apiError = error as { response?: { data?: { error?: string } } };
       toast.error(apiError?.response?.data?.error || 'Falha ao excluir a intenção');
+    }
+  };
+
+  const runConfirmed = () => {
+    const pending = confirming;
+    setConfirming(null);
+    if (!pending) return;
+    if (pending.action === 'convert') {
+      handleConvert(pending.intention);
+    } else {
+      handleDelete(pending.intention);
     }
   };
 
@@ -422,21 +447,34 @@ export const PlanningPage: React.FC = () => {
                       </p>
                     </div>
 
-                    {intention.status === 'planned' && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white" onClick={() => handleConvert(intention)}>
-                          <Wand2 className="w-4 h-4 mr-1" />
-                          Virar transação
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => openEdit(intention)}>
-                          <Pencil className="w-4 h-4 mr-1" />
-                          Editar
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDelete(intention)} title="Excluir">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {intention.status === 'planned' && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-amber-500 hover:bg-amber-600 text-white"
+                            onClick={() => setConfirming({ action: 'convert', intention })}
+                          >
+                            <Wand2 className="w-4 h-4 mr-1" />
+                            Virar transação
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => openEdit(intention)}>
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Editar
+                          </Button>
+                        </>
+                      )}
+                      {intention.status !== 'bought' && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setConfirming({ action: 'delete', intention })}
+                          title="Excluir"
+                        >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -517,6 +555,31 @@ export const PlanningPage: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={confirming !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirming(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirming?.action === 'convert' ? 'Virar transação?' : 'Excluir intenção?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirming &&
+                (confirming.action === 'convert'
+                  ? `"${confirming.intention.name}" vira uma transação com as parcelas no extrato. Não dá para desfazer.`
+                  : `"${confirming.intention.name}" será excluída. Não dá para desfazer.`)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={runConfirmed}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
