@@ -21,9 +21,12 @@ import { UploadBillDialog } from '@/app/components/upload-bill-dialog';
 import { ReconcileBillDialog } from '@/app/components/reconcile-bill-dialog';
 import { UploadSheetDialog } from '@/app/components/upload-sheet-dialog';
 import { toast } from 'sonner';
+import { useUser } from '@/contexts/user-context';
 import { TransactionStatsFilters } from '@/services/transactions/getTransactionStats';
 
 export const DashboardPage: React.FC = () => {
+  const { user } = useUser();
+  const modoOn = user?.profile?.modo_on === true;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<TransactionStats | null>(null);
   const [ledger, setLedger] = useState<LedgerResult | null>(null);
@@ -95,11 +98,15 @@ export const DashboardPage: React.FC = () => {
       };
       const dueDate = `${selectedMonth}-01`; // Convert YYYY-MM to YYYY-MM-DD for stats
 
-      await Promise.all([
+      const requests = [
         loadTransactions(filters),
         loadStats({ due_date: dueDate }),
-        loadLedger(),
-      ]);
+      ];
+      if (modoOn) {
+        requests.push(loadLedger());
+      }
+
+      await Promise.all(requests);
     } catch (error) {
       toast.error('Falha ao carregar dados');
     }
@@ -107,11 +114,14 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedMonth, paymentStatus, includeUnpaid]);
+  }, [selectedMonth, paymentStatus, includeUnpaid, modoOn]);
 
   // Use stats from API
+  const totalExpenses = stats?.outgoing_total || 0;
   const totalIncome = stats?.incoming_total || 0;
+  const balance = stats?.balance || 0;
   const totalPaid = stats?.outgoing_total_paid || 0;
+  const totalPending = totalExpenses - totalPaid;
 
   // Use ledger summary for realized/projected balance
   const realizedBalance = parseFloat(ledger?.summary.realized_balance || '0');
@@ -128,7 +138,7 @@ export const DashboardPage: React.FC = () => {
   const handleBillUploaded = (transactionIds: number[]) => {
     setShowUploadBill(false);
     loadData();
-    if (transactionIds.length > 0) {
+    if (modoOn && transactionIds.length > 0) {
       setReconcileBillIds(transactionIds);
       setShowReconcile(true);
     } else {
@@ -190,10 +200,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {projectedBalance.toFixed(2)}
+              R$ {(modoOn ? projectedBalance : balance).toFixed(2)}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              R$ {realizedBalance.toFixed(2)} <span className="text-xs">seu saldo real</span>
+              R$ {(modoOn ? realizedBalance : balance - (stats?.outgoing_from_actors || 0)).toFixed(2)} <span className="text-xs">seu saldo real</span>
             </p>
           </CardContent>
         </Card>
@@ -235,7 +245,7 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              R$ {payable.toFixed(2)}
+              R$ {(modoOn ? payable : totalPending).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Contas pendentes
@@ -250,10 +260,16 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              R$ {receivable.toFixed(2)}
+              R$ {(modoOn ? receivable : (stats?.outgoing_from_actors || 0)).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Valores ainda não recebidos
+              {modoOn ? (
+                'Valores ainda não recebidos'
+              ) : (
+                <>
+                  <span className="text-green-600 font-medium">R$ {(stats?.outgoing_from_actors_paid || 0).toFixed(2)}</span> já recebido
+                </>
+              )}
             </p>
           </CardContent>
         </Card>
@@ -261,10 +277,12 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-4 mb-8">
-        <Button onClick={() => setShowQuickAdd(true)} className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Lançamento
-        </Button>
+        {modoOn && (
+          <Button onClick={() => setShowQuickAdd(true)} className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Lançamento
+          </Button>
+        )}
 
         <Button onClick={() => setShowAddTransaction(true)} variant="outline" className="flex-1 sm:flex-none">
           <Plus className="w-4 h-4 mr-2" />
@@ -327,7 +345,7 @@ export const DashboardPage: React.FC = () => {
               <TabsTrigger value="all">Todas</TabsTrigger>
               <TabsTrigger value="expenses">Despesas</TabsTrigger>
               <TabsTrigger value="income">Receitas</TabsTrigger>
-              <TabsTrigger value="ledger">Extrato</TabsTrigger>
+              {modoOn && <TabsTrigger value="ledger">Extrato</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="expenses">
@@ -357,32 +375,36 @@ export const DashboardPage: React.FC = () => {
               />
             </TabsContent>
 
-            <TabsContent value="ledger">
-              <div className="flex justify-end mb-3">
-                <Button
-                  variant={includeUnpaid ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setIncludeUnpaid((value) => !value)}
-                >
-                  {includeUnpaid ? 'Incluindo previsto' : 'Só realizado'}
-                </Button>
-              </div>
-              <LedgerList entries={ledger?.entries || []} loading={ledgerLoading} />
-            </TabsContent>
+            {modoOn && (
+              <TabsContent value="ledger">
+                <div className="flex justify-end mb-3">
+                  <Button
+                    variant={includeUnpaid ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setIncludeUnpaid((value) => !value)}
+                  >
+                    {includeUnpaid ? 'Incluindo previsto' : 'Só realizado'}
+                  </Button>
+                </div>
+                <LedgerList entries={ledger?.entries || []} loading={ledgerLoading} />
+              </TabsContent>
+            )}
           </Tabs>
         </CardContent>
       </Card>
 
       {/* Dialogs */}
-      <QuickAddDialog
-        open={showQuickAdd}
-        onOpenChange={setShowQuickAdd}
-        onSuccess={() => {
-          setShowQuickAdd(false);
-          loadData();
-          toast.success('Lançamento criado!');
-        }}
-      />
+      {modoOn && (
+        <QuickAddDialog
+          open={showQuickAdd}
+          onOpenChange={setShowQuickAdd}
+          onSuccess={() => {
+            setShowQuickAdd(false);
+            loadData();
+            toast.success('Lançamento criado!');
+          }}
+        />
+      )}
       <AddTransactionDialog
         open={showAddTransaction}
         onOpenChange={setShowAddTransaction}
@@ -393,16 +415,18 @@ export const DashboardPage: React.FC = () => {
         onOpenChange={setShowUploadBill}
         onSuccess={handleBillUploaded}
       />
-      <ReconcileBillDialog
-        open={showReconcile}
-        onOpenChange={setShowReconcile}
-        billTransactionIds={reconcileBillIds}
-        onSuccess={() => {
-          setShowReconcile(false);
-          loadData();
-          toast.success('Conciliação concluída!');
-        }}
-      />
+      {modoOn && (
+        <ReconcileBillDialog
+          open={showReconcile}
+          onOpenChange={setShowReconcile}
+          billTransactionIds={reconcileBillIds}
+          onSuccess={() => {
+            setShowReconcile(false);
+            loadData();
+            toast.success('Conciliação concluída!');
+          }}
+        />
+      )}
       <UploadSheetDialog
         open={showUploadSheet}
         onOpenChange={setShowUploadSheet}
