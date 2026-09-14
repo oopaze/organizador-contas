@@ -77,7 +77,7 @@ class TestUploadFileUseCase(TestCase):
         self.mock_ai_call_repository.get.assert_called_once_with("ai_123")
         mock_saved_file.update_ai_info.assert_called_once_with(mock_ai_call)
         self.mock_file_repository.update.assert_called_once_with(mock_saved_file)
-        self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, False)
+        self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, False, card_id=None)
         self.assertEqual(result["id"], "123")
         self.assertEqual(result["transaction_ids"], [55])
 
@@ -205,7 +205,29 @@ class TestUploadFileUseCase(TestCase):
         self.use_case.execute(uploaded_file, user_id, create_in_future_months=True)
 
         # Assert
-        self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, True)
+        self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, True, card_id=None)
+
+    def test_execute_passes_card_id_to_transpose(self):
+        user_id = 1
+        uploaded_file = SimpleUploadedFile("test.pdf", b"fake pdf content")
+        mock_file_domain = Mock(spec=FileDomain)
+        mock_saved_file = Mock(spec=FileDomain)
+        mock_saved_file.id = "123"
+        mock_saved_file.extract_text_from_pdf.return_value = "text"
+        mock_updated_file = Mock(spec=FileDomain)
+        mock_updated_file.id = "123"
+        mock_ai_call = Mock(spec=AICallDomain)
+
+        self.mock_file_factory.build.return_value = mock_file_domain
+        self.mock_file_repository.create.return_value = mock_saved_file
+        self.mock_ask_use_case.execute.return_value = "ai_123"
+        self.mock_ai_call_repository.get.return_value = mock_ai_call
+        self.mock_file_repository.update.return_value = mock_updated_file
+        self.mock_file_serializer.serialize.return_value = {"id": "123"}
+
+        self.use_case.execute(uploaded_file, user_id, card_id=3)
+
+        self.mock_transpose_use_case.execute.assert_called_once_with("123", user_id, False, card_id=3)
 
     def test_execute_calls_ask_use_case_with_correct_prompt(self):
         """Test that execute calls AI with the correct prompt format."""

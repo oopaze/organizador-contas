@@ -84,6 +84,7 @@ class BillFactory:
             transaction_type=model.transaction_type,
             main_transaction_id=model.main_transaction.id if model.main_transaction else None,
             category=model.category,
+            card_id=model.card_id,
         )
     
     def build_from_other_bill(self, bill: BillDomain, due_date: str = None) -> BillDomain:
@@ -94,4 +95,5 @@ class BillFactory:
             file=bill.file,
             transaction_type=bill.transaction_type,
             category=bill.category,
+            card_id=bill.card_id,
         )

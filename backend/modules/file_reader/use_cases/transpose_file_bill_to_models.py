@@ -34,17 +34,18 @@ class TransposeFileBillToModelsUseCase:
         self.file_repository = file_repository
         self.recalculate_amount_use_case = recalculate_amount_use_case
 
-    def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False) -> list[int]:
+    def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False, card_id: int = None) -> list[int]:
         file = self.file_repository.get(file_id)
         response = file.get_response()
 
         if isinstance(response, list):
-            return self._execute_for_many(file, response, user_id, create_in_future_months)
-        return self._execute_for_one(file, response, user_id, create_in_future_months)
+            return self._execute_for_many(file, response, user_id, create_in_future_months, card_id)
+        return self._execute_for_one(file, response, user_id, create_in_future_months, card_id)
 
-    def _execute_for_one(self, file: FileDomain, response: dict, user_id: int, create_in_future_months: bool = False) -> list[int]:
+    def _execute_for_one(self, file: FileDomain, response: dict, user_id: int, create_in_future_months: bool = False, card_id: int = None) -> list[int]:
         created_ids = []
         bill = self.bill_factory.build_from_file(file, response)
+        bill.card_id = card_id
         saved_bill = self.bill_repository.create(bill, user_id)
         created_ids.append(saved_bill.id)
         bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, response)
@@ -53,6 +54,7 @@ class TransposeFileBillToModelsUseCase:
         future_transactions = self._get_future_transactions(response, saved_bill) if create_in_future_months else []
         for future_transaction in future_transactions:
             bill = self.bill_factory.build_from_file(file, future_transaction)
+            bill.card_id = card_id
             saved_bill = self.bill_repository.create(bill, user_id)
             created_ids.append(saved_bill.id)
             bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, ai_response=future_transaction)
@@ -105,7 +107,7 @@ class TransposeFileBillToModelsUseCase:
 
         return result
 
-    def _execute_for_many(self, file: FileDomain, response: list, user_id: int, create_in_future_months: bool = False) -> list[int]:
+    def _execute_for_many(self, file: FileDomain, response: list, user_id: int, create_in_future_months: bool = False, card_id: int = None) -> list[int]:
         created_ids = []
         if response and "despesas" in response[0]:
             logger.info(f"[Transpose] Detected monthly format, flattening {len(response)} months")
@@ -115,6 +117,7 @@ class TransposeFileBillToModelsUseCase:
         for r in response:
             try:
                 bill = self.bill_factory.build_from_file(file, r)
+                bill.card_id = card_id
                 saved_bill = self.bill_repository.create(bill, user_id)
                 created_ids.append(saved_bill.id)
                 bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, r)

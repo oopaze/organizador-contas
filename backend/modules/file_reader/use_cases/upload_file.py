@@ -132,6 +132,7 @@ class UploadFileUseCase:
       password: str = None, 
       model = LlmModels.DEEPSEEK_CHAT.name,
       create_in_future_months: bool = False,
+      card_id: int = None,
     ):
         uploaded_file = self.file_factory.build(file)
         saved_file = self.file_repository.create(uploaded_file, user_id)
@@ -147,7 +148,7 @@ class UploadFileUseCase:
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
 
-        transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months)
+        transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months, card_id=card_id)
         serialized_file = self.file_serializer.serialize(updated_file)
         return {**serialized_file, "transaction_ids": transaction_ids}
 

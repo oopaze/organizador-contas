@@ -68,6 +68,24 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
         self.mock_bill_repository.create.assert_called_once_with(mock_bill, user_id)
         self.mock_sub_transaction_repository.create_many.assert_called_once_with([])
 
+    def test_sets_card_id_on_created_bill(self):
+        mock_file = Mock(spec=FileDomain)
+        mock_file.get_response.return_value = {
+            "bill_identifier": "Credit Card", "total_amount": 500.00,
+            "due_date": "2026-03-15", "transactions": [],
+        }
+        mock_bill = Mock(spec=BillDomain)
+        mock_bill.id = "bill_123"
+        self.mock_file_repository.get.return_value = mock_file
+        self.mock_bill_factory.build_from_file.return_value = mock_bill
+        self.mock_bill_repository.create.return_value = mock_bill
+        self.mock_sub_transaction_factory.build_many_from_file.return_value = []
+
+        self.use_case.execute("123", 1, card_id=3)
+
+        self.assertEqual(mock_bill.card_id, 3)
+        self.mock_bill_repository.create.assert_called_once_with(mock_bill, 1)
+
     def test_execute_for_bill_with_sub_transactions(self):
         """Test that execute processes bill with sub-transactions."""
         # Arrange
