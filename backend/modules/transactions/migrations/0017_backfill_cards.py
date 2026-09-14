@@ -9,17 +9,24 @@ def backfill(apps, schema_editor):
 
     cards_by_key = {}
     open_bills = Transaction.objects.filter(
-        file__isnull=True, category="credit_card", deleted_at__isnull=True
+        file__isnull=True,
+        category="credit_card",
+        deleted_at__isnull=True,
+        card__isnull=True,
     )
     for bill in open_bills:
         parsed = parse_open_bill_identifier(bill.transaction_identifier)
         if parsed is None:
             continue
         name = parsed[0]
+        if not name:
+            continue
         key = (bill.user_id, name.casefold())
         card = cards_by_key.get(key)
         if card is None:
-            card = Card.objects.filter(user_id=bill.user_id, name__iexact=name).first()
+            card = Card.objects.filter(
+                user_id=bill.user_id, name__iexact=name, deleted_at__isnull=True
+            ).first()
         if card is None:
             card = Card.objects.create(name=name, due_day=1, user_id=bill.user_id)
         cards_by_key[key] = card
@@ -31,11 +38,20 @@ def backfill(apps, schema_editor):
     )
     for bill in imported_bills:
         identifier = (bill.transaction_identifier or "").casefold()
-        for card in Card.objects.filter(user_id=bill.user_id):
-            if card.name.casefold() in identifier:
-                bill.card_id = card.id
-                bill.save(update_fields=["card"])
-                break
+        card = max(
+            (
+                candidate
+                for candidate in Card.objects.filter(
+                    user_id=bill.user_id, deleted_at__isnull=True
+                )
+                if candidate.name.casefold() in identifier
+            ),
+            key=lambda candidate: len(candidate.name),
+            default=None,
+        )
+        if card is not None:
+            bill.card_id = card.id
+            bill.save(update_fields=["card"])
 
 
 class Migration(migrations.Migration):
