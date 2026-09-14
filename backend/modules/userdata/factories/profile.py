@@ -15,4 +15,7 @@ class ProfileFactory:
             updated_at=model.updated_at,
             modo_on=model.modo_on,
             salary_day=model.salary_day,
+            monthly_spending_goal=model.monthly_spending_goal,
+            monthly_savings_goal=model.monthly_savings_goal,
+            monthly_essentials_goal=model.monthly_essentials_goal,
         )
