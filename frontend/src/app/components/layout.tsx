@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/app/components/ui/button';
-import { LogOut, Wallet } from 'lucide-react';
+import { LogOut, Settings, Wallet } from 'lucide-react';
 import { visibleNavItems } from '@/app/components/nav-items';
 import { useStandalone } from '@/lib/use-standalone';
 import { BottomTabs } from '@/app/components/bottom-tabs';
@@ -47,8 +47,15 @@ export const Layout: React.FC = () => {
               ))}
             </nav>
 
-            {/* Logout Button */}
-            <div className="flex order-2 sm:order-3 sm:justify-self-end">
+            {/* Settings and Logout Buttons */}
+            <div className="flex items-center gap-2 order-2 sm:order-3 sm:justify-self-end">
+              <NavLink to="/settings" title="Configurações" aria-label="Configurações">
+                {({ isActive }) => (
+                  <Button variant={isActive ? 'secondary' : 'outline'} size="icon">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                )}
+              </NavLink>
               <Button variant="outline" size="icon" onClick={logout} className="sm:hidden" title="Sair">
                 <LogOut className="w-4 h-4" />
               </Button>

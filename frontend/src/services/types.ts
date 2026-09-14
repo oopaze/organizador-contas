@@ -11,6 +11,7 @@ export interface User {
     last_name: string;
     bio: string;
     salary: number;
+    modo_on?: boolean;
   };
 }
 
