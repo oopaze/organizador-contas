@@ -43,16 +43,16 @@ GET_PROJECTION_DESCRIPTION = (
 )
 
 SET_GOALS_DESCRIPTION = (
-    "Atualiza as metas financeiras mensais do usuário: monthly_spending_goal "
-    "(meta de gasto por mês), monthly_savings_goal (meta de quanto guardar) "
-    "e monthly_essentials_goal (meta de gastos essenciais). Valores em R$. "
-    "Retorna o perfil atualizado com as metas salvas."
+    "Atualiza as metas financeiras do usuǭrio em percentual da renda: "
+    "spending_goal_percent (teto de gasto), savings_goal_percent (quanto "
+    "guardar) e essentials_goal_percent (teto de gastos essenciais). "
+    "Valores de 0 a 100. Retorna o perfil atualizado com as metas salvas."
 )
 
 GOAL_FIELDS = (
-    "monthly_spending_goal",
-    "monthly_savings_goal",
-    "monthly_essentials_goal",
+    "spending_goal_percent",
+    "savings_goal_percent",
+    "essentials_goal_percent",
 )
 
 

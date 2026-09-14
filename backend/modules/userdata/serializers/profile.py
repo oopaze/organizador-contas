@@ -14,9 +14,9 @@ class ProfileSerializer:
             'modo_on',
             'created_at',
             'updated_at',
-            'monthly_spending_goal',
-            'monthly_savings_goal',
-            'monthly_essentials_goal',
+            'spending_goal_percent',
+            'savings_goal_percent',
+            'essentials_goal_percent',
         )
 
     def serialize(self, profile: "ProfileDomain") -> dict:
@@ -31,7 +31,7 @@ class ProfileSerializer:
             "modo_on": profile.modo_on,
             "created_at": profile.created_at.strftime("%Y-%m-%d %H:%M:%S") if profile.created_at else None,
             "updated_at": profile.updated_at.strftime("%Y-%m-%d %H:%M:%S") if profile.updated_at else None,
-            "monthly_spending_goal": getattr(profile, 'monthly_spending_goal', None),
-            "monthly_savings_goal": getattr(profile, 'monthly_savings_goal', None),
-            "monthly_essentials_goal": getattr(profile, 'monthly_essentials_goal', None),
+            "spending_goal_percent": getattr(profile, 'spending_goal_percent', None),
+            "savings_goal_percent": getattr(profile, 'savings_goal_percent', None),
+            "essentials_goal_percent": getattr(profile, 'essentials_goal_percent', None),
         }

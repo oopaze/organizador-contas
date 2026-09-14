@@ -41,25 +41,25 @@ class TestGoalsFullFlow(TransactionTestCase):
         self.update_use_case.execute(
             self.profile.id,
             data={
-                "monthly_spending_goal": Decimal("3000.00"),
-                "monthly_savings_goal": Decimal("1000.00"),
-                "monthly_essentials_goal": Decimal("1500.00"),
+                "spending_goal_percent": Decimal("60.00"),
+                "savings_goal_percent": Decimal("20.00"),
+                "essentials_goal_percent": Decimal("30.00"),
             },
         )
 
         result = self.projection_use_case.execute(self.user.id, months=3)
 
-        self.assertEqual(result["goals"]["monthly_spending_goal"], "3000.00")
-        self.assertEqual(result["goals"]["monthly_savings_goal"], "1000.00")
-        self.assertEqual(result["goals"]["monthly_essentials_goal"], "1500.00")
+        self.assertEqual(result["goals"]["spending_goal_percent"], "60.00")
+        self.assertEqual(result["goals"]["savings_goal_percent"], "20.00")
+        self.assertEqual(result["goals"]["essentials_goal_percent"], "30.00")
         self.assertEqual(len(result["months"]), 3)
 
     def test_projection_goals_null_when_not_set(self):
         result = self.projection_use_case.execute(self.user.id, months=2)
 
-        self.assertIsNone(result["goals"]["monthly_spending_goal"])
-        self.assertIsNone(result["goals"]["monthly_savings_goal"])
-        self.assertIsNone(result["goals"]["monthly_essentials_goal"])
+        self.assertIsNone(result["goals"]["spending_goal_percent"])
+        self.assertIsNone(result["goals"]["savings_goal_percent"])
+        self.assertIsNone(result["goals"]["essentials_goal_percent"])
 
 
 class TestProjectionRangeIntegration(TransactionTestCase):

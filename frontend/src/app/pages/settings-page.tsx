@@ -40,16 +40,27 @@ export const SettingsPage: React.FC = () => {
     if (!user?.profile) return;
     setSalary(user.profile.salary ? String(user.profile.salary) : '');
     setSalaryDay(String(user.profile.salary_day ?? 1));
-    setSpendingGoal(user.profile.monthly_spending_goal != null ? String(user.profile.monthly_spending_goal) : '');
-    setSavingsGoal(user.profile.monthly_savings_goal != null ? String(user.profile.monthly_savings_goal) : '');
-    setEssentialsGoal(user.profile.monthly_essentials_goal != null ? String(user.profile.monthly_essentials_goal) : '');
+    setSpendingGoal(user.profile.spending_goal_percent != null ? String(user.profile.spending_goal_percent) : '');
+    setSavingsGoal(user.profile.savings_goal_percent != null ? String(user.profile.savings_goal_percent) : '');
+    setEssentialsGoal(user.profile.essentials_goal_percent != null ? String(user.profile.essentials_goal_percent) : '');
   }, [
     user?.profile?.salary,
     user?.profile?.salary_day,
-    user?.profile?.monthly_spending_goal,
-    user?.profile?.monthly_savings_goal,
-    user?.profile?.monthly_essentials_goal,
+    user?.profile?.spending_goal_percent,
+    user?.profile?.savings_goal_percent,
+    user?.profile?.essentials_goal_percent,
   ]);
+
+  const goalHint = (value: string) => {
+    const percent = parseFloat(value);
+    if (!percent) return '';
+    const salaryValue = parseFloat(salary);
+    if (!salaryValue) return 'Configure o salário para ver o valor';
+    return `= R$ ${((salaryValue * percent) / 100).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}/mês`;
+  };
 
   const handleToggle = async (checked: boolean) => {
     setSavingMode(true);
@@ -91,14 +102,15 @@ export const SettingsPage: React.FC = () => {
     setSavingGoals(true);
     try {
       await updateProfile({
-        monthly_spending_goal: spendingGoal !== '' ? parseFloat(spendingGoal) : null,
-        monthly_savings_goal: savingsGoal !== '' ? parseFloat(savingsGoal) : null,
-        monthly_essentials_goal: essentialsGoal !== '' ? parseFloat(essentialsGoal) : null,
+        spending_goal_percent: spendingGoal !== '' ? parseFloat(spendingGoal) : null,
+        savings_goal_percent: savingsGoal !== '' ? parseFloat(savingsGoal) : null,
+        essentials_goal_percent: essentialsGoal !== '' ? parseFloat(essentialsGoal) : null,
       });
       await refetchUser();
       toast.success('Metas atualizadas!');
-    } catch {
-      toast.error('Falha ao salvar as metas');
+    } catch (error) {
+      const apiError = error as { response?: { data?: { error?: string } } };
+      toast.error(apiError?.response?.data?.error || 'Falha ao salvar as metas');
     } finally {
       setSavingGoals(false);
     }
@@ -191,53 +203,59 @@ export const SettingsPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Metas mensais</CardTitle>
+          <CardTitle>Metas (% da renda)</CardTitle>
           <CardDescription>
-            Suas metas aparecem no Planejamento: linha de referência no gráfico e card de
-            progresso no mês.
+            Percentuais da sua renda. Aparecem no Planejamento acompanhando o período
+            selecionado: linha de referência no gráfico e card de progresso.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSaveGoals} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="goal-spending">Meta de gasto (R$)</Label>
+                <Label htmlFor="goal-spending">Teto de gasto (%)</Label>
                 <Input
                   id="goal-spending"
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
+                  max="100"
                   inputMode="decimal"
-                  placeholder="Ex: 3000"
+                  placeholder="Ex: 60"
                   value={spendingGoal}
                   onChange={(e) => setSpendingGoal(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">{goalHint(spendingGoal)}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="goal-savings">Meta de guardar (R$)</Label>
+                <Label htmlFor="goal-savings">Quanto guardar (%)</Label>
                 <Input
                   id="goal-savings"
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
+                  max="100"
                   inputMode="decimal"
-                  placeholder="Ex: 1000"
+                  placeholder="Ex: 20"
                   value={savingsGoal}
                   onChange={(e) => setSavingsGoal(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">{goalHint(savingsGoal)}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="goal-essentials">Meta de essenciais (R$)</Label>
+                <Label htmlFor="goal-essentials">Teto de essenciais (%)</Label>
                 <Input
                   id="goal-essentials"
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
+                  max="100"
                   inputMode="decimal"
-                  placeholder="Ex: 1500"
+                  placeholder="Ex: 30"
                   value={essentialsGoal}
                   onChange={(e) => setEssentialsGoal(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">{goalHint(essentialsGoal)}</p>
               </div>
             </div>
             <div className="flex justify-end">

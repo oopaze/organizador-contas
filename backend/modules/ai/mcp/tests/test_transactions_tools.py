@@ -220,9 +220,9 @@ class TestGetProjectionTool(SimpleTestCase):
             "months": [{"month": "2026-09", "salary": "5000.00"}],
             "total_months": 1,
             "goals": {
-                "monthly_spending_goal": "3000.00",
-                "monthly_savings_goal": "1000.00",
-                "monthly_essentials_goal": "2000.00",
+                "spending_goal_percent": "3000.00",
+                "savings_goal_percent": "1000.00",
+                "essentials_goal_percent": "2000.00",
             },
         }
 
@@ -233,9 +233,9 @@ class TestGetProjectionTool(SimpleTestCase):
         )
 
         self.assertIn("goals", result)
-        self.assertEqual(result["goals"]["monthly_spending_goal"], "3000.00")
-        self.assertEqual(result["goals"]["monthly_savings_goal"], "1000.00")
-        self.assertEqual(result["goals"]["monthly_essentials_goal"], "2000.00")
+        self.assertEqual(result["goals"]["spending_goal_percent"], "3000.00")
+        self.assertEqual(result["goals"]["savings_goal_percent"], "1000.00")
+        self.assertEqual(result["goals"]["essentials_goal_percent"], "2000.00")
 
 
 class TestSetGoalsTool(SimpleTestCase):
@@ -243,18 +243,18 @@ class TestSetGoalsTool(SimpleTestCase):
         profile_repository = Mock()
         profile_repository.get_by_user_id.return_value = Mock(id=42)
         update_use_case = Mock()
-        update_use_case.execute.return_value = {"id": 42, "monthly_spending_goal": "3500.00"}
+        update_use_case.execute.return_value = {"id": 42, "spending_goal_percent": "35.00"}
 
         result = transactions.call_set_goals(
-            arguments={"monthly_spending_goal": 3500},
+            arguments={"spending_goal_percent": 35},
             update_profile_use_case=update_use_case,
             profile_repository=profile_repository,
             user_id=7,
         )
 
         profile_repository.get_by_user_id.assert_called_once_with(7)
-        update_use_case.execute.assert_called_once_with(42, {"monthly_spending_goal": "3500"})
-        self.assertEqual(result["monthly_spending_goal"], "3500.00")
+        update_use_case.execute.assert_called_once_with(42, {"spending_goal_percent": "35"})
+        self.assertEqual(result["spending_goal_percent"], "35.00")
 
     def test_ignores_none_goals(self):
         profile_repository = Mock()
@@ -263,13 +263,13 @@ class TestSetGoalsTool(SimpleTestCase):
         update_use_case.execute.return_value = {}
 
         transactions.call_set_goals(
-            arguments={"monthly_savings_goal": None, "monthly_essentials_goal": 1500},
+            arguments={"savings_goal_percent": None, "essentials_goal_percent": 30},
             update_profile_use_case=update_use_case,
             profile_repository=profile_repository,
             user_id=7,
         )
 
-        update_use_case.execute.assert_called_once_with(42, {"monthly_essentials_goal": "1500"})
+        update_use_case.execute.assert_called_once_with(42, {"essentials_goal_percent": "30"})
 
 
 class TestDispatchTool(SimpleTestCase):
@@ -323,8 +323,8 @@ class TestDispatchTool(SimpleTestCase):
         container.planning_container().profile_repository.return_value = profile_repository
 
         result = dispatch_tool(
-            "set_goals", {"monthly_spending_goal": 3000}, container, user_id=7
+            "set_goals", {"spending_goal_percent": 30}, container, user_id=7
         )
 
         self.assertEqual(result["id"], 42)
-        update_use_case.execute.assert_called_once_with(42, {"monthly_spending_goal": "3000"})
+        update_use_case.execute.assert_called_once_with(42, {"spending_goal_percent": "30"})

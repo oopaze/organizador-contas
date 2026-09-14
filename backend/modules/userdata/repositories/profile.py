@@ -35,9 +35,9 @@ class ProfileRepository:
         profile_instance.salary = profile.salary
         profile_instance.salary_day = profile.salary_day
         profile_instance.modo_on = profile.modo_on
-        profile_instance.monthly_spending_goal = profile.monthly_spending_goal
-        profile_instance.monthly_savings_goal = profile.monthly_savings_goal
-        profile_instance.monthly_essentials_goal = profile.monthly_essentials_goal
+        profile_instance.spending_goal_percent = profile.spending_goal_percent
+        profile_instance.savings_goal_percent = profile.savings_goal_percent
+        profile_instance.essentials_goal_percent = profile.essentials_goal_percent
         profile_instance.save()
         return self.profile_factory.build_from_model(profile_instance)
     
