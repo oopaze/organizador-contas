@@ -29,6 +29,7 @@ urlpatterns = [
     path("transactions/", include("modules.transactions.urls")),
     path("loans/", include("modules.loans.urls")),
     path("planning/", include("modules.planning.urls")),
+    path("cards/", include("modules.cards.urls")),
     path("ai/", include("modules.ai.urls")),
 ]
 
