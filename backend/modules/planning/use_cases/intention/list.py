@@ -1,3 +1,4 @@
+import calendar
 from datetime import date
 
 from modules.planning.repositories.intention import PurchaseIntentionRepository
@@ -18,9 +19,11 @@ class ListPurchaseIntentionsUseCase:
     ) -> list[dict]:
         filters = {"user_id": user_id}
         if month:
-            filters["month__lte"] = month
+            filters["month__lte"] = self._last_day_of(month)
+        elif end:
+            filters["month__lte"] = self._last_day_of(end)
         if start:
-            filters["month__gte"] = start
+            filters["month__gte"] = self._first_day_of(start)
         if status:
             filters["status"] = status
 
@@ -44,6 +47,16 @@ class ListPurchaseIntentionsUseCase:
                 data["carry_over"] = True
                 result.append(data)
         return result
+
+    def _first_day_of(self, value: str) -> str:
+        year, month = self._parse_month(value).year, self._parse_month(value).month
+        return date(year, month, 1).isoformat()
+
+    def _last_day_of(self, value: str) -> str:
+        parsed = self._parse_month(value)
+        return date(
+            parsed.year, parsed.month, calendar.monthrange(parsed.year, parsed.month)[1]
+        ).isoformat()
 
     def _parse_month(self, value) -> date:
         if isinstance(value, date):

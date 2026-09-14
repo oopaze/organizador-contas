@@ -47,7 +47,7 @@ class TestListPurchaseIntentionsUseCase(SimpleTestCase):
 
         filters = repository.filter.call_args[0][0]
         self.assertEqual(filters["user_id"], 7)
-        self.assertEqual(filters["month__lte"], "2026-09")
+        self.assertEqual(filters["month__lte"], "2026-09-30")
         self.assertEqual(result, [{"id": 1}])
 
     def test_status_filter(self):
