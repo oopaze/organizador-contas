@@ -23,6 +23,7 @@ from modules.transactions.use_cases.transaction import (
     LedgerUseCase,
     ReconcileBillPreviewUseCase,
     ApplyReconciliationUseCase,
+    EnsureMonthlySalaryUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
     CreateSubTransactionUseCase,
@@ -76,4 +77,5 @@ __all__ = [
     "LedgerUseCase",
     "ReconcileBillPreviewUseCase",
     "ApplyReconciliationUseCase",
+    "EnsureMonthlySalaryUseCase",
 ]

@@ -25,6 +25,14 @@ export { quickAddTransaction } from './transactions/quickAddTransaction';
 export { getLedger, type LedgerFilters } from './transactions/getLedger';
 export { previewReconciliation } from './transactions/previewReconciliation';
 export { applyReconciliation, type ApplyReconciliationResult } from './transactions/applyReconciliation';
+export { ensureSalary, type EnsureSalaryResult } from './transactions/ensureSalary';
+
+// Planning services
+export { getIntentions } from './planning/getIntentions';
+export { createIntention } from './planning/createIntention';
+export { updateIntention } from './planning/updateIntention';
+export { deleteIntention } from './planning/deleteIntention';
+export { convertIntention } from './planning/convertIntention';
 
 // Sub-transaction services
 export { getSubTransactions } from './subTransactions/getSubTransactions';

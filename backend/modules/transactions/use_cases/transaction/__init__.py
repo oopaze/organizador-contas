@@ -11,6 +11,7 @@ from modules.transactions.use_cases.transaction.quick_add import QuickAddTransac
 from modules.transactions.use_cases.transaction.ledger import LedgerUseCase
 from modules.transactions.use_cases.transaction.reconcile_bill_preview import ReconcileBillPreviewUseCase
 from modules.transactions.use_cases.transaction.apply_reconciliation import ApplyReconciliationUseCase
+from modules.transactions.use_cases.transaction.ensure_salary import EnsureMonthlySalaryUseCase
 
 __all__ = [
     "CreateTransactionUseCase",
@@ -26,4 +27,5 @@ __all__ = [
     "LedgerUseCase",
     "ReconcileBillPreviewUseCase",
     "ApplyReconciliationUseCase",
+    "EnsureMonthlySalaryUseCase",
 ]

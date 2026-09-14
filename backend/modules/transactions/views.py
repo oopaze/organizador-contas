@@ -173,6 +173,17 @@ class TransactionViewSet(viewsets.ViewSet):
         result = self.container.apply_reconciliation_use_case().execute(request.data, request.user.id)
         return Response(result, status=status.HTTP_200_OK)
     
+    @decorators.action(detail=False, methods=["POST"], url_path="ensure_salary")
+    def ensure_salary(self, request):
+        month = request.data.get("month")
+        if not month:
+            return Response({"error": "month é obrigatório (YYYY-MM)"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            result = self.container.ensure_monthly_salary_use_case().execute(request.user.id, month)
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_200_OK)
+
     @decorators.action(detail=True, methods=["POST"])
     def pay(self, request, pk: str):
         update_sub_transactions = request.data.get("update_sub_transactions", False)

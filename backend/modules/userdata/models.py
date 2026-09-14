@@ -44,6 +44,7 @@ class Profile(TimedModel):
     last_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    salary_day = models.PositiveSmallIntegerField(default=1)
     modo_on = models.BooleanField(default=False)
 
     def __str__(self):

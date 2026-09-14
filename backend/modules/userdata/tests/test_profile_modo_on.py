@@ -22,3 +22,16 @@ class TestProfileModoOn(SimpleTestCase):
         serialized = ProfileSerializer().serialize(profile)
 
         self.assertIs(serialized["modo_on"], True)
+
+    def test_domain_update_sets_salary_day(self):
+        profile = ProfileDomain()
+        profile.update({"salary_day": 5})
+
+        self.assertEqual(profile.salary_day, 5)
+
+    def test_serializer_includes_salary_day(self):
+        profile = ProfileDomain(salary_day=5)
+
+        serialized = ProfileSerializer().serialize(profile)
+
+        self.assertEqual(serialized["salary_day"], 5)

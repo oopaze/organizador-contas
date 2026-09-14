@@ -28,6 +28,7 @@ urlpatterns = [
     path("file_reader/", include("modules.file_reader.urls")),
     path("transactions/", include("modules.transactions.urls")),
     path("loans/", include("modules.loans.urls")),
+    path("planning/", include("modules.planning.urls")),
     path("ai/", include("modules.ai.urls")),
 ]
 

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "modules.base",
     "modules.transactions",
     "modules.loans",
+    "modules.planning",
     "modules.userdata",
     "corsheaders",
 ]

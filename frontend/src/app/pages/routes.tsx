@@ -13,6 +13,7 @@ import { PublicActorPage } from './public-actor-page';
 import { OAuthAuthorizePage } from './oauth-authorize-page';
 import { LoansPage } from '@/app/pages/loans-page';
 import { SettingsPage } from './settings-page';
+import { PlanningPage } from './planning-page';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -47,6 +48,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/ai-insights" element={<AIInsightsPage />} />
         <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/loans" element={<LoansPage />} />
+        <Route path="/planning" element={<PlanningPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

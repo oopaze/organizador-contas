@@ -11,6 +11,9 @@ from modules.transactions.repositories import ActorRepository, TransactionReposi
 from modules.transactions.serializers import ActorSerializer, TransactionSerializer, SubTransactionSerializer
 from modules.transactions.factories import ActorFactory, TransactionFactory, SubTransactionFactory
 from modules.transactions.services.share_token import ShareTokenService
+from modules.userdata.factories import ProfileFactory
+from modules.userdata.models import Profile
+from modules.userdata.repositories.profile import ProfileRepository
 from modules.transactions.use_cases import (
     GetToolsForAIUseCase,
     CreateActorUseCase,
@@ -46,6 +49,7 @@ from modules.transactions.use_cases import (
     LedgerUseCase,
     ReconcileBillPreviewUseCase,
     ApplyReconciliationUseCase,
+    EnsureMonthlySalaryUseCase,
 )
 
 
@@ -77,6 +81,9 @@ class TransactionsContainer(containers.DeclarativeContainer):
     actor_repository = providers.Factory(ActorRepository, model=Actor, actor_factory=actor_factory)
     transaction_repository = providers.Factory(TransactionRepository, model=Transaction, transaction_factory=transaction_factory)
     sub_transaction_repository = providers.Factory(SubTransactionRepository, model=SubTransaction, sub_transaction_factory=sub_transaction_factory)
+    profile_repository = providers.Factory(
+        ProfileRepository, model=Profile, profile_factory=providers.Factory(ProfileFactory)
+    )
 
     # SERVICES
     share_token_service = providers.Factory(ShareTokenService)
@@ -338,4 +345,12 @@ class TransactionsContainer(containers.DeclarativeContainer):
         transaction_repository=transaction_repository,
         sub_transaction_repository=sub_transaction_repository,
         recalculate_amount_use_case=recalculate_amount_use_case,
+    )
+
+    ensure_monthly_salary_use_case = providers.Factory(
+        EnsureMonthlySalaryUseCase,
+        transaction_repository=transaction_repository,
+        transaction_factory=transaction_factory,
+        transaction_serializer=transaction_serializer,
+        profile_repository=profile_repository,
     )

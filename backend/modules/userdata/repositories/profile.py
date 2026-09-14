@@ -18,6 +18,10 @@ class ProfileRepository:
     def get_by_user(self, user: "UserDomain") -> "ProfileDomain":
         profile_instance = self.model.objects.get(user=user.id)
         return self.profile_factory.build_from_model(profile_instance)
+
+    def get_by_user_id(self, user_id: int) -> "ProfileDomain":
+        profile_instance = self.model.objects.get(user_id=user_id)
+        return self.profile_factory.build_from_model(profile_instance)
     
     def create(self, user: "UserDomain", first_name: str = "", last_name: str = "", bio: str = "", salary: float = 0.0) -> "ProfileDomain":
         profile_instance = self.model.objects.create(user_id=user.id, first_name=first_name, last_name=last_name, bio=bio, salary=salary)
@@ -29,6 +33,7 @@ class ProfileRepository:
         profile_instance.last_name = profile.last_name
         profile_instance.bio = profile.bio
         profile_instance.salary = profile.salary
+        profile_instance.salary_day = profile.salary_day
         profile_instance.modo_on = profile.modo_on
         profile_instance.save()
         return self.profile_factory.build_from_model(profile_instance)
