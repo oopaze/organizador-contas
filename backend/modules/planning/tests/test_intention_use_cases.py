@@ -79,6 +79,54 @@ class TestListPurchaseIntentionsUseCase(SimpleTestCase):
         self.assertEqual(result[0]["carry_over"], True)
         self.assertNotIn("carry_over", result[1])
 
+    def test_range_includes_planned_carry_over_from_before_start(self):
+        repository = Mock()
+        serializer = Mock()
+        repository.filter.return_value = [
+            PurchaseIntentionDomain(
+                id=1, name="Celular", amount="5000", month=date(2026, 8, 1),
+                installments=10, status="planned",
+            ),
+        ]
+        serializer.serialize.side_effect = lambda domain: {"id": domain.id}
+
+        use_case = ListPurchaseIntentionsUseCase(repository, serializer)
+        result = use_case.execute(7, start="2026-09", end="2026-10")
+
+        self.assertEqual(result, [{"id": 1, "carry_over": True}])
+        filters = repository.filter.call_args[0][0]
+        self.assertNotIn("month__gte", filters)
+
+    def test_range_excludes_carry_over_past_last_installment(self):
+        repository = Mock()
+        serializer = Mock()
+        repository.filter.return_value = [
+            PurchaseIntentionDomain(
+                id=1, month=date(2026, 6, 1), installments=2, status="planned",
+            ),
+        ]
+        serializer.serialize.side_effect = lambda domain: {"id": domain.id}
+
+        use_case = ListPurchaseIntentionsUseCase(repository, serializer)
+        result = use_case.execute(7, start="2026-09", end="2026-10")
+
+        self.assertEqual(result, [])
+
+    def test_range_excludes_bought_carry_over(self):
+        repository = Mock()
+        serializer = Mock()
+        repository.filter.return_value = [
+            PurchaseIntentionDomain(
+                id=1, month=date(2026, 8, 1), installments=10, status="bought",
+            ),
+        ]
+        serializer.serialize.side_effect = lambda domain: {"id": domain.id}
+
+        use_case = ListPurchaseIntentionsUseCase(repository, serializer)
+        result = use_case.execute(7, start="2026-09", end="2026-10")
+
+        self.assertEqual(result, [])
+
 
 class TestUpdatePurchaseIntentionUseCase(SimpleTestCase):
     def test_updates_and_serializes(self):

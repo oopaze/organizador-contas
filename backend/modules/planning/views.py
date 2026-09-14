@@ -66,6 +66,9 @@ class PurchaseIntentionViewSet(viewsets.ViewSet):
             return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(intention, status=status.HTTP_200_OK)
 
+    def partial_update(self, request, pk: str):
+        return self.update(request, pk)
+
     def destroy(self, request, pk: str):
         try:
             self.container.delete_intention_use_case().execute(pk, request.user.id)
