@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Progress } from '@/app/components/ui/progress';
 import type { LedgerResult, ProjectionGoals } from '@/services';
 
 const ESSENTIAL_PREFIXES = ['housing', 'bill', 'transport', 'health', 'education'];
@@ -7,30 +6,30 @@ const ESSENTIAL_PREFIXES = ['housing', 'bill', 'transport', 'health', 'education
 const formatMoney = (value: number) =>
   `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-interface GoalBarProps {
+const GoalRow: React.FC<{
   label: string;
   current: number;
-  goal: number;
-  colorClass: string;
-  direction: 'max' | 'min';
-}
-
-const GoalBar: React.FC<GoalBarProps> = ({ label, current, goal, colorClass, direction }) => {
-  const percent = goal > 0 ? Math.min(100, (current / goal) * 100) : 0;
-  const offTrack = goal > 0 && (direction === 'max' ? current > goal : current < goal);
-  return (
+  target: number;
+  goalLabel: string;
+  over: boolean;
+}> = ({ label, current, target, goalLabel, over }) => (
+  <div className="flex items-start justify-between gap-3">
     <div>
-      <div className="flex justify-between mb-1">
-        <span className="text-sm font-medium">{label}</span>
-        <span className={`text-sm ${offTrack ? 'font-semibold text-red-600' : 'text-muted-foreground'}`}>
-          {formatMoney(current)} / {formatMoney(goal)}
-          {offTrack && (direction === 'max' ? ' (acima da meta)' : ' (abaixo da meta)')}
-        </span>
-      </div>
-      <Progress value={percent} className={`h-2 ${colorClass}`} />
+      <span className="text-sm font-medium">{label}</span>
+      <p className="text-xs text-muted-foreground">
+        {goalLabel} = {formatMoney(target)}
+      </p>
     </div>
-  );
-};
+    <div className="text-right">
+      <span className={`text-sm font-semibold ${over ? 'text-red-600' : 'text-gray-900'}`}>
+        {formatMoney(current)}
+      </span>
+      <p className={`text-xs ${over ? 'text-red-600' : 'text-muted-foreground'}`}>
+        {over ? 'acima da meta' : `restam ${formatMoney(target - current)}`}
+      </p>
+    </div>
+  </div>
+);
 
 export const GoalsProgressCard: React.FC<{
   goals: ProjectionGoals;
@@ -46,21 +45,16 @@ export const GoalsProgressCard: React.FC<{
   const essentialSpending = entries
     .filter((entry) => ESSENTIAL_PREFIXES.some((prefix) => (entry.category || '').startsWith(prefix)))
     .reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0);
-  const saved = periodIncome - totalSpending;
 
   const spendingPercent = parseFloat(goals?.spending_goal_percent || '0');
   const savingsPercent = parseFloat(goals?.savings_goal_percent || '0');
   const essentialsPercent = parseFloat(goals?.essentials_goal_percent || '0');
 
-  if (!spendingPercent && !savingsPercent && !essentialsPercent) {
+  if ((!spendingPercent && !savingsPercent && !essentialsPercent) || periodIncome <= 0) {
     return null;
   }
 
-  if (periodIncome <= 0) {
-    return null;
-  }
-
-  const target = (percent: number) => (periodIncome * percent) / 100;
+  const leftover = periodIncome - totalSpending;
 
   return (
     <Card>
@@ -69,34 +63,39 @@ export const GoalsProgressCard: React.FC<{
           Metas do período{periodMonths > 1 ? ` (${periodMonths} meses)` : ''}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {spendingPercent > 0 && (
-          <GoalBar
-            label={`Gasto (teto ${spendingPercent}%)`}
+          <GoalRow
+            label="Gasto"
             current={totalSpending}
-            goal={target(spendingPercent)}
-            colorClass="bg-red-500"
-            direction="max"
-          />
-        )}
-        {savingsPercent > 0 && (
-          <GoalBar
-            label={`Guardado (meta ${savingsPercent}%)`}
-            current={saved}
-            goal={target(savingsPercent)}
-            colorClass="bg-emerald-500"
-            direction="min"
+            target={(periodIncome * spendingPercent) / 100}
+            goalLabel={`meta ${spendingPercent}%`}
+            over={totalSpending > (periodIncome * spendingPercent) / 100}
           />
         )}
         {essentialsPercent > 0 && (
-          <GoalBar
-            label={`Essenciais (teto ${essentialsPercent}%)`}
+          <GoalRow
+            label="Essenciais"
             current={essentialSpending}
-            goal={target(essentialsPercent)}
-            colorClass="bg-blue-500"
-            direction="max"
+            target={(periodIncome * essentialsPercent) / 100}
+            goalLabel={`meta ${essentialsPercent}%`}
+            over={essentialSpending > (periodIncome * essentialsPercent) / 100}
           />
         )}
+        {savingsPercent > 0 && (
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">Guardar</span>
+            <span className="text-xs text-muted-foreground">
+              meta {savingsPercent}% = {formatMoney((periodIncome * savingsPercent) / 100)}
+            </span>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-t pt-3">
+          <span className="text-sm font-medium">Sobra do período</span>
+          <span className={`text-sm font-semibold ${leftover < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+            {formatMoney(leftover)}
+          </span>
+        </div>
       </CardContent>
     </Card>
   );
