@@ -11,6 +11,7 @@ export interface User {
     last_name: string;
     bio: string;
     salary: number;
+    modo_on?: boolean;
   };
 }
 
@@ -309,4 +310,88 @@ export interface UploadPixReceiptResult {
     bank: string | null;
     ai_call_id: string;
   };
+}
+
+// Quick add types
+export type PaymentMethod = 'cash' | 'credit';
+
+export interface QuickAddInput {
+  direction: TransactionType;
+  payment_method: PaymentMethod;
+  amount: string;
+  description: string;
+  date: string;
+  category?: string;
+  actor_id?: number;
+  is_paid?: boolean;
+  card_label?: string;
+}
+
+export interface QuickAddResult {
+  transaction: TransactionDetail;
+  sub_transaction_id: number;
+  open_bill_total: string | null;
+}
+
+// Ledger types
+export interface LedgerEntry {
+  date: string;
+  description: string;
+  amount: string;
+  direction: TransactionType;
+  paid_at: string | null;
+  category: string;
+  transaction_id: number;
+  sub_transaction_id: number | null;
+  transaction_identifier: string;
+  is_card: boolean;
+  running_balance: string;
+}
+
+export interface LedgerSummary {
+  realized_balance: string;
+  projected_balance: string;
+  payable: string;
+  receivable: string;
+  incoming_total: string;
+  outgoing_total: string;
+}
+
+export interface LedgerResult {
+  entries: LedgerEntry[];
+  summary: LedgerSummary;
+}
+
+// Reconciliation types
+export interface ReconcileSubPayload {
+  id: number;
+  date: string;
+  description: string;
+  amount: string;
+  installment_info: string | null;
+  category: string;
+}
+
+export interface ReconcilePair {
+  bill_sub_transaction_id: number;
+  real_sub_transaction_id: number;
+  real_transaction_id: number;
+  confidence: number;
+  reason: string;
+  bill: ReconcileSubPayload;
+  real: ReconcileSubPayload;
+}
+
+export interface ReconcilePreview {
+  bill: { id: number; identifier: string; due_date: string };
+  pairs: ReconcilePair[];
+  unmatched_bill: ReconcileSubPayload[];
+  unmatched_real: ReconcileSubPayload[];
+  suggested_categories: { sub_transaction_id: number; category: string }[];
+  transaction_ids?: number[];
+}
+
+export interface ApplyReconciliationInput {
+  pairs: { bill_sub_transaction_id: number; real_sub_transaction_id: number }[];
+  categories: { sub_transaction_id: number; category: string }[];
 }

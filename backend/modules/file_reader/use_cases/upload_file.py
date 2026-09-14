@@ -143,5 +143,6 @@ class UploadFileUseCase:
         saved_file.update_ai_info(ai_call)
         updated_file = self.file_repository.update(saved_file)
 
-        self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months)
-        return self.file_serializer.serialize(updated_file)
+        transaction_ids = self.transpose_file_bill_to_models_use_case.execute(updated_file.id, user_id, create_in_future_months)
+        serialized_file = self.file_serializer.serialize(updated_file)
+        return {**serialized_file, "transaction_ids": transaction_ids}

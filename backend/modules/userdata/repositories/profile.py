@@ -29,6 +29,7 @@ class ProfileRepository:
         profile_instance.last_name = profile.last_name
         profile_instance.bio = profile.bio
         profile_instance.salary = profile.salary
+        profile_instance.modo_on = profile.modo_on
         profile_instance.save()
         return self.profile_factory.build_from_model(profile_instance)
     

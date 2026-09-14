@@ -4,6 +4,7 @@ from django.db.models import Case, When, Value, BooleanField, Exists, OuterRef
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.factories.transaction import TransactionFactory
 from modules.transactions.models import Transaction, SubTransaction
+from modules.transactions.types import TransactionCategory
 
 
 class TransactionRepository:
@@ -49,6 +50,29 @@ class TransactionRepository:
     def get_children_transactions(self, transaction_id: str, user_id: int) -> list["TransactionDomain"]:
         transaction_instances = self.queryset.filter(main_transaction_id=transaction_id, user_id=user_id)
         return [self.transaction_factory.build_from_model(transaction) for transaction in transaction_instances]
+
+    def get_open_bill(self, user_id: int, identifier: str, year: int, month: int) -> "TransactionDomain | None":
+        instance = self.queryset.filter(
+            user_id=user_id,
+            file__isnull=True,
+            category=TransactionCategory.CREDIT_CARD.name,
+            transaction_identifier=identifier,
+            due_date__year=year,
+            due_date__month=month,
+        ).first()
+        if instance is None:
+            return None
+        return self.transaction_factory.build_from_model(instance)
+
+    def get_open_bills(self, user_id: int, due_date_start, due_date_end) -> list["TransactionDomain"]:
+        queryset = self.queryset.filter(
+            user_id=user_id,
+            file__isnull=True,
+            category=TransactionCategory.CREDIT_CARD.name,
+            due_date__gte=due_date_start,
+            due_date__lte=due_date_end,
+        )
+        return [self.transaction_factory.build_from_model(instance) for instance in queryset]
     
     def get_all(self, user_id: int) -> list["TransactionDomain"]:
         transaction_instances = self.queryset.filter(user_id=user_id)
@@ -67,7 +91,9 @@ class TransactionRepository:
             main_transaction_id=transaction.main_transaction,
             recurrence_count=transaction.recurrence_count,
             category=transaction.category,
+            paid_at=transaction.paid_at,
         )
+        transaction_instance.refresh_from_db()
         return self.transaction_factory.build_from_model(transaction_instance)
     
     def update(self, transaction: "TransactionDomain") -> "TransactionDomain":

@@ -2,19 +2,27 @@ import { apiRequest, USE_MOCK_API } from '../client';
 import { User } from '../types';
 import { mockUsers, delay } from '../mockData';
 
-async function updateProfileMock(data: Partial<User>): Promise<User> {
+export interface ProfileUpdateInput {
+  first_name?: string;
+  last_name?: string;
+  bio?: string;
+  salary?: number;
+  modo_on?: boolean;
+}
+
+async function updateProfileMock(data: ProfileUpdateInput): Promise<User> {
   await delay();
   mockUsers[0] = { ...mockUsers[0], ...data };
   return mockUsers[0];
 }
 
-async function updateProfileReal(data: Partial<User>): Promise<User> {
+async function updateProfileReal(data: ProfileUpdateInput): Promise<User> {
   return apiRequest<User>('/user/me/profile/', {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(data),
   });
 }
 
-export async function updateProfile(data: Partial<User>): Promise<User> {
+export async function updateProfile(data: ProfileUpdateInput): Promise<User> {
   return USE_MOCK_API ? await updateProfileMock(data) : await updateProfileReal(data);
 }

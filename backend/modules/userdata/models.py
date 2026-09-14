@@ -44,6 +44,7 @@ class Profile(TimedModel):
     last_name = models.CharField(max_length=150, blank=True)
     bio = models.TextField(blank=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    modo_on = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} #{self.id}"
