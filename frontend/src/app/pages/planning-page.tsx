@@ -27,13 +27,13 @@ import {
   DialogTitle,
 } from '@/app/components/ui/dialog';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, Target, Trash2, Wand2, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pencil, Plus, Target, Trash2, Wand2, XCircle } from 'lucide-react';
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Legend,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -87,6 +87,7 @@ export const PlanningPage: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [when, setWhen] = useState(currentMonth());
   const [installments, setInstallments] = useState('1');
+  const [editing, setEditing] = useState<PurchaseIntention | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -115,24 +116,44 @@ export const PlanningPage: React.FC = () => {
     setAmount('');
     setWhen(month);
     setInstallments('1');
+    setEditing(null);
+  };
+
+  const openEdit = (intention: PurchaseIntention) => {
+    setName(intention.name);
+    setAmount(String(parseFloat(intention.amount || '0')));
+    setWhen(intention.month.slice(0, 7));
+    setInstallments(String(intention.installments || 1));
+    setEditing(intention);
+    setShowForm(true);
   };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await createIntention({
-        name,
-        amount,
-        month: `${when}-01`,
-        installments: Math.max(1, parseInt(installments, 10) || 1),
-      });
+      if (editing) {
+        await updateIntention(editing.id, {
+          name,
+          amount,
+          month: `${when}-01`,
+          installments: Math.max(1, parseInt(installments, 10) || 1),
+        });
+        toast.success('Intenção atualizada!');
+      } else {
+        await createIntention({
+          name,
+          amount,
+          month: `${when}-01`,
+          installments: Math.max(1, parseInt(installments, 10) || 1),
+        });
+        toast.success('Intenção adicionada!');
+      }
       resetForm();
       setShowForm(false);
-      toast.success('Intenção adicionada!');
       load();
     } catch {
-      toast.error('Falha ao adicionar a intenção');
+      toast.error(editing ? 'Falha ao atualizar a intenção' : 'Falha ao adicionar a intenção');
     } finally {
       setSaving(false);
     }
@@ -171,6 +192,7 @@ export const PlanningPage: React.FC = () => {
   const projected = parseFloat(ledger?.summary.projected_balance || '0');
   const commitment = parseFloat(projection?.months?.[0]?.intentions_total || '0');
   const afterIntentions = projected - commitment;
+  const salary = parseFloat(projection?.months?.[0]?.salary || '0');
 
   const spendingByCategory = Object.entries(
     (ledger?.entries || [])
@@ -184,6 +206,7 @@ export const PlanningPage: React.FC = () => {
 
   const projectionData = (projection?.months || []).map((monthData) => ({
     month: shortMonth(monthData.month),
+    salário: parseFloat(monthData.salary),
     intenções: parseFloat(monthData.intentions_total),
     sobra: parseFloat(monthData.leftover),
   }));
@@ -256,7 +279,7 @@ export const PlanningPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle>Gastos do mês por categoria</CardTitle>
-            <CardDescription>O que já foi lançado neste mês</CardDescription>
+            <CardDescription>O que já foi lançado neste mês, como % da sua renda fixa</CardDescription>
           </CardHeader>
           <CardContent>
             {spendingByCategory.length === 0 ? (
@@ -278,7 +301,11 @@ export const PlanningPage: React.FC = () => {
                           <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value: number) => formatMoney(value)} />
+                      <Tooltip
+                        formatter={(value: number) =>
+                          `${formatMoney(value)}${salary > 0 ? ` (${((value / salary) * 100).toFixed(1)}% da renda)` : ''}`
+                        }
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -301,20 +328,23 @@ export const PlanningPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle>Projeção dos próximos 12 meses</CardTitle>
-            <CardDescription>Parcelas planejadas (amarelo) e sobra do salário (verde) mês a mês</CardDescription>
+            <CardDescription>
+              Tudo comparado à sua renda fixa: salário (azul), parcelas (amarelo) e sobra (verde)
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[240px] sm:h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={projectionData}>
+                <LineChart data={projectionData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" fontSize={11} />
                   <YAxis fontSize={11} width={45} />
                   <Tooltip formatter={(value: number) => formatMoney(value)} />
                   <Legend />
-                  <Bar dataKey="intenções" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="sobra" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Line type="monotone" dataKey="salário" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="intenções" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="sobra" stroke="#10b981" strokeWidth={2} dot={false} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -384,6 +414,10 @@ export const PlanningPage: React.FC = () => {
                           <Wand2 className="w-4 h-4 mr-1" />
                           Virar transação
                         </Button>
+                        <Button size="sm" variant="outline" onClick={() => openEdit(intention)}>
+                          <Pencil className="w-4 h-4 mr-1" />
+                          Editar
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => handleDismiss(intention)}>
                           <XCircle className="w-4 h-4 mr-1" />
                           Descartar
@@ -401,10 +435,13 @@ export const PlanningPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
+      <Dialog open={showForm} onOpenChange={(open) => {
+        if (!open) resetForm();
+        setShowForm(open);
+      }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova intenção de compra</DialogTitle>
+            <DialogTitle>{editing ? 'Editar intenção' : 'Nova intenção de compra'}</DialogTitle>
             <DialogDescription>
               Dá para parcelar: a projeção mostra o impacto mês a mês.
             </DialogDescription>
@@ -464,7 +501,7 @@ export const PlanningPage: React.FC = () => {
                 Cancelar
               </Button>
               <Button type="submit" disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-white">
-                {saving ? 'Adicionando...' : 'Adicionar intenção'}
+                {saving ? 'Salvando...' : editing ? 'Salvar alterações' : 'Adicionar intenção'}
               </Button>
             </DialogFooter>
           </form>
