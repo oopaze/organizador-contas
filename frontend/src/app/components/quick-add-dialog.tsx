@@ -5,7 +5,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
-import { Checkbox } from '@/app/components/ui/checkbox';
+import { Switch } from '@/app/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/app/components/ui/radio-group';
 import { toast } from 'sonner';
 import { TRANSACTION_CATEGORIES } from '@/lib/category-colors';
@@ -34,6 +34,7 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
   const [actorId, setActorId] = useState('none');
   const [isPaid, setIsPaid] = useState(true);
   const [cardLabel, setCardLabel] = useState('');
+  const [installments, setInstallments] = useState('1');
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +51,7 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
     setActorId('none');
     setIsPaid(true);
     setCardLabel('');
+    setInstallments('1');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +69,7 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
         actor_id: actorId === 'none' ? undefined : Number(actorId),
         is_paid: paymentMethod === 'cash' ? isPaid : undefined,
         card_label: paymentMethod === 'credit' ? cardLabel.trim() : undefined,
+        installments: Math.max(1, parseInt(installments, 10) || 1),
       });
       reset();
       onSuccess();
@@ -145,6 +148,22 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="quick-installments">Parcelas</Label>
+              <Input
+                id="quick-installments"
+                type="number"
+                min="1"
+                max="48"
+                inputMode="numeric"
+                value={installments}
+                onChange={(e) => setInstallments(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                1 = à vista. No cartão, as parcelas caem nas faturas dos próximos meses.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label>Pagamento</Label>
               <RadioGroup
                 value={paymentMethod}
@@ -177,18 +196,20 @@ export const QuickAddDialog: React.FC<QuickAddDialogProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Checkbox
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="quick-paid" className="cursor-pointer">
+                    Já paguei/recebi
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    desligue para agendar (previsão)
+                  </p>
+                </div>
+                <Switch
                   id="quick-paid"
                   checked={isPaid}
-                  onCheckedChange={(checked) => setIsPaid(checked === true)}
+                  onCheckedChange={setIsPaid}
                 />
-                <Label htmlFor="quick-paid" className="cursor-pointer">
-                  Já paguei/recebi
-                </Label>
-                <span className="text-xs text-muted-foreground">
-                  desmarque para agendar (previsão)
-                </span>
               </div>
             )}
 

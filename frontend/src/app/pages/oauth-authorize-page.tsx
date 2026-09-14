@@ -111,14 +111,14 @@ export const OAuthAuthorizePage: React.FC = () => {
         <CardHeader>
           <CardTitle>Autorizar {client.name}</CardTitle>
           <CardDescription>
-            Este aplicativo poderá ler suas finanças no Poupix em modo somente leitura.
+            Este aplicativo poderá ler e editar suas finanças no Poupix.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border bg-muted/40 p-4 text-sm">
             <div className="font-medium">Permissão solicitada</div>
             <div className="text-muted-foreground">
-              Leitura das suas transações, categorias e atores ({scope}).
+              Leitura e edição das suas transações, categorias e atores ({scope}).
             </div>
           </div>
 

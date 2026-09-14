@@ -174,3 +174,137 @@ class TestQuickAddTransactionUseCase(TestCase):
                 },
                 user_id=7,
             )
+
+    def test_installments_below_one_raises(self):
+        with self.assertRaises(ValueError):
+            self.use_case.execute(
+                {
+                    "direction": "outgoing",
+                    "payment_method": "cash",
+                    "amount": "100",
+                    "description": "Compra",
+                    "date": "2026-09-13",
+                    "installments": 0,
+                },
+                user_id=7,
+            )
+
+    def test_cash_installments_create_monthly_transactions(self):
+        def build_side_effect(data):
+            return TransactionDomain(
+                due_date=data["due_date"],
+                total_amount=data["total_amount"],
+                transaction_identifier=data["transaction_identifier"],
+                transaction_type=data["transaction_type"],
+                user_id=7,
+            )
+
+        created_ids = iter([1, 2, 3])
+
+        def create_side_effect(transaction):
+            transaction.id = next(created_ids)
+            return transaction
+
+        sub_ids = iter([11, 12, 13])
+        self.transaction_factory.build.side_effect = build_side_effect
+        self.transaction_repository.create.side_effect = create_side_effect
+        self.create_sub_transaction_use_case.execute.side_effect = (
+            lambda data, user_id: {"id": next(sub_ids)}
+        )
+        self.transaction_serializer.serialize.return_value = {"id": 1}
+
+        result = self.use_case.execute(
+            {
+                "direction": "outgoing",
+                "payment_method": "cash",
+                "amount": "100",
+                "description": "Compra parcelada",
+                "date": "2026-09-13",
+                "installments": 3,
+                "is_paid": True,
+            },
+            user_id=7,
+        )
+
+        self.assertEqual(self.transaction_repository.create.call_count, 3)
+        parents = [call[0][0] for call in self.transaction_factory.build.call_args_list]
+        self.assertEqual([p["paid_at"] for p in parents], ["2026-09-13", None, None])
+        self.assertEqual([p["due_date"] for p in parents], ["2026-09-13", "2026-10-13", "2026-11-13"])
+        self.assertEqual(parents[1]["main_transaction"], 1)
+        self.assertEqual(parents[1]["installment_number"], 2)
+        self.assertEqual(parents[2]["recurrence_count"], 3)
+
+        subs = [call[0][0] for call in self.create_sub_transaction_use_case.execute.call_args_list]
+        self.assertEqual([s["installment_info"] for s in subs], ["1/3", "2/3", "3/3"])
+        self.assertEqual([str(s["amount"]) for s in subs], ["33.33", "33.33", "33.34"])
+        self.assertEqual([s["date"] for s in subs], ["2026-09-13", "2026-10-13", "2026-11-13"])
+        self.assertEqual(subs[0]["paid_at"], "2026-09-13")
+        self.assertIsNone(subs[1]["paid_at"])
+        self.assertIsNone(result["open_bill_total"])
+        self.assertEqual(result["sub_transaction_id"], 11)
+
+    def test_credit_installments_spread_across_open_bills(self):
+        def build_side_effect(data):
+            return TransactionDomain(
+                due_date=data["due_date"],
+                total_amount=data["total_amount"],
+                transaction_identifier=data["transaction_identifier"],
+                transaction_type=data["transaction_type"],
+                user_id=7,
+                category="credit_card",
+            )
+
+        bills = iter([
+            TransactionDomain(id=20, total_amount="0", user_id=7),
+            TransactionDomain(id=21, total_amount="0", user_id=7),
+            TransactionDomain(id=22, total_amount="0", user_id=7),
+        ])
+
+        def create_side_effect(transaction):
+            transaction.id = next(bills).id
+            return transaction
+
+        sub_ids = iter([31, 32, 33])
+        filled_first = TransactionDomain(id=20, total_amount="33.33", user_id=7)
+        self.transaction_repository.get_open_bill.return_value = None
+        self.transaction_factory.build.side_effect = build_side_effect
+        self.transaction_repository.create.side_effect = create_side_effect
+        self.transaction_repository.get.return_value = filled_first
+        self.create_sub_transaction_use_case.execute.side_effect = (
+            lambda data, user_id: {"id": next(sub_ids)}
+        )
+        self.transaction_serializer.serialize.return_value = {"id": 20}
+
+        result = self.use_case.execute(
+            {
+                "payment_method": "credit",
+                "amount": "100",
+                "description": "Compra parcelada",
+                "date": "2026-09-13",
+                "card_label": "Nubank",
+                "installments": 3,
+            },
+            user_id=7,
+        )
+
+        self.assertEqual(
+            [call[0][1:] for call in self.transaction_repository.get_open_bill.call_args_list],
+            [
+                ("Fatura Nubank 09/2026", 2026, 9),
+                ("Fatura Nubank 10/2026", 2026, 10),
+                ("Fatura Nubank 11/2026", 2026, 11),
+            ],
+        )
+        self.assertEqual(self.transaction_repository.create.call_count, 3)
+        self.assertEqual(
+            [call[0] for call in self.recalculate_amount_use_case.execute.call_args_list],
+            [(20, 7), (21, 7), (22, 7)],
+        )
+        subs = [call[0][0] for call in self.create_sub_transaction_use_case.execute.call_args_list]
+        self.assertEqual([s["installment_info"] for s in subs], ["1/3", "2/3", "3/3"])
+        self.assertEqual([s["date"] for s in subs], ["2026-09-13", "2026-10-13", "2026-11-13"])
+        self.assertEqual([str(s["amount"]) for s in subs], ["33.33", "33.33", "33.34"])
+        self.assertTrue(all(s["paid_at"] is None for s in subs))
+        self.assertEqual(result["open_bill_total"], "33.33")
+        self.assertEqual(result["sub_transaction_id"], 31)
+

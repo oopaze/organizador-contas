@@ -148,8 +148,5 @@ db_clean:
 # MCP
 # ===========================================
 
-mcp_setup_db:
-	@cd backend && python manage.py mcp_setup_db --admin-user $${PG_ADMIN_USER:-postgres} --admin-password $${PG_ADMIN_PASSWORD:?PG_ADMIN_PASSWORD is required}
-
 mcp_run:
 	@cd backend && python manage.py run_mcp
