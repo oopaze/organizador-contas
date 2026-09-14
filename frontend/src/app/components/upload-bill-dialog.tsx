@@ -291,7 +291,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setCreatingCard(false)}>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => { setCreatingCard(false); setCardTouched(false); }}>
                     Cancelar
                   </Button>
                   <Button type="button" size="sm" onClick={handleCreateCard} disabled={!newCardName.trim()}>

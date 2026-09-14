@@ -172,7 +172,7 @@ class QuickAddTransactionUseCase:
                 legacy = self.transaction_repository.get_open_bill(
                     user_id, identifier, year, month
                 )
-                if legacy is not None:
+                if legacy is not None and legacy.card_id is None:
                     legacy.card_id = locked_card.id
                     return self.transaction_repository.update(legacy)
                 bill = self._create_bill(user_id, locked_card.id, identifier, due_date)

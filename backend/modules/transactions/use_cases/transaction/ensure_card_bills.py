@@ -53,7 +53,7 @@ class EnsureMonthlyCardBillsUseCase:
                     legacy = self.transaction_repository.get_open_bill(
                         user_id, identifier, year, month_number
                     )
-                    if legacy is not None:
+                    if legacy is not None and legacy.card_id is None:
                         legacy.card_id = locked_card.id
                         bill = self.transaction_repository.update(legacy)
                     else:

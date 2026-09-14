@@ -115,3 +115,31 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
         self.transaction_repository.update.assert_called_once_with(legacy)
         self.recalculate_amount_use_case.execute.assert_called_once_with(60, 7)
         self.assertEqual(result, {"bills": [{"id": 60}]})
+
+    def test_does_not_adopt_legacy_bill_linked_to_another_card(self):
+        self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
+        foreign = TransactionDomain(
+            id=70,
+            total_amount="100",
+            user_id=7,
+            due_date=date(2026, 9, 10),
+            transaction_identifier="Fatura Nubank 09/2026",
+            card_id=99,
+        )
+        built = TransactionDomain(id=50, total_amount="0", user_id=7, due_date="2026-09-10")
+        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_open_bill.return_value = foreign
+        self.transaction_factory.build.return_value = built
+        self.transaction_repository.create.return_value = built
+        self.transaction_repository.get.return_value = built
+        self.transaction_serializer.serialize.return_value = {"id": 50}
+
+        result = self.use_case.execute(7, "2026-09")
+
+        self.transaction_repository.create.assert_called_once()
+        built_data = self.transaction_factory.build.call_args[0][0]
+        self.assertEqual(built_data["card_id"], 3)
+        self.assertIs(foreign.card_id, 99)
+        self.transaction_repository.update.assert_not_called()
+        self.recalculate_amount_use_case.execute.assert_called_once_with(50, 7)
+        self.assertEqual(result, {"bills": [{"id": 50}]})

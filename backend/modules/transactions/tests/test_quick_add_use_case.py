@@ -508,3 +508,50 @@ class TestQuickAddTransactionUseCase(TestCase):
         self.create_sub_transaction_use_case.execute.assert_called_once()
         self.assertEqual(result["open_bill_total"], "100")
         self.assertEqual(result["sub_transaction_id"], 60)
+
+    def test_credit_with_card_does_not_adopt_bill_linked_to_another_card(self):
+        card_repository = Mock()
+        card = CardDomain(id=3, name="Nubank", due_day=10)
+        card_repository.get_or_none.return_value = card
+        card_repository.get_for_update.return_value = card
+        foreign = TransactionDomain(
+            id=20, total_amount="100", user_id=7, due_date="2026-09-10",
+            transaction_identifier="Fatura Nubank 09/2026", category="credit_card",
+            card_id=99,
+        )
+        use_case = QuickAddTransactionUseCase(
+            transaction_repository=self.transaction_repository,
+            transaction_factory=self.transaction_factory,
+            transaction_serializer=self.transaction_serializer,
+            create_sub_transaction_use_case=self.create_sub_transaction_use_case,
+            recalculate_amount_use_case=self.recalculate_amount_use_case,
+            card_repository=card_repository,
+        )
+        new_bill = TransactionDomain(id=21, total_amount="0", user_id=7, due_date="2026-09-10")
+        filled = TransactionDomain(id=21, total_amount="54.90", user_id=7)
+        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_open_bill.return_value = foreign
+        self.transaction_factory.build.return_value = new_bill
+        self.transaction_repository.create.return_value = new_bill
+        self.transaction_repository.get.return_value = filled
+        self.create_sub_transaction_use_case.execute.return_value = {"id": 60}
+        self.transaction_serializer.serialize.return_value = {"id": 21}
+
+        result = use_case.execute(
+            {
+                "payment_method": "credit",
+                "amount": "54.90",
+                "description": "Padaria",
+                "date": "2026-09-13",
+                "card_id": 3,
+            },
+            user_id=7,
+        )
+
+        self.transaction_repository.create.assert_called_once()
+        built_data = self.transaction_factory.build.call_args[0][0]
+        self.assertEqual(built_data["card_id"], 3)
+        self.transaction_repository.update.assert_not_called()
+        self.assertIs(foreign.card_id, 99)
+        self.assertEqual(result["open_bill_total"], "54.90")
+        self.assertEqual(result["sub_transaction_id"], 60)
