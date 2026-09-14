@@ -28,20 +28,10 @@ import {
 } from '@/app/components/ui/dialog';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Pencil, Plus, Target, Trash2, Wand2, XCircle } from 'lucide-react';
-import {
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { getCategoryLabel } from '@/lib/category-colors';
+import { ProjectionChart } from '@/app/components/planning/projection-chart';
+import { GoalsProgressCard } from '@/app/components/planning/goals-progress-card';
 
 const currentMonth = () => {
   const now = new Date();
@@ -101,7 +91,7 @@ export const PlanningPage: React.FC = () => {
     await ensureSalary(month).catch(() => undefined);
     await ensureCardBills(month).catch(() => undefined);
     Promise.all([
-      getIntentions(month),
+      getIntentions({ start: month, end: addMonths(month, projectionMonths - 1) }),
       getLedger({ start: `${month}-01`, end: `${month}-${String(lastDayOf(month)).padStart(2, '0')}` }),
       getProjection({ start: month, end: addMonths(month, projectionMonths - 1) }),
     ])
@@ -197,8 +187,6 @@ export const PlanningPage: React.FC = () => {
   };
 
   const projected = parseFloat(ledger?.summary.projected_balance || '0');
-  const commitment = parseFloat(projection?.months?.[0]?.intentions_total || '0');
-  const afterIntentions = projected - commitment;
   const salary = parseFloat(projection?.months?.[0]?.salary || '0');
 
   const spendingByCategory = Object.entries(
@@ -223,8 +211,16 @@ export const PlanningPage: React.FC = () => {
     (sum, monthData) => sum + parseFloat(monthData.intentions_total),
     0,
   );
+  const periodLeftover = (projection?.months || []).reduce(
+    (sum, monthData) => sum + parseFloat(monthData.leftover),
+    0,
+  );
   const periodIncome = salary * (projection?.total_months || 0);
   const impactPercent = periodIncome > 0 ? (intentionsImpactTotal / periodIncome) * 100 : 0;
+  const spendingGoal = projection?.goals?.monthly_spending_goal
+    ? parseFloat(projection.goals.monthly_spending_goal)
+    : null;
+  const periodEnd = addMonths(month, projectionMonths - 1);
 
   const goToMonth = (offset: number) => {
     const [year, monthNumber] = month.split('-').map(Number);
@@ -243,9 +239,16 @@ export const PlanningPage: React.FC = () => {
           <Button variant="outline" size="icon" onClick={() => goToMonth(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-base font-semibold text-gray-900 min-w-[180px] text-center">
-            {formatMonthDisplay(month)}
-          </span>
+          <div className="text-center">
+            <span className="text-base font-semibold text-gray-900 min-w-[180px]">
+              {formatMonthDisplay(month)}
+            </span>
+            {projectionMonths > 1 && (
+              <p className="text-xs text-muted-foreground">
+                {shortMonth(month)} → {shortMonth(periodEnd)}
+              </p>
+            )}
+          </div>
           <Button variant="outline" size="icon" onClick={() => goToMonth(1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -267,28 +270,33 @@ export const PlanningPage: React.FC = () => {
 
         <Card className="border-amber-300 bg-amber-50/40">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Parcelas das intenções no mês</CardTitle>
+            <CardTitle className="text-sm font-medium">Intenções no período</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{formatMoney(commitment)}</div>
+            <div className="text-2xl font-bold text-amber-600">{formatMoney(intentionsImpactTotal)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {intentions.filter((intention) => intention.status === 'planned').length} planejada(s)
+              {intentions.filter((intention) => intention.status === 'planned').length} planejada(s) em{' '}
+              {projection?.total_months || 0} mês(es)
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Sobra depois de comprar</CardTitle>
+            <CardTitle className="text-sm font-medium">Sobra no período</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${afterIntentions < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-              {formatMoney(afterIntentions)}
+            <div className={`text-2xl font-bold ${periodLeftover < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+              {formatMoney(periodLeftover)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Saldo projetado − parcelas</p>
+            <p className="text-xs text-muted-foreground mt-1">Soma das sobras de {projection?.total_months || 0} mês(es)</p>
           </CardContent>
         </Card>
       </div>
+
+      {projection?.goals && (
+        <GoalsProgressCard goals={projection.goals} ledger={ledger!} salary={salary} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -364,19 +372,7 @@ export const PlanningPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="h-[240px] sm:h-[260px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={projectionData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis fontSize={11} width={45} />
-                  <Tooltip formatter={(value: number) => formatMoney(value)} />
-                  <Legend />
-                  <Line type="monotone" dataKey="salário" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="gastos" stroke="#ef4444" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="intenções" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="sobra" stroke="#10b981" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              <ProjectionChart data={projectionData} spendingGoal={spendingGoal} />
             </div>
             {intentionsImpactTotal > 0 && (
               <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -392,8 +388,10 @@ export const PlanningPage: React.FC = () => {
       <Card className="border-amber-300">
         <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
           <div>
-            <CardTitle>Intenções do mês</CardTitle>
-            <CardDescription>Vire transação quando decidir comprar</CardDescription>
+            <CardTitle>Intenções do período</CardTitle>
+            <CardDescription>
+              {shortMonth(month)} → {shortMonth(periodEnd)} · vire transação quando decidir comprar
+            </CardDescription>
           </div>
           <Button
             onClick={() => {
@@ -412,7 +410,7 @@ export const PlanningPage: React.FC = () => {
             <p className="py-6 text-center text-sm text-muted-foreground">Carregando...</p>
           ) : intentions.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              Nenhuma intenção neste mês
+              Nenhuma intenção no período
             </p>
           ) : (
             <div className="divide-y">

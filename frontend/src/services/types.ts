@@ -13,6 +13,9 @@ export interface User {
     salary: number;
     salary_day?: number;
     modo_on?: boolean;
+    monthly_spending_goal?: string | number | null;
+    monthly_savings_goal?: string | number | null;
+    monthly_essentials_goal?: string | number | null;
   };
 }
 
@@ -431,9 +434,16 @@ export interface ProjectionMonth {
   leftover: string;
 }
 
+export interface ProjectionGoals {
+  monthly_spending_goal: string | null;
+  monthly_savings_goal: string | null;
+  monthly_essentials_goal: string | null;
+}
+
 export interface ProjectionResult {
   months: ProjectionMonth[];
   total_months: number;
+  goals?: ProjectionGoals;
 }
 
 // Card types

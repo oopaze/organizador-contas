@@ -9,6 +9,9 @@ export interface ProfileUpdateInput {
   salary?: number;
   salary_day?: number;
   modo_on?: boolean;
+  monthly_spending_goal?: number | null;
+  monthly_savings_goal?: number | null;
+  monthly_essentials_goal?: number | null;
 }
 
 async function updateProfileMock(data: ProfileUpdateInput): Promise<User> {
