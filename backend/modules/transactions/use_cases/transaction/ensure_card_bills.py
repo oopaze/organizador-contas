@@ -59,7 +59,7 @@ class EnsureMonthlyCardBillsUseCase:
                     }
                 )
                 bill = self.transaction_repository.create(bill)
-            elif bill.due_date != due_date:
+            elif str(bill.due_date) != due_date:
                 bill.due_date = due_date
                 bill = self.transaction_repository.update(bill)
 

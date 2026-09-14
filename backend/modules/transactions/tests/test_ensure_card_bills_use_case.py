@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import Mock
 
 from django.test import SimpleTestCase
@@ -44,7 +45,7 @@ class TestEnsureMonthlyCardBillsUseCase(SimpleTestCase):
 
     def test_reuses_existing_bill_and_syncs_due_date(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
-        existing = TransactionDomain(id=50, total_amount="100", user_id=7, due_date="2026-09-01")
+        existing = TransactionDomain(id=50, total_amount="100", user_id=7, due_date=date(2026, 9, 1))
         self.transaction_repository.get_open_bill_by_card.return_value = existing
         self.transaction_repository.update.return_value = existing
         self.transaction_repository.get.return_value = existing
@@ -55,6 +56,19 @@ class TestEnsureMonthlyCardBillsUseCase(SimpleTestCase):
         self.transaction_repository.create.assert_not_called()
         self.assertEqual(str(existing.due_date), "2026-09-10")
         self.transaction_repository.update.assert_called_once_with(existing)
+        self.recalculate_amount_use_case.execute.assert_called_once_with(50, 7)
+
+    def test_does_not_update_when_due_date_already_matches(self):
+        self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
+        existing = TransactionDomain(id=50, total_amount="100", user_id=7, due_date=date(2026, 9, 10))
+        self.transaction_repository.get_open_bill_by_card.return_value = existing
+        self.transaction_repository.get.return_value = existing
+        self.transaction_serializer.serialize.return_value = {"id": 50}
+
+        self.use_case.execute(7, "2026-09")
+
+        self.transaction_repository.create.assert_not_called()
+        self.transaction_repository.update.assert_not_called()
         self.recalculate_amount_use_case.execute.assert_called_once_with(50, 7)
 
     def test_clamps_due_day_to_month_end(self):
