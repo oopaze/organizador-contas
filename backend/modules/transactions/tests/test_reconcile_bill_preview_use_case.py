@@ -64,6 +64,20 @@ class TestReconcileBillPreviewUseCase(TestCase):
         self.assertEqual(result["unmatched_bill"], [])
         self.assertEqual(result["suggested_categories"], [{"sub_transaction_id": 101, "category": "food_grocery"}])
 
+    def test_filters_candidates_by_bill_card(self):
+        self.bill.card_id = 3
+        other_bill = TransactionDomain(
+            id=21, due_date=date(2026, 9, 1), total_amount="50",
+            transaction_identifier="Fatura Visa 09/2026", transaction_type="outgoing",
+            user_id=7, category="credit_card", card_id=9,
+        )
+        self.open_bill.card_id = 3
+        self.transaction_repository.get_open_bills.return_value = [self.open_bill, other_bill]
+
+        self.use_case.execute(50, user_id=7)
+
+        self.sub_transaction_repository.get_all_by_transaction_ids.assert_called_once_with([20])
+
     def test_drops_pairs_with_invalid_ids(self):
         self.ai_call_repository.get.return_value.response = {
             "pairs": [{"bill_sub_transaction_id": 999, "real_sub_transaction_id": 40, "confidence": 0.9}],
