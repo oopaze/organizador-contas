@@ -46,12 +46,6 @@ const lastDayOf = (month: string) => {
 const formatMoney = (value: number | string) =>
   `R$ ${Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const formatMonthDisplay = (monthValue: string) => {
-  const [year, month] = monthValue.split('-').map(Number);
-  const label = new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  return label.charAt(0).toUpperCase() + label.slice(1);
-};
-
 const shortMonth = (monthValue: string) => {
   const [year, month] = monthValue.split('-').map(Number);
   return `${String(month).padStart(2, '0')}/${String(year).slice(2)}`;
@@ -72,8 +66,8 @@ const statusLabel: Record<PurchaseIntention['status'], string> = {
 const PIE_COLORS = ['#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899', '#f97316', '#06b6d4', '#84cc16'];
 
 export const PlanningPage: React.FC = () => {
-  const [month, setMonth] = useState(currentMonth());
-  const [projectionMonths, setProjectionMonths] = useState(12);
+  const [startMonth, setStartMonth] = useState(currentMonth());
+  const [endMonth, setEndMonth] = useState(addMonths(currentMonth(), 11));
   const [intentions, setIntentions] = useState<PurchaseIntention[]>([]);
   const [ledger, setLedger] = useState<LedgerResult | null>(null);
   const [projection, setProjection] = useState<ProjectionResult | null>(null);
@@ -88,12 +82,12 @@ export const PlanningPage: React.FC = () => {
 
   const load = async () => {
     setLoading(true);
-    await ensureSalary(month).catch(() => undefined);
-    await ensureCardBills(month).catch(() => undefined);
+    await ensureSalary(startMonth).catch(() => undefined);
+    await ensureCardBills(startMonth).catch(() => undefined);
     Promise.all([
-      getIntentions({ start: month, end: addMonths(month, projectionMonths - 1) }),
-      getLedger({ start: `${month}-01`, end: `${month}-${String(lastDayOf(month)).padStart(2, '0')}` }),
-      getProjection({ start: month, end: addMonths(month, projectionMonths - 1) }),
+      getIntentions({ start: startMonth, end: endMonth }),
+      getLedger({ start: `${startMonth}-01`, end: `${startMonth}-${String(lastDayOf(startMonth)).padStart(2, '0')}` }),
+      getProjection({ start: startMonth, end: endMonth }),
     ])
       .then(([list, ledgerResult, projectionResult]) => {
         setIntentions(list);
@@ -106,12 +100,12 @@ export const PlanningPage: React.FC = () => {
 
   useEffect(() => {
     load();
-  }, [month, projectionMonths]);
+  }, [startMonth, endMonth]);
 
   const resetForm = () => {
     setName('');
     setAmount('');
-    setWhen(month);
+    setWhen(startMonth);
     setInstallments('1');
     setEditing(null);
   };
@@ -220,12 +214,20 @@ export const PlanningPage: React.FC = () => {
   const spendingGoal = projection?.goals?.monthly_spending_goal
     ? parseFloat(projection.goals.monthly_spending_goal)
     : null;
-  const periodEnd = addMonths(month, projectionMonths - 1);
+  const changeStart = (value: string) => {
+    if (!value) return;
+    setStartMonth(value);
+    if (value > endMonth) setEndMonth(value);
+  };
 
-  const goToMonth = (offset: number) => {
-    const [year, monthNumber] = month.split('-').map(Number);
-    const date = new Date(year, monthNumber - 1 + offset, 1);
-    setMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+  const changeEnd = (value: string) => {
+    if (!value) return;
+    setEndMonth(value < startMonth ? startMonth : value);
+  };
+
+  const shiftRange = (offset: number) => {
+    setStartMonth((value) => addMonths(value, offset));
+    setEndMonth((value) => addMonths(value, offset));
   };
 
   return (
@@ -235,21 +237,26 @@ export const PlanningPage: React.FC = () => {
           <Target className="w-6 h-6 text-gray-700" />
           <h1 className="text-2xl font-bold text-gray-900">Planejamento</h1>
         </div>
-        <div className="flex items-center justify-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => goToMonth(-1)}>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => shiftRange(-1)} title="Período anterior">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="text-center">
-            <span className="text-base font-semibold text-gray-900 min-w-[180px]">
-              {formatMonthDisplay(month)}
-            </span>
-            {projectionMonths > 1 && (
-              <p className="text-xs text-muted-foreground">
-                {shortMonth(month)} → {shortMonth(periodEnd)}
-              </p>
-            )}
-          </div>
-          <Button variant="outline" size="icon" onClick={() => goToMonth(1)}>
+          <Input
+            type="month"
+            aria-label="Mês inicial"
+            value={startMonth}
+            onChange={(event) => changeStart(event.target.value)}
+            className="w-[140px]"
+          />
+          <span className="text-sm text-muted-foreground">→</span>
+          <Input
+            type="month"
+            aria-label="Mês final"
+            value={endMonth}
+            onChange={(event) => changeEnd(event.target.value)}
+            className="w-[140px]"
+          />
+          <Button variant="outline" size="icon" onClick={() => shiftRange(1)} title="Próximo período">
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -258,7 +265,7 @@ export const PlanningPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Saldo projetado do mês</CardTitle>
+            <CardTitle className="text-sm font-medium">Saldo projetado ({shortMonth(startMonth)})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${projected < 0 ? 'text-red-600' : 'text-blue-600'}`}>
@@ -301,7 +308,7 @@ export const PlanningPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Gastos do mês por categoria</CardTitle>
+            <CardTitle>Gastos de {shortMonth(startMonth)} por categoria</CardTitle>
             <CardDescription>O que já foi lançado neste mês, como % da sua renda fixa</CardDescription>
           </CardHeader>
           <CardContent>
@@ -349,26 +356,11 @@ export const PlanningPage: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-            <div>
-              <CardTitle>Projeção</CardTitle>
-              <CardDescription>
-                {formatMonthDisplay(month)} + {projectionMonths - 1} meses, na sua renda fixa
-              </CardDescription>
-            </div>
-            <div className="flex gap-1 shrink-0">
-              {[3, 6, 12, 24].map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={projectionMonths === option ? 'default' : 'outline'}
-                  className={`px-2 h-8 text-xs ${projectionMonths === option ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
-                  onClick={() => setProjectionMonths(option)}
-                >
-                  {option}m
-                </Button>
-              ))}
-            </div>
+          <CardHeader>
+            <CardTitle>Projeção</CardTitle>
+            <CardDescription>
+              {shortMonth(startMonth)} → {shortMonth(endMonth)}, na sua renda fixa
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[240px] sm:h-[260px]">
@@ -390,12 +382,12 @@ export const PlanningPage: React.FC = () => {
           <div>
             <CardTitle>Intenções do período</CardTitle>
             <CardDescription>
-              {shortMonth(month)} → {shortMonth(periodEnd)} · vire transação quando decidir comprar
+              {shortMonth(startMonth)} → {shortMonth(endMonth)} · vire transação quando decidir comprar
             </CardDescription>
           </div>
           <Button
             onClick={() => {
-              setWhen(month);
+              setWhen(startMonth);
               setShowForm(true);
             }}
             size="sm"
