@@ -113,6 +113,16 @@ export async function apiUploadRequest<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 403) {
+      const { refreshToken } = await import('./auth/refresh');
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        return apiUploadRequest(endpoint, formData);
+      }
+      tokenManager.clearTokens();
+      window.location.href = '/';
+      throw new Error('Session expired');
+    }
     const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
     const err = new Error(
       (data.error as string) || (data.detail as string) || 'Upload failed'
