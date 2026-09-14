@@ -41,7 +41,7 @@ class PlanningContainer(containers.DeclarativeContainer):
     )
 
     # Cross-module: converting an intention creates a real transaction
-    transactions_container = providers.Singleton(
+    transactions_container = providers.Container(
         TransactionsContainer,
         ask_use_case=ask_use_case,
         ai_call_repository=ai_call_repository,
@@ -83,4 +83,5 @@ class PlanningContainer(containers.DeclarativeContainer):
         ProjectionUseCase,
         intention_repository=intention_repository,
         profile_repository=profile_repository,
+        sub_transaction_repository=transactions_container.sub_transaction_repository,
     )

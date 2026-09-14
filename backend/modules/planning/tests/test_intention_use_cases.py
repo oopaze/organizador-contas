@@ -47,8 +47,7 @@ class TestListPurchaseIntentionsUseCase(SimpleTestCase):
 
         filters = repository.filter.call_args[0][0]
         self.assertEqual(filters["user_id"], 7)
-        self.assertEqual(filters["month__year"], 2026)
-        self.assertEqual(filters["month__month"], 9)
+        self.assertEqual(filters["month__lte"], "2026-09")
         self.assertEqual(result, [{"id": 1}])
 
     def test_status_filter(self):
@@ -61,6 +60,24 @@ class TestListPurchaseIntentionsUseCase(SimpleTestCase):
 
         filters = repository.filter.call_args[0][0]
         self.assertEqual(filters["status"], "planned")
+
+    def test_includes_installments_from_previous_months(self):
+        repository = Mock()
+        serializer = Mock()
+        repository.filter.return_value = [
+            PurchaseIntentionDomain(id=1, month=date(2026, 9, 1), installments=6),
+            PurchaseIntentionDomain(id=2, month=date(2026, 9, 1), installments=2),
+            PurchaseIntentionDomain(id=3, month=date(2026, 5, 1), installments=3),
+            PurchaseIntentionDomain(id=4, month=date(2026, 11, 1), installments=1, status="bought"),
+        ]
+        serializer.serialize.side_effect = lambda domain: {"id": domain.id}
+
+        use_case = ListPurchaseIntentionsUseCase(repository, serializer)
+        result = use_case.execute(7, month="2026-11")
+
+        self.assertEqual([item["id"] for item in result], [1, 4])
+        self.assertEqual(result[0]["carry_over"], True)
+        self.assertNotIn("carry_over", result[1])
 
 
 class TestUpdatePurchaseIntentionUseCase(SimpleTestCase):

@@ -6,6 +6,7 @@ from django.test import SimpleTestCase
 
 from modules.planning.domains.intention import PurchaseIntentionDomain
 from modules.planning.use_cases.intention.projection import ProjectionUseCase
+from modules.transactions.domains import SubTransactionDomain, TransactionDomain
 from modules.userdata.domains.profile import ProfileDomain
 
 
@@ -13,7 +14,18 @@ class TestProjectionUseCase(SimpleTestCase):
     def setUp(self):
         self.intention_repository = Mock()
         self.profile_repository = Mock()
-        self.use_case = ProjectionUseCase(self.intention_repository, self.profile_repository)
+        self.sub_transaction_repository = Mock()
+        self.sub_transaction_repository.get_by_date_range.return_value = []
+        self.use_case = ProjectionUseCase(
+            self.intention_repository, self.profile_repository, self.sub_transaction_repository
+        )
+
+    def _sub(self, month: str, amount: str, direction: str = "outgoing") -> SubTransactionDomain:
+        return SubTransactionDomain(
+            date=month,
+            amount=amount,
+            transaction=TransactionDomain(transaction_type=direction),
+        )
 
     def test_sums_installments_across_months(self):
         self.profile_repository.get_by_user_id.return_value = ProfileDomain(salary="5000")
@@ -34,10 +46,25 @@ class TestProjectionUseCase(SimpleTestCase):
             ["33.33", "908.33", "908.34", "875.00"],
         )
         self.assertEqual(months[0]["salary"], "5000.00")
+        self.assertEqual(months[0]["expenses"], "0.00")
         self.assertEqual(months[0]["leftover"], "4966.67")
         self.assertEqual(months[3]["leftover"], "4125.00")
         filters = self.intention_repository.filter.call_args[0][0]
         self.assertEqual(filters, {"user_id": 7, "status": "planned"})
+
+    def test_subtracts_average_monthly_expenses(self):
+        self.profile_repository.get_by_user_id.return_value = ProfileDomain(salary="5000")
+        self.intention_repository.filter.return_value = []
+        self.sub_transaction_repository.get_by_date_range.return_value = [
+            self._sub("2026-07-01", "1000.00"),
+            self._sub("2026-08-01", "500.00"),
+            self._sub("2026-08-20", "2000.00", "incoming"),
+        ]
+
+        result = self.use_case.execute(7, start="2026-09", end="2026-09")
+
+        self.assertEqual(result["months"][0]["expenses"], "750.00")
+        self.assertEqual(result["months"][0]["leftover"], "4250.00")
 
     def test_defaults_to_twelve_months(self):
         self.profile_repository.get_by_user_id.return_value = ProfileDomain(salary="5000")

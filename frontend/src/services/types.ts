@@ -410,6 +410,7 @@ export interface PurchaseIntention {
   installments: number;
   status: IntentionStatus;
   transaction_id: number | null;
+  carry_over?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -425,6 +426,7 @@ export interface PurchaseIntentionInput {
 export interface ProjectionMonth {
   month: string;
   salary: string;
+  expenses: string;
   intentions_total: string;
   leftover: string;
 }

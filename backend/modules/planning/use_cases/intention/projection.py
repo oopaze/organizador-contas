@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from decimal import ROUND_DOWN, Decimal
+from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ObjectDoesNotExist
 from dateutil.relativedelta import relativedelta
@@ -10,19 +10,25 @@ from modules.userdata.repositories.profile import ProfileRepository
 
 
 class ProjectionUseCase:
-    """Monthly outlook: guaranteed salary minus planned installment commitments.
+    """Monthly outlook: guaranteed salary minus real spending minus planned installments.
 
-    Each planned intention contributes its monthly installment value to
-    every month between its first month and the end of its installment plan.
+    Expenses are the user's average monthly outgoing over the last 3 months
+    of transactions. Each planned intention contributes its monthly
+    installment value to every month between its first month and the end of
+    its installment plan — including intentions started in previous months.
     """
+
+    EXPENSE_WINDOW_MONTHS = 3
 
     def __init__(
         self,
         intention_repository: PurchaseIntentionRepository,
         profile_repository: ProfileRepository,
+        sub_transaction_repository,
     ):
         self.intention_repository = intention_repository
         self.profile_repository = profile_repository
+        self.sub_transaction_repository = sub_transaction_repository
 
     def execute(self, user_id: int, start: str = None, end: str = None, months: int = 12) -> dict:
         start_date = self._parse_month(start) if start else date.today().replace(day=1)
@@ -30,6 +36,7 @@ class ProjectionUseCase:
 
         planned = self.intention_repository.filter({"user_id": user_id, "status": "planned"})
         salary = self._salary(user_id)
+        expenses = self._average_monthly_expenses(user_id)
 
         projection = []
         current = start_date
@@ -42,8 +49,9 @@ class ProjectionUseCase:
                 {
                     "month": f"{current.year:04d}-{current.month:02d}",
                     "salary": self._money(salary),
+                    "expenses": self._money(expenses),
                     "intentions_total": self._money(commitments),
-                    "leftover": self._money(salary - commitments),
+                    "leftover": self._money(salary - expenses - commitments),
                 }
             )
             current += relativedelta(months=1)
@@ -72,6 +80,29 @@ class ProjectionUseCase:
             return Decimal(str(profile.salary or 0))
         except Exception:
             return Decimal("0")
+
+    def _average_monthly_expenses(self, user_id: int) -> Decimal:
+        today = date.today()
+        window_start = today.replace(day=1) - relativedelta(months=self.EXPENSE_WINDOW_MONTHS)
+        try:
+            subs = self.sub_transaction_repository.get_by_date_range(
+                user_id, window_start.isoformat(), today.isoformat()
+            )
+        except Exception:
+            return Decimal("0")
+
+        monthly_totals: dict[str, Decimal] = {}
+        for sub in subs:
+            transaction = getattr(sub, "transaction", None)
+            if transaction is None or transaction.transaction_type != "outgoing":
+                continue
+            month_key = str(sub.date)[:7]
+            monthly_totals[month_key] = monthly_totals.get(month_key, Decimal("0")) + Decimal(str(sub.amount))
+
+        if not monthly_totals:
+            return Decimal("0")
+        total = sum(monthly_totals.values(), Decimal("0"))
+        return (total / len(monthly_totals)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     def _parse_month(self, value: str) -> date:
         try:
