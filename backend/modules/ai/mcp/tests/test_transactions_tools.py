@@ -1,8 +1,18 @@
+from datetime import date
+from decimal import Decimal
 from unittest.mock import Mock
 
 from django.test import SimpleTestCase
 
-from modules.ai.mcp.tools import dispatch_tool, transactions
+from modules.ai.mcp.tools import dispatch_tool, dumps_payload, transactions
+
+
+class TestDumpsPayload(SimpleTestCase):
+    def test_serializes_dates_and_decimals(self):
+        text = dumps_payload({"due_date": date(2026, 9, 14), "amount": Decimal("10.50")})
+
+        self.assertIn("2026-09-14", text)
+        self.assertIn("10.50", text)
 
 
 class TestListTransactionsTool(SimpleTestCase):

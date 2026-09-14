@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.http.auth import user_id_from_bearer_token
-from modules.ai.mcp.tools import TOOLS, dispatch_tool
+from modules.ai.mcp.tools import TOOLS, dispatch_tool, dumps_payload
 
 
 logger = logging.getLogger("modules.ai.mcp")
@@ -48,7 +48,7 @@ def _dispatch(payload: dict, user_id: int) -> dict | None:
         return {
             "jsonrpc": "2.0", "id": rid,
             "result": {
-                "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False)}],
+                "content": [{"type": "text", "text": dumps_payload(result)}],
                 "isError": "error" in result,
             },
         }

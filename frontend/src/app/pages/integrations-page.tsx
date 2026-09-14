@@ -3,18 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
-import { Plug, Copy, Check, ExternalLink, Trash2 } from 'lucide-react';
+import { Plug, Copy, Check, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { listMCPConnections, revokeMCPConnection, MCPConnection } from '@/services/mcp/mcpConnections';
 
 const MCP_URL = 'https://api.poupix.connectakit.com.br/mcp';
-const CLAUDE_DEEPLINK = `claude://mcp/install?url=${encodeURIComponent(MCP_URL)}&name=Poupix`;
 
 export const IntegrationsPage: React.FC = () => {
   const [connections, setConnections] = useState<MCPConnection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showChatGPTHelp, setShowChatGPTHelp] = useState(false);
   const [copied, setCopied] = useState(false);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
@@ -60,58 +57,71 @@ export const IntegrationsPage: React.FC = () => {
         <Plug className="h-8 w-8 text-emerald-600" />
         <div>
           <h1 className="text-2xl font-semibold">Conectores</h1>
-          <p className="text-muted-foreground">Conecte assistentes de IA para conversar com seus dados financeiros.</p>
+          <p className="text-muted-foreground">
+            Conecte seu assistente de IA ao Poupix via MCP.
+          </p>
         </div>
       </div>
 
-      {/* Claude Integration */}
+      {/* MCP URL */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-              <span className="text-orange-600 font-bold text-sm">C</span>
-            </div>
-            <CardTitle>Claude</CardTitle>
-          </div>
+          <CardTitle>URL do MCP</CardTitle>
           <CardDescription>
-            Adicione o Poupix como MCP server no Claude Desktop ou Claude.ai.
+            É só esse link. Cole no seu assistente na opção de adicionar um conector MCP.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Clique no botão abaixo para abrir o Claude Desktop e adicionar o Poupix automaticamente como um servidor MCP.
-            O Claude poderá consultar suas transações, atores e outros dados financeiros.
-          </p>
-          <a href={CLAUDE_DEEPLINK}>
-            <Button className="gap-2">
-              <ExternalLink className="w-4 h-4" />
-              Conectar ao Claude
+        <CardContent>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={MCP_URL}
+              onFocus={(e) => e.target.select()}
+              className="flex-1 min-w-0 px-3 py-2 border rounded-md font-mono text-xs bg-muted"
+            />
+            <Button size="sm" onClick={copyUrl} className="gap-2 shrink-0">
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Copiado!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Copiar
+                </>
+              )}
             </Button>
-          </a>
+          </div>
         </CardContent>
       </Card>
 
-      {/* ChatGPT Integration */}
+      {/* How to configure */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-green-600 font-bold text-sm">G</span>
-            </div>
-            <CardTitle>ChatGPT</CardTitle>
-          </div>
+          <CardTitle>Como configurar</CardTitle>
           <CardDescription>
-            Adicione como Custom Connector no ChatGPT (Plus, Pro, Team ou Enterprise).
+            Funciona com qualquer cliente que suporte MCP via HTTP (Claude, ChatGPT, Cursor…).
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Conecte o Poupix ao ChatGPT usando o protocolo MCP via HTTP. Requer uma conta ChatGPT com suporte a conectores.
-          </p>
-          <Button variant="outline" className="gap-2" onClick={() => setShowChatGPTHelp(true)}>
-            <ExternalLink className="w-4 h-4" />
-            Como conectar
-          </Button>
+        <CardContent>
+          <ol className="text-sm space-y-3 list-decimal list-inside text-muted-foreground">
+            <li>
+              No seu assistente, abra as configurações de conectores e escolha{' '}
+              <strong>adicionar conector personalizado / MCP</strong>.
+            </li>
+            <li>
+              Dê o nome <strong>Poupix</strong> e cole a <strong>URL do MCP</strong> acima.
+            </li>
+            <li>
+              O Poupix vai abrir a tela de autorização — entre na sua conta e clique em{' '}
+              <strong>Autorizar</strong>. O acesso é por usuário e você pode revogar quando quiser.
+            </li>
+            <li>
+              Volte ao assistente: as ferramentas de transações, subtransações e projeção já
+              aparecem para ele usar.
+            </li>
+          </ol>
         </CardContent>
       </Card>
 
@@ -134,7 +144,7 @@ export const IntegrationsPage: React.FC = () => {
           )}
           {!loading && connections.length === 0 && (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              Nenhuma integração conectada ainda.
+              Nenhuma conexão ativa ainda.
             </p>
           )}
           {!loading && connections.length > 0 && (
@@ -169,58 +179,6 @@ export const IntegrationsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* ChatGPT Help Dialog */}
-      <Dialog open={showChatGPTHelp} onOpenChange={setShowChatGPTHelp}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Conectar ao ChatGPT</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <ol className="text-sm space-y-2 list-decimal list-inside text-muted-foreground">
-              <li>
-                Abra{' '}
-                <a
-                  href="https://chat.openai.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground underline"
-                >
-                  chat.openai.com
-                </a>{' '}
-                → <strong>Settings</strong> → <strong>Connectors</strong>
-              </li>
-              <li>
-                Clique em <strong>Add custom connector</strong>
-              </li>
-              <li>Cole a URL abaixo no campo "Server URL"</li>
-              <li>
-                Conclua o fluxo de OAuth — você será redirecionado ao Poupix para autorizar
-              </li>
-            </ol>
-            <div className="flex gap-2">
-              <input
-                readOnly
-                value={MCP_URL}
-                className="flex-1 px-3 py-2 border rounded-md font-mono text-xs bg-muted"
-              />
-              <Button size="sm" onClick={copyUrl} className="gap-2 shrink-0">
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copiado!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copiar
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

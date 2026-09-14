@@ -7,6 +7,7 @@ dispatch_tool so both transports stay in sync.
 import json
 import logging
 
+from django.core.serializers.json import DjangoJSONEncoder
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
@@ -19,6 +20,10 @@ from modules.ai.mcp.tools.list_enums import (
 
 
 logger = logging.getLogger("modules.ai.mcp")
+
+
+def dumps_payload(payload: dict) -> str:
+    return json.dumps(payload, ensure_ascii=False, cls=DjangoJSONEncoder)
 
 
 TOOLS = [
@@ -219,4 +224,4 @@ def register_tools(server: Server, container: MCPContainer, user_id: int) -> Non
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         payload = dispatch_tool(name, arguments, container, user_id)
-        return [TextContent(type="text", text=json.dumps(payload, ensure_ascii=False))]
+        return [TextContent(type="text", text=dumps_payload(payload))]
