@@ -11,6 +11,7 @@ export interface User {
     last_name: string;
     bio: string;
     salary: number;
+    salary_day?: number;
     modo_on?: boolean;
   };
 }
@@ -395,4 +396,25 @@ export interface ReconcilePreview {
 export interface ApplyReconciliationInput {
   pairs: { bill_sub_transaction_id: number; real_sub_transaction_id: number }[];
   categories: { sub_transaction_id: number; category: string }[];
+}
+
+// Planning types
+export type IntentionStatus = 'planned' | 'bought' | 'dismissed';
+
+export interface PurchaseIntention {
+  id: number;
+  name: string;
+  amount: string;
+  month: string;
+  status: IntentionStatus;
+  transaction_id: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface PurchaseIntentionInput {
+  name: string;
+  amount: string;
+  month: string;
+  status?: IntentionStatus;
 }

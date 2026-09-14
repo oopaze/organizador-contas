@@ -1,4 +1,4 @@
-import { Home, Users, MessageSquare, Brain, Plug, HandCoins } from 'lucide-react';
+import { Home, Users, Target, Plug, HandCoins } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -11,11 +11,10 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Início', icon: Home },
+  { to: '/planning', label: 'Planejamento', icon: Target },
   { to: '/loans', label: 'Empréstimos', icon: HandCoins },
   { to: '/actors', label: 'Atores', icon: Users },
-  { to: '/chat', label: 'Assistente IA', icon: MessageSquare, hideWhenInstalled: true },
   { to: '/integrations', label: 'Integrações', icon: Plug, hideWhenInstalled: true },
-  { to: '/ai-insights', label: 'AI Insights', icon: Brain, hideWhenInstalled: true },
 ];
 
 export function visibleNavItems(standalone: boolean): NavItem[] {

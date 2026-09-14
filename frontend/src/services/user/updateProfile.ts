@@ -7,6 +7,7 @@ export interface ProfileUpdateInput {
   last_name?: string;
   bio?: string;
   salary?: number;
+  salary_day?: number;
   modo_on?: boolean;
 }
 
