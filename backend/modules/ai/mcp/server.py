@@ -4,6 +4,7 @@ import os
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
+from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.tools import register_tools
 
@@ -26,7 +27,11 @@ def _resolve_user_id() -> int:
 
 async def _amain() -> None:
     user_id = _resolve_user_id()
-    container = MCPContainer()
+    ai_container = AIContainer()
+    container = MCPContainer(
+        ask_use_case=ai_container.ask_use_case(),
+        ai_call_repository=ai_container.ai_call_repository(),
+    )
     server = Server("poupix-mcp")
     register_tools(server, container, user_id=user_id)
 

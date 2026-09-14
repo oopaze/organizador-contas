@@ -130,6 +130,18 @@ TOOLS = [
         "description": LIST_ENUMS_DESCRIPTION,
         "inputSchema": {"type": "object", "properties": {}},
     },
+    {
+        "name": "get_projection",
+        "description": transactions.GET_PROJECTION_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "start": {"type": "string", "description": "YYYY-MM"},
+                "end": {"type": "string", "description": "YYYY-MM"},
+                "months": {"type": "integer", "minimum": 1, "maximum": 24},
+            },
+        },
+    },
 ]
 
 
@@ -175,6 +187,12 @@ def dispatch_tool(name: str, arguments: dict, container: MCPContainer, user_id: 
             )
         if name == "list_enums":
             return call_list_enums(use_case=container.list_enums_use_case())
+        if name == "get_projection":
+            return transactions.call_get_projection(
+                arguments=arguments,
+                use_case=container.planning_container().projection_use_case(),
+                user_id=user_id,
+            )
         return {
             "error": {
                 "code": "UNKNOWN_TOOL",

@@ -34,6 +34,12 @@ UPDATE_SUB_TRANSACTION_DESCRIPTION = (
     "category, installment_info, actor, user_provided_description."
 )
 
+GET_PROJECTION_DESCRIPTION = (
+    "Projeção mensal de 12 meses: salário garantido configurado menos o "
+    "comprometimento das intenções de compra planejadas (parcelas), com a "
+    "sobra de cada mês. Aceita start/end (YYYY-MM) e months."
+)
+
 
 def call_list_transactions(*, arguments: dict, use_case, user_id: int) -> dict:
     filters: dict[str, Any] = {"user_id": user_id}
@@ -126,3 +132,12 @@ def call_update_sub_transaction(*, arguments: dict, use_case, user_id: int) -> d
         if key != "sub_transaction_id"
     }
     return use_case.execute(arguments["sub_transaction_id"], fields, user_id)
+
+
+def call_get_projection(*, arguments: dict, use_case, user_id: int) -> dict:
+    return use_case.execute(
+        user_id,
+        start=arguments.get("start"),
+        end=arguments.get("end"),
+        months=int(arguments.get("months") or 12),
+    )

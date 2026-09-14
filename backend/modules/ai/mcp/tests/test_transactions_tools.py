@@ -172,6 +172,21 @@ class TestSubTransactionTools(SimpleTestCase):
         self.assertEqual(user_id, 7)
 
 
+class TestGetProjectionTool(SimpleTestCase):
+    def test_forwards_window_and_months(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"months": []}
+
+        result = transactions.call_get_projection(
+            arguments={"start": "2026-09", "end": "2026-12", "months": 6},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        use_case.execute.assert_called_once_with(7, start="2026-09", end="2026-12", months=6)
+        self.assertEqual(result, {"months": []})
+
+
 class TestDispatchTool(SimpleTestCase):
     def test_unknown_tool(self):
         result = dispatch_tool("nao_existe", {}, Mock(), user_id=7)
@@ -202,3 +217,13 @@ class TestDispatchTool(SimpleTestCase):
         result = dispatch_tool("list_transactions", {"limit": 1}, container, user_id=7)
 
         self.assertEqual(result["transactions"], [{"id": 1}])
+
+    def test_routes_get_projection(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"months": [{"month": "2026-09"}]}
+        container = Mock()
+        container.planning_container().projection_use_case.return_value = use_case
+
+        result = dispatch_tool("get_projection", {"start": "2026-09"}, container, user_id=7)
+
+        self.assertEqual(result["months"][0]["month"], "2026-09")
