@@ -148,6 +148,18 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "set_goals",
+        "description": transactions.SET_GOALS_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "monthly_spending_goal": {"type": "number", "description": "Meta de gasto mensal em R$"},
+                "monthly_savings_goal": {"type": "number", "description": "Meta de quanto guardar por mês em R$"},
+                "monthly_essentials_goal": {"type": "number", "description": "Meta de gastos essenciais mensal em R$"},
+            },
+        },
+    },
 ]
 
 
@@ -197,6 +209,15 @@ def dispatch_tool(name: str, arguments: dict, container: MCPContainer, user_id: 
             return transactions.call_get_projection(
                 arguments=arguments,
                 use_case=container.planning_container().projection_use_case(),
+                user_id=user_id,
+            )
+        if name == "set_goals":
+            userdata = container.userdata_container()
+            planning = container.planning_container()
+            return transactions.call_set_goals(
+                arguments=arguments,
+                update_profile_use_case=userdata.update_profile_use_case(),
+                profile_repository=planning.profile_repository(),
                 user_id=user_id,
             )
         return {

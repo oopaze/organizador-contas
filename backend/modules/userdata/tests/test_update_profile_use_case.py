@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 from django.test import SimpleTestCase
+from decimal import Decimal
 
 from modules.userdata.use_cases.update_profile import UpdateProfileUseCase
 from modules.userdata.domains.profile import ProfileDomain
@@ -173,4 +174,51 @@ class TestUpdateProfileUseCase(SimpleTestCase):
         # Assert
         self.mock_profile_serializer.serialize.assert_called_once_with(mock_updated_profile)
         self.assertEqual(result, serialized_profile)
+
+    def test_execute_with_monthly_goals(self):
+        """Test that execute updates profile with monthly spending/savings/essentials goals."""
+        # Arrange
+        profile_id = 1
+        
+        mock_profile = Mock(spec=ProfileDomain, id=profile_id)
+        self.mock_profile_repository.get.return_value = mock_profile
+        
+        mock_updated_profile = Mock(
+            spec=ProfileDomain,
+            id=profile_id,
+            monthly_spending_goal=Decimal('3000.00'),
+            monthly_savings_goal=Decimal('1000.00'),
+            monthly_essentials_goal=Decimal('1500.00'),
+        )
+        self.mock_profile_repository.update.return_value = mock_updated_profile
+        
+        serialized_profile = {
+            "id": profile_id,
+            "monthly_spending_goal": Decimal('3000.00'),
+            "monthly_savings_goal": Decimal('1000.00'),
+            "monthly_essentials_goal": Decimal('1500.00'),
+        }
+        self.mock_profile_serializer.serialize.return_value = serialized_profile
+
+        # Act
+        result = self.use_case.execute(
+            profile_id=profile_id,
+            monthly_spending_goal=Decimal('3000.00'),
+            monthly_savings_goal=Decimal('1000.00'),
+            monthly_essentials_goal=Decimal('1500.00'),
+        )
+
+        # Assert
+        mock_profile.update.assert_called_once()
+        # Check that the update was called with a dict containing all three goals
+        call_args = mock_profile.update.call_args[0][0]
+        self.assertEqual(call_args['monthly_spending_goal'], Decimal('3000.00'))
+        self.assertEqual(call_args['monthly_savings_goal'], Decimal('1000.00'))
+        self.assertEqual(call_args['monthly_essentials_goal'], Decimal('1500.00'))
+        
+        self.mock_profile_repository.update.assert_called_once_with(mock_profile)
+        self.mock_profile_serializer.serialize.assert_called_once_with(mock_updated_profile)
+        self.assertEqual(result["monthly_spending_goal"], Decimal('3000.00'))
+        self.assertEqual(result["monthly_savings_goal"], Decimal('1000.00'))
+        self.assertEqual(result["monthly_essentials_goal"], Decimal('1500.00'))
 

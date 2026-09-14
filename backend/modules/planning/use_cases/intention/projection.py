@@ -56,7 +56,19 @@ class ProjectionUseCase:
             )
             current += relativedelta(months=1)
 
-        return {"months": projection, "total_months": len(projection)}
+        # Fetch and include goals
+        try:
+            profile = self.profile_repository.get_by_user_id(user_id)
+        except ObjectDoesNotExist:
+            profile = None
+        
+        goals = {
+            "monthly_spending_goal": str(profile.monthly_spending_goal) if profile and profile.monthly_spending_goal else None,
+            "monthly_savings_goal": str(profile.monthly_savings_goal) if profile and profile.monthly_savings_goal else None,
+            "monthly_essentials_goal": str(profile.monthly_essentials_goal) if profile and profile.monthly_essentials_goal else None,
+        }
+
+        return {"months": projection, "total_months": len(projection), "goals": goals}
 
     def _installment_value(self, intention: "PurchaseIntentionDomain", month_date: date) -> Decimal:
         intention_month = self._parse_month(intention.month.isoformat()[:7])

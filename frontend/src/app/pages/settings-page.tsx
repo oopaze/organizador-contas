@@ -24,6 +24,10 @@ export const SettingsPage: React.FC = () => {
   const [savingSalary, setSavingSalary] = useState(false);
   const [salary, setSalary] = useState('');
   const [salaryDay, setSalaryDay] = useState('1');
+  const [spendingGoal, setSpendingGoal] = useState('');
+  const [savingsGoal, setSavingsGoal] = useState('');
+  const [essentialsGoal, setEssentialsGoal] = useState('');
+  const [savingGoals, setSavingGoals] = useState(false);
   const [cards, setCards] = useState<CardType[]>([]);
   const [showCardForm, setShowCardForm] = useState(false);
   const [editingCard, setEditingCard] = useState<CardType | null>(null);
@@ -36,7 +40,16 @@ export const SettingsPage: React.FC = () => {
     if (!user?.profile) return;
     setSalary(user.profile.salary ? String(user.profile.salary) : '');
     setSalaryDay(String(user.profile.salary_day ?? 1));
-  }, [user?.profile?.salary, user?.profile?.salary_day]);
+    setSpendingGoal(user.profile.monthly_spending_goal != null ? String(user.profile.monthly_spending_goal) : '');
+    setSavingsGoal(user.profile.monthly_savings_goal != null ? String(user.profile.monthly_savings_goal) : '');
+    setEssentialsGoal(user.profile.monthly_essentials_goal != null ? String(user.profile.monthly_essentials_goal) : '');
+  }, [
+    user?.profile?.salary,
+    user?.profile?.salary_day,
+    user?.profile?.monthly_spending_goal,
+    user?.profile?.monthly_savings_goal,
+    user?.profile?.monthly_essentials_goal,
+  ]);
 
   const handleToggle = async (checked: boolean) => {
     setSavingMode(true);
@@ -70,6 +83,24 @@ export const SettingsPage: React.FC = () => {
       toast.error('Falha ao salvar o salário');
     } finally {
       setSavingSalary(false);
+    }
+  };
+
+  const handleSaveGoals = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingGoals(true);
+    try {
+      await updateProfile({
+        monthly_spending_goal: spendingGoal !== '' ? parseFloat(spendingGoal) : null,
+        monthly_savings_goal: savingsGoal !== '' ? parseFloat(savingsGoal) : null,
+        monthly_essentials_goal: essentialsGoal !== '' ? parseFloat(essentialsGoal) : null,
+      });
+      await refetchUser();
+      toast.success('Metas atualizadas!');
+    } catch {
+      toast.error('Falha ao salvar as metas');
+    } finally {
+      setSavingGoals(false);
     }
   };
 
@@ -152,6 +183,66 @@ export const SettingsPage: React.FC = () => {
             <div className="flex justify-end">
               <Button type="submit" disabled={savingSalary}>
                 {savingSalary ? 'Salvando...' : 'Salvar salário'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Metas mensais</CardTitle>
+          <CardDescription>
+            Suas metas aparecem no Planejamento: linha de referência no gráfico e card de
+            progresso no mês.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSaveGoals} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="goal-spending">Meta de gasto (R$)</Label>
+                <Input
+                  id="goal-spending"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="Ex: 3000"
+                  value={spendingGoal}
+                  onChange={(e) => setSpendingGoal(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="goal-savings">Meta de guardar (R$)</Label>
+                <Input
+                  id="goal-savings"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="Ex: 1000"
+                  value={savingsGoal}
+                  onChange={(e) => setSavingsGoal(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="goal-essentials">Meta de essenciais (R$)</Label>
+                <Input
+                  id="goal-essentials"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="Ex: 1500"
+                  value={essentialsGoal}
+                  onChange={(e) => setEssentialsGoal(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingGoals}>
+                {savingGoals ? 'Salvando...' : 'Salvar metas'}
               </Button>
             </div>
           </form>
