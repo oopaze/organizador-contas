@@ -362,7 +362,10 @@ export const PlanningPage: React.FC = () => {
                         className="h-2.5 w-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                       />
-                      <span>{entry.name}</span>
+                      <span>
+                        {entry.name}{' '}
+                        <span className="font-medium text-foreground">{formatMoney(entry.value)}</span>
+                      </span>
                     </div>
                   ))}
                 </div>
