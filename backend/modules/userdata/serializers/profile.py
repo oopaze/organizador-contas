@@ -7,6 +7,7 @@ class ProfileSerializer:
             "id": profile.id,
             "bio": profile.bio,
             "salary": profile.salary,
+            "salary_day": profile.salary_day,
             "full_name": profile.full_name(),
             "first_name": profile.first_name,
             "last_name": profile.last_name,
