@@ -53,11 +53,13 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   }, [open]);
 
   useEffect(() => {
-    if (!selectedFile || cards.length === 0) return;
+    if (!selectedFile || cards.length === 0 || cardId !== 'none') return;
     const fileName = selectedFile.name.toLowerCase();
-    const match = cards.find((card) => fileName.includes(card.name.toLowerCase()));
+    const match = cards
+      .filter((card) => card.is_active)
+      .find((card) => fileName.includes(card.name.toLowerCase()));
     if (match) setCardId(String(match.id));
-  }, [selectedFile, cards]);
+  }, [selectedFile, cards, cardId]);
 
   const handleCreateCard = async () => {
     try {
@@ -130,6 +132,10 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
+      setCardId('none');
+      setCreatingCard(false);
+      setNewCardName('');
+      setNewCardDueDay('1');
       onSuccess(result?.transaction_ids || []);
     }).catch((error) => {
       toast.error(error?.response?.data?.error || 'Falha ao enviar fatura. Verifique se a senha está correta.');
@@ -145,6 +151,10 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setPdfPassword('');
       setSelectedModel('gemini-2.5-flash-lite');
       setCreateInFutureMonths(false);
+      setCardId('none');
+      setCreatingCard(false);
+      setNewCardName('');
+      setNewCardDueDay('1');
     }
     onOpenChange(isOpen);
   };
