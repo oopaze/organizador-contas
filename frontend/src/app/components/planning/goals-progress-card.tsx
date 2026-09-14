@@ -35,12 +35,16 @@ export const GoalsProgressCard: React.FC<{
   goals: ProjectionGoals;
   ledger: LedgerResult;
   salary: number;
-}> = ({ goals, ledger, salary }) => {
+  months: number;
+}> = ({ goals, ledger, salary, months }) => {
+  const periodMonths = Math.max(1, months);
   const entries = (ledger?.entries || []).filter((entry) => entry.direction === 'outgoing');
-  const totalSpending = entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0);
-  const essentialSpending = entries
-    .filter((entry) => ESSENTIAL_PREFIXES.some((prefix) => (entry.category || '').startsWith(prefix)))
-    .reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0);
+  const totalSpending =
+    entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0) / periodMonths;
+  const essentialSpending =
+    entries
+      .filter((entry) => ESSENTIAL_PREFIXES.some((prefix) => (entry.category || '').startsWith(prefix)))
+      .reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0) / periodMonths;
   const saved = salary - totalSpending;
 
   const spendingGoal = parseFloat(goals?.monthly_spending_goal || '0');
