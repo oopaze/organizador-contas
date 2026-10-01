@@ -38,7 +38,8 @@ export const tokenManager = {
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retried = false
 ): Promise<T> {
   const token = await tokenManager.getAccessToken();
   const isFormData = options.body instanceof FormData;
@@ -55,9 +56,9 @@ export async function apiRequest<T>(
   const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
 
   if (!response.ok) {
-    if (response.status === 403) {
+    if (response.status === 403 && !retried) {
       const refreshed = await refreshToken();
-      if (refreshed) return apiRequest<T>(endpoint, options);
+      if (refreshed) return apiRequest<T>(endpoint, options, true);
       await tokenManager.clearTokens();
       sessionExpiredHandler?.();
       throw new SessionExpiredError();

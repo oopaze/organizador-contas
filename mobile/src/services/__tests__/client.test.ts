@@ -56,6 +56,20 @@ describe('apiRequest', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
+  test('403 persistente após refresh não repete o refresh infinitamente', async () => {
+    let calls = 0;
+    global.fetch = jest.fn().mockImplementation(async () => {
+      calls += 1;
+      if (calls > 3) throw new Error('loop detectado');
+      return { ok: false, status: 403, json: async () => ({ detail: 'Sem permissão' }) };
+    }) as jest.Mock;
+    mockedRefresh.mockResolvedValue(true);
+
+    await expect(apiRequest('/x')).rejects.toThrow('Sem permissão');
+
+    expect(mockedRefresh).toHaveBeenCalledTimes(1);
+  });
+
   test('refresh falhando limpa tokens, chama handler e lança SessionExpiredError', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
