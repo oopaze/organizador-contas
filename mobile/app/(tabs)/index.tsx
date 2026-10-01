@@ -9,8 +9,10 @@ import Users from 'lucide-react-native/icons/users';
 import Wallet from 'lucide-react-native/icons/wallet';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { EmptyState } from '../../src/components/empty-state';
+import { LedgerList } from '../../src/components/ledger-list';
 import { MonthPicker } from '../../src/components/month-picker';
 import { StatCard } from '../../src/components/stat-card';
+import { TransactionsList } from '../../src/components/transactions-list';
 import { Button } from '../../src/components/ui/button';
 import {
   Card,
@@ -71,20 +73,15 @@ function PaymentFilterButton({ label, active, activeClassName, icon, onPress }: 
   );
 }
 
-function TransactionsPlaceholder() {
-  return (
-    <EmptyState
-      title="Transações"
-      description="A lista será adicionada na próxima atualização do app."
-    />
-  );
-}
-
 export default function HomeScreen() {
   const { user } = useUser();
   const queryClient = useQueryClient();
   const isOnline = useOnlineStatus();
   const modoOn = user?.profile?.modo_on === true;
+  const selfLabel = useMemo(() => {
+    const name = `${user?.profile?.first_name ?? ''} ${user?.profile?.last_name ?? ''}`.trim();
+    return name ? `${name} (Eu)` : 'Eu';
+  }, [user]);
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('all');
@@ -315,13 +312,49 @@ export default function HomeScreen() {
               </TabsList>
 
               <TabsContent value="all">
-                <TransactionsPlaceholder />
+                <TransactionsList
+                  type="all"
+                  transactions={transactionsQuery.data}
+                  loading={transactionsQuery.isLoading}
+                  error={
+                    transactionsQuery.isError
+                      ? 'Não foi possível carregar as transações'
+                      : undefined
+                  }
+                  onRetry={() => void transactionsQuery.refetch()}
+                  onChanged={refetchAll}
+                  selfLabel={selfLabel}
+                />
               </TabsContent>
               <TabsContent value="expenses">
-                <TransactionsPlaceholder />
+                <TransactionsList
+                  type="expenses"
+                  transactions={transactionsQuery.data}
+                  loading={transactionsQuery.isLoading}
+                  error={
+                    transactionsQuery.isError
+                      ? 'Não foi possível carregar as transações'
+                      : undefined
+                  }
+                  onRetry={() => void transactionsQuery.refetch()}
+                  onChanged={refetchAll}
+                  selfLabel={selfLabel}
+                />
               </TabsContent>
               <TabsContent value="income">
-                <TransactionsPlaceholder />
+                <TransactionsList
+                  type="income"
+                  transactions={transactionsQuery.data}
+                  loading={transactionsQuery.isLoading}
+                  error={
+                    transactionsQuery.isError
+                      ? 'Não foi possível carregar as transações'
+                      : undefined
+                  }
+                  onRetry={() => void transactionsQuery.refetch()}
+                  onChanged={refetchAll}
+                  selfLabel={selfLabel}
+                />
               </TabsContent>
 
               {modoOn ? (
@@ -335,9 +368,13 @@ export default function HomeScreen() {
                       {includeUnpaid ? 'Incluindo previsto' : 'Só realizado'}
                     </Button>
                   </View>
-                  <EmptyState
-                    title="Extrato"
-                    description="O extrato será adicionado na próxima atualização do app."
+                  <LedgerList
+                    ledger={ledgerQuery.data}
+                    loading={ledgerQuery.isLoading}
+                    error={
+                      ledgerQuery.isError ? 'Não foi possível carregar o extrato' : undefined
+                    }
+                    onRetry={() => void ledgerQuery.refetch()}
                   />
                 </TabsContent>
               ) : null}
