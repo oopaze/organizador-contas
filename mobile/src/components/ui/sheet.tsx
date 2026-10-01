@@ -8,7 +8,7 @@ import {
   type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import X from 'lucide-react-native/icons/x';
-import { Pressable, Text, View } from 'react-native';
+import { BackHandler, Pressable, Text, View } from 'react-native';
 
 export interface SheetProps {
   visible: boolean;
@@ -29,6 +29,19 @@ export function Sheet({ visible, onClose, title, scrollable, children }: SheetPr
       ref.current?.dismiss();
     }
   }, [visible]);
+
+  // Botão voltar do Android: com o sheet aberto, fecha o overlay em vez de
+  // navegar/sair. Nas telas sem sheet o handler não existe e vale o padrão.
+  useEffect(() => {
+    if (!visible) return;
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [visible, onClose]);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -51,7 +64,7 @@ export function Sheet({ visible, onClose, title, scrollable, children }: SheetPr
             accessibilityRole="button"
             accessibilityLabel="Fechar"
             onPress={onClose}
-            className="rounded-md p-2 active:bg-zinc-100"
+            className="h-11 w-11 items-center justify-center rounded-md active:bg-zinc-100"
           >
             <X size={18} color="#71717a" />
           </Pressable>

@@ -179,6 +179,7 @@ export function UploadPixReceiptDialog({
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-11 w-11"
                   accessibilityLabel="Remover arquivo"
                   onPress={() => setSelectedFile(null)}
                 >

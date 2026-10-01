@@ -10,6 +10,7 @@ import Settings from 'lucide-react-native/icons/settings';
 import ShieldCheck from 'lucide-react-native/icons/shield-check';
 import Sparkles from 'lucide-react-native/icons/sparkles';
 import Trash from 'lucide-react-native/icons/trash';
+import { EmptyState } from '../src/components/empty-state';
 import { InlineMessage } from '../src/components/inline-message';
 import { AlertDialog } from '../src/components/ui/alert-dialog';
 import { Badge } from '../src/components/ui/badge';
@@ -226,9 +227,7 @@ export default function IntegrationsScreen() {
               <Skeleton className="h-16 w-full" />
             </View>
           ) : connections.length === 0 ? (
-            <Text className="py-4 text-center text-sm text-zinc-500">
-              Nenhuma conexão ativa ainda.
-            </Text>
+            <EmptyState title="Nenhuma conexão ativa ainda." />
           ) : (
             <View className="gap-3">
               {connections.map((connection) => (
@@ -248,7 +247,7 @@ export default function IntegrationsScreen() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="self-start border-red-200"
+                    className="h-11 self-start border-red-200"
                     disabled={revokingId === connection.client_id}
                     onPress={() => {
                       setRevokeError(null);

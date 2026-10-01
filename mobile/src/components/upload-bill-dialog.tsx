@@ -172,6 +172,7 @@ export function UploadBillDialog({ visible, onClose, onUploaded }: UploadBillDia
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-11 w-11"
                   accessibilityLabel="Remover arquivo"
                   onPress={() => setSelectedFile(null)}
                 >

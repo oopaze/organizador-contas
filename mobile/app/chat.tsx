@@ -236,7 +236,7 @@ export default function ChatScreen() {
           accessibilityRole="button"
           accessibilityLabel="Voltar"
           onPress={handleBack}
-          className="rounded-md p-2 active:bg-zinc-100"
+          className="h-11 w-11 items-center justify-center rounded-md active:bg-zinc-100"
         >
           <ArrowLeft size={18} color="#3f3f46" />
         </Pressable>
@@ -244,7 +244,7 @@ export default function ChatScreen() {
           accessibilityRole="button"
           accessibilityLabel="Conversas"
           onPress={() => setSidebarOpen(true)}
-          className="rounded-md p-2 active:bg-zinc-100"
+          className="h-11 w-11 items-center justify-center rounded-md active:bg-zinc-100"
         >
           <Menu size={18} color="#3f3f46" />
         </Pressable>

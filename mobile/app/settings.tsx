@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Plus from 'lucide-react-native/icons/plus';
 import { CardFormDialog } from '../src/components/card-form-dialog';
+import { EmptyState } from '../src/components/empty-state';
 import { InlineMessage } from '../src/components/inline-message';
 import { Badge } from '../src/components/ui/badge';
 import { Button } from '../src/components/ui/button';
@@ -295,9 +296,7 @@ export default function SettingsScreen() {
               </Button>
             </View>
           ) : cards.length === 0 ? (
-            <Text className="py-4 text-center text-sm text-zinc-500">
-              Nenhum cartão cadastrado ainda.
-            </Text>
+            <EmptyState title="Nenhum cartão cadastrado ainda." />
           ) : (
             <View className="gap-3">
               {cards.map((card) => (

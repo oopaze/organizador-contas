@@ -123,7 +123,7 @@ function ActorCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Compartilhar com este ator"
           onPress={onShare}
         >
@@ -132,7 +132,7 @@ function ActorCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Editar ator"
           onPress={onEdit}
         >
@@ -141,7 +141,7 @@ function ActorCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Remover ator"
           onPress={onDelete}
         >
@@ -440,9 +440,7 @@ export default function ActorsScreen() {
                     </Button>
                   </View>
                 ) : actors.length === 0 ? (
-                  <Text className="py-8 text-center text-sm text-zinc-500">
-                    Nenhum ator encontrado
-                  </Text>
+                  <EmptyState title="Nenhum ator encontrado" />
                 ) : (
                   <View className="gap-3">
                     {actors.map((actor) => {

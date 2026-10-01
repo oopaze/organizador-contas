@@ -32,3 +32,15 @@ test('não renderiza quando invisível', async () => {
   await render(<Dialog visible={false} onClose={() => {}} title="Nova transação" />);
   expect(screen.queryByText('Nova transação')).toBeNull();
 });
+
+test('rola o conteúdo quando o teclado abre', async () => {
+  await render(<Dialog visible onClose={() => {}} title="Nova transação" />);
+  expect(screen.getByTestId('dialog-scroll')).toBeTruthy();
+});
+
+test('fecha no botão voltar do Android (onRequestClose)', async () => {
+  const onClose = jest.fn();
+  await render(<Dialog visible onClose={onClose} title="Nova transação" />);
+  await fireEvent(screen.getByTestId('dialog-modal'), 'requestClose');
+  expect(onClose).toHaveBeenCalled();
+});

@@ -11,6 +11,17 @@ npm start
 
 Com um aparelho Android: abra no Expo Go ou gere um development build (`npx expo run:android`).
 
+## Configuração
+
+`.env` é opcional para rodar localmente — sem ele o app usa a API de produção. Para apontar para outro backend:
+
+```bash
+cp .env.example .env
+# edite EXPO_PUBLIC_API_URL
+```
+
+`EXPO_PUBLIC_API_URL` entra no bundle durante o build (`npx expo start`/`prebuild`). `USE_MOCK_API` **não** é variável de ambiente: é constante de código em `src/services/client.ts`.
+
 ## Verificação
 
 ```bash
@@ -84,6 +95,20 @@ unzip -l mobile/builds/poupix-1.0.0.apk | head
 ### Memoria
 
 Esta maquina tem 8 GB, 4 vCPUs e **sem swap**. O script limita o build para nao estourar a memoria: `-Dorg.gradle.workers.max=2` e `-Dkotlin.daemon.jvmargs=-Xmx1024m`, mantendo `org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m`. Se o build rodar em maquina maior, esses limites podem ser afrouxados.
+
+### Versionamento
+
+`app.json` é a fonte da versão. A cada release, incremente os dois campos juntos:
+
+- `expo.version` — versão exibida e usada no nome do artefato (`builds/poupix-<versao>.apk`);
+- `expo.android.versionCode` — inteiro que o Android usa para permitir a atualização por cima da instalação antiga.
+
+## Limitações conhecidas
+
+- **Escrita exige conexão** (ADR 0002): a leitura usa cache local e, offline, mostra os dados salvos com banner do último sync; criar/editar/excluir sem rede falha com erro honesto — não existe fila de escrita.
+- **Sem câmera**: os anexos (fatura, planilha, comprovante PIX, arquivo do empréstimo) saem do seletor de arquivos do Android; não há captura por câmera.
+- **Insights IA fora do app** (Task 19 cancelada): a tela continua no web. No app ficam Chat IA e Conectores (MCP).
+- **Sem OTA**: cada entrega é um APK novo; o app instalado não se atualiza sozinho.
 
 ## Escopo
 

@@ -162,7 +162,7 @@ function LoanCard({
               variant="ghost"
               size="icon"
               accessibilityLabel="Adicionar pagamento"
-              className="h-9 w-9"
+              className="h-11 w-11"
             >
               <Plus size={16} color="#18181b" />
             </Button>
@@ -176,7 +176,7 @@ function LoanCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9"
+            className="h-11 w-11"
             accessibilityLabel="Baixar comprovante do empréstimo"
             onPress={() => onOpenFile(fileUrl)}
           >
@@ -186,7 +186,7 @@ function LoanCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Compartilhar empréstimo"
           onPress={onShare}
         >
@@ -195,7 +195,7 @@ function LoanCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Editar empréstimo"
           onPress={onEdit}
         >
@@ -204,7 +204,7 @@ function LoanCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           accessibilityLabel="Remover empréstimo"
           onPress={onDelete}
         >
@@ -452,9 +452,7 @@ export default function LoansScreen() {
                     </Button>
                   </View>
                 ) : loans.length === 0 ? (
-                  <Text className="py-8 text-center text-sm text-zinc-500">
-                    Nenhum empréstimo registrado ainda.
-                  </Text>
+                  <EmptyState title="Nenhum empréstimo registrado ainda." />
                 ) : (
                   <View className="gap-3">
                     {loans.map((loan) => {
