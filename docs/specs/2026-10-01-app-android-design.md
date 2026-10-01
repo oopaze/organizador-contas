@@ -11,8 +11,9 @@ Ter um app Android nativo do Poupix, instalável por APK direto no aparelho (sem
 
 Levantado do repositório em 2026-10-01:
 
-- **Frontend atual:** React 18 + Vite + Tailwind 4 + Radix/shadcn, 153 arquivos TS/TSX (~14,9k linhas). Telas: login, dashboard (Início), actors, loans, chat, ai-insights, integrations, public-actor, oauth-authorize. As duas últimas são fluxos de navegador.
-- **Camada de serviços:** 40 arquivos, ~1,8k linhas, fetch puro com Bearer token e refresh automático em 403 (`frontend/src/services/client.ts`), uploads multipart. API de produção: `https://api.poupix.connectakit.com.br`.
+- **Frontend atual:** React 18 + Vite + Tailwind 4 + Radix/shadcn, 177 arquivos TS/TSX (~17,1k linhas). Telas autenticadas: dashboard (Início), planning (Planejamento), loans (Empréstimos), actors (Atores), settings (Configurações), integrations (Conectores), chat e ai-insights. Públicas: public-actor e oauth-authorize (fluxos de navegador).
+- **Estado do main em 2026-10-01:** Modo On (lançamento rápido, extrato/ledger, conciliação de fatura), Planejamento (intenções e projeção) e Cartões já estão implementados — o app porta este estado, não o PWA de setembro.
+- **Camada de serviços:** 74 arquivos, ~2,2k linhas, fetch puro com Bearer token e refresh automático em 403 (`frontend/src/services/client.ts`), uploads multipart. API de produção: `https://api.poupix.connectakit.com.br`.
 - **Acoplamentos web localizados:** localStorage (tokens), `window.location` (expiração de sessão e OAuth), clipboard (share de ator), `matchMedia` (standalone/mobile), download via `URL.createObjectURL` (ai-insights), `document.*` (copiar/baixar).
 - **Sem WebSocket/SSE:** o chat é request/response.
 - **Recharts** aparece apenas em `ai-insights-page.tsx`.
@@ -25,14 +26,14 @@ Levantado do repositório em 2026-10-01:
 1. **Expo managed + Expo Router + NativeWind** — menor atrito de tooling, ecossistema cobre SecureStore/DocumentPicker/Share, NativeWind preserva o modelo Tailwind do código atual, e o build local de APK é viável (prebuild + Gradle).
 2. **Projeto novo em `mobile/`** dentro do monorepo; `android/` gerado por `expo prebuild` e não versionado (sem código nativo custom nesta fase).
 3. **Paridade com o PWA:** todas as telas autenticadas entram. As duas públicas ficam no web (`/share/actor` é link compartilhado; `/oauth/authorize` é redirect do Claude Desktop/ChatGPT).
-4. **Navegação:** abas embaixo com **Início, Empréstimos, Atores, Mais**. "Mais" lista Chat IA, Insights IA, Integrações e Sair — o PWA instalado já mostra as três primeiras; as telas de IA ganham porta explícita em vez de sumirem.
+4. **Navegação:** abas embaixo com **Início, Planejamento, Empréstimos, Atores, Mais**. "Mais" lista Conectores, Configurações, Chat IA, Insights IA e Sair — espelha a barra do PWA instalado (que mostra as quatro primeiras) dando porta explícita ao que fica oculto.
 5. **Offline somente leitura** (ADR 0002): react-query com persistência em AsyncStorage; leitura responde do cache, refetch em background, banner "Sem conexão — dados de HH:mm". Escrita exige rede e falha com erro honesto.
 6. **Auth:** tokens em `expo-secure-store`; refresh em 403 portado de `client.ts`; sessão expirada limpa tokens e volta ao login pelo router.
 7. **Uploads:** `expo-document-picker` (PDF/XLSX) mantendo o mesmo `FormData`; **sem câmera** — o backend rejeita comprovante que é imagem (`upload_pix_receipt` exige texto em PDF).
 8. **Traduções de UI:** Table → lista de cards; Dialog → Modal do RN; Select/DropdownMenu → bottom sheet; ícones `lucide-react-native` (mesmo conjunto); gráficos `react-native-gifted-charts`.
 9. **Configuração:** `EXPO_PUBLIC_API_URL` no `.env` (default: produção); `USE_MOCK_API` continua constante de código. Nenhuma feature flag nova.
 10. **APK:** build local nesta máquina (instalação de JDK + Android SDK), keystore gerado aqui e guardado **fora do git**; saída em `mobile/builds/`. Fallback: EAS Build na conta do usuário.
-11. **Modo On fica fora:** o app consome os endpoints atuais. A UI de lançamento rápido/conciliação entra depois que o backend do Modo On (branch `feat/modo-on`) existir.
+11. **Modo On, Planejamento e Cartões entram:** já estão no main; o app porta lançamento rápido, extrato, conciliação, intenções/projeção e cartões junto com o resto — tudo no mesmo projeto.
 12. **Identidade:** nome "Poupix", package `com.poupix.app`, ícones reaproveitados do PWA.
 
 ## Arquitetura
@@ -45,12 +46,13 @@ mobile/
     _layout.tsx            # providers: auth, react-query, safe-area
     login.tsx
     (tabs)/
-      _layout.tsx          # abas: index, loans, actors, more
+      _layout.tsx          # abas: index, planning, loans, actors, more
       index.tsx            # Início (dashboard)
+      planning.tsx         # Planejamento
       loans.tsx
       actors.tsx
       more.tsx
-    chat.tsx  ai-insights.tsx  integrations.tsx   # stack, fora das abas
+    settings.tsx  chat.tsx  ai-insights.tsx  integrations.tsx   # stack, fora das abas
   src/
     components/            # primitivos portados + diálogos
     contexts/  lib/
@@ -72,7 +74,7 @@ Tela → hook react-query (queryKey por recurso) → `services/` (mesmas assinat
 
 ## Equivalências de componentes
 
-Os 19 primitivos em uso no PWA têm equivalente direto:
+Os 21 primitivos em uso no PWA têm equivalente direto:
 
 | PWA (web) | App (RN) |
 |---|---|
@@ -81,6 +83,8 @@ Os 19 primitivos em uso no PWA têm equivalente direto:
 | Sheet | `@gorhom/bottom-sheet` |
 | DropdownMenu / Select | bottom sheet de opções |
 | ScrollArea | `ScrollView` / `FlatList` |
+| Popover (seletor de mês) | bottom sheet de calendário/lista |
+| Switch | port direto |
 | Button, Card, Input, Label, Checkbox, Badge, Skeleton, Collapsible, RadioGroup, Tabs, Textarea | portes diretos com NativeWind |
 
 ## Tratamento de erro
@@ -95,13 +99,13 @@ Os 19 primitivos em uso no PWA têm equivalente direto:
 2. APK instala no aparelho do usuário por transferência direta (minSdk da Expo SDK vigente).
 3. Login contra produção; dashboard lista transações; modo avião mostra os últimos dados com banner.
 4. Uploads (fatura, planilha, PIX, arquivo de empréstimo) funcionam pelo seletor de arquivo.
-5. CRUD de atores e empréstimos, pagamentos e compartilhar link funcionam.
+5. CRUD de atores, empréstimos, pagamentos, cartões e configurações; planejamento (intenções/projeção) e compartilhar link funcionam.
 6. Chat, Insights (com gráficos) e Integrações abrem e executam.
 7. Sem rede, escrita mostra erro honesto (não trava, não duplica).
 
 ## Fora de escopo
 
-Publicação em loja, push notifications, câmera, escrita offline/fila de sincronização, Modo On (UI), expo-updates/OTA, alvo web universal, alterações no `frontend/` ou no backend.
+Publicação em loja, push notifications, câmera, escrita offline/fila de sincronização, expo-updates/OTA, alvo web universal, alterações no `frontend/` ou no backend.
 
 ## Riscos
 
