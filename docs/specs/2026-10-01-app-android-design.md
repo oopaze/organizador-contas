@@ -1,7 +1,7 @@
 # App Poupix para Android (React Native/Expo) — Design Spec
 
 **Data:** 2026-10-01
-**Status:** Design aprovado em conversa; aguardando revisão do spec
+**Status:** Implementado — checklist no aparelho pendente com o usuário (Task 22)
 
 ## Objetivo
 
