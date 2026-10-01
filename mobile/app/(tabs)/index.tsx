@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CircleCheck from 'lucide-react-native/icons/circle-check';
 import Clock from 'lucide-react-native/icons/clock';
+import Plus from 'lucide-react-native/icons/plus';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
 import Users from 'lucide-react-native/icons/users';
 import Wallet from 'lucide-react-native/icons/wallet';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AddSubTransactionDialog } from '../../src/components/add-sub-transaction-dialog';
+import { AddTransactionDialog } from '../../src/components/add-transaction-dialog';
+import { EditSubTransactionDialog } from '../../src/components/edit-sub-transaction-dialog';
+import { EditTransactionDialog } from '../../src/components/edit-transaction-dialog';
 import { EmptyState } from '../../src/components/empty-state';
+import { InlineMessage } from '../../src/components/inline-message';
 import { LedgerList } from '../../src/components/ledger-list';
 import { MonthPicker } from '../../src/components/month-picker';
+import { QuickAddDialog } from '../../src/components/quick-add-dialog';
 import { StatCard } from '../../src/components/stat-card';
 import { TransactionsList } from '../../src/components/transactions-list';
 import { Button } from '../../src/components/ui/button';
@@ -21,11 +28,13 @@ import {
   CardHeader,
   CardTitle,
 } from '../../src/components/ui/card';
+import { Dialog } from '../../src/components/ui/dialog';
 import { Skeleton } from '../../src/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/ui/tabs';
 import { cn } from '../../src/components/ui/utils';
 import { useUser } from '../../src/contexts/user-context';
 import { formatCurrency } from '../../src/lib/format';
+import { invalidateFinancialData } from '../../src/lib/invalidate-financial-data';
 import { useOnlineStatus } from '../../src/lib/use-online-status';
 import {
   ensureCardBills,
@@ -33,6 +42,10 @@ import {
   getLedger,
   getTransactionStats,
   getTransactions,
+  guessSubTransactionsCategory,
+  recalculateTransactionAmount,
+  type SubTransaction,
+  type Transaction,
 } from '../../src/services';
 
 type PaymentStatus = 'all' | 'paid' | 'unpaid';
@@ -89,6 +102,17 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
 
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Transaction | null>(null);
+  const [addSubTarget, setAddSubTarget] = useState<number | null>(null);
+  const [editSubTarget, setEditSubTarget] = useState<SubTransaction | null>(null);
+  const [recalculateTarget, setRecalculateTarget] = useState<Transaction | null>(null);
+  const [guessTarget, setGuessTarget] = useState<Transaction | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [actionWorking, setActionWorking] = useState(false);
+
   const { start, end } = useMemo(() => monthRange(selectedMonth), [selectedMonth]);
   const transactionFilters = useMemo(
     () => ({ due_date: selectedMonth, payment_status: paymentStatus }),
@@ -127,6 +151,76 @@ export default function HomeScreen() {
       ]),
     [queryClient, transactionFilters, statsFilters, ledgerFilters, modoOn]
   );
+
+  /** Escritas dos diálogos (inclusive subtransações) invalidam tudo e releem a tela. */
+  const handleDataChanged = useCallback(() => {
+    void invalidateFinancialData(queryClient);
+    void refetchAll();
+  }, [queryClient, refetchAll]);
+
+  const openRecalculateDialog = (transaction: Transaction) => {
+    setActionError(null);
+    setActionFeedback(null);
+    setRecalculateTarget(transaction);
+  };
+
+  const openGuessDialog = (transaction: Transaction) => {
+    setActionError(null);
+    setActionFeedback(null);
+    setGuessTarget(transaction);
+  };
+
+  const closeActionDialog = () => {
+    if (actionWorking) return;
+    setRecalculateTarget(null);
+    setGuessTarget(null);
+    setActionError(null);
+  };
+
+  const handleConfirmRecalculate = async () => {
+    if (!recalculateTarget || actionWorking) return;
+
+    setActionWorking(true);
+    setActionError(null);
+    try {
+      await recalculateTransactionAmount(recalculateTarget.id);
+      setRecalculateTarget(null);
+      await invalidateFinancialData(queryClient);
+      await refetchAll();
+      setActionFeedback('Valor recalculado com sucesso');
+    } catch {
+      setActionError('Falha ao recalcular valor. Verifique a conexão e tente de novo.');
+    } finally {
+      setActionWorking(false);
+    }
+  };
+
+  const handleConfirmGuess = async () => {
+    if (!guessTarget || actionWorking) return;
+
+    setActionWorking(true);
+    setActionError(null);
+    try {
+      const response = await guessSubTransactionsCategory(guessTarget.id);
+      setGuessTarget(null);
+      await invalidateFinancialData(queryClient);
+      await refetchAll();
+      setActionFeedback(response.message || 'Categorias atualizadas com sucesso');
+    } catch {
+      setActionError('Falha ao adivinhar categorias. Verifique a conexão e tente de novo.');
+    } finally {
+      setActionWorking(false);
+    }
+  };
+
+  const listActions = {
+    onAddSubTransaction: (transaction: Transaction) => setAddSubTarget(transaction.id),
+    onEditTransaction: (transaction: Transaction) => setEditTarget(transaction),
+    onRecalculateTransaction: openRecalculateDialog,
+    onGuessCategories: openGuessDialog,
+    onEditSubTransaction: (subTransaction: SubTransaction) => setEditSubTarget(subTransaction),
+    onChanged: refetchAll,
+  };
 
   // ensureSalary/ensureCardBills são best-effort: nunca bloqueiam a leitura
   // nem mostram erro de tela; só invalidam as queries quando dão certo.
@@ -185,7 +279,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-zinc-50">
       <ScrollView
-        contentContainerClassName="gap-6 p-4 pb-10"
+        contentContainerClassName="gap-6 p-4 pb-24"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -195,7 +289,21 @@ export default function HomeScreen() {
           />
         }
       >
-        <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
+        <View className="flex-row items-center justify-between gap-2">
+          <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
+          {modoOn ? (
+            <Button
+              variant="outline"
+              size="icon"
+              accessibilityLabel="Adicionar receita"
+              onPress={() => setAddTransactionOpen(true)}
+            >
+              <Plus size={16} color="#18181b" />
+            </Button>
+          ) : null}
+        </View>
+
+        {actionFeedback ? <InlineMessage tone="success">{actionFeedback}</InlineMessage> : null}
 
         {cardsLoading ? (
           <View className="flex-row flex-wrap gap-3">
@@ -322,8 +430,8 @@ export default function HomeScreen() {
                       : undefined
                   }
                   onRetry={() => void transactionsQuery.refetch()}
-                  onChanged={refetchAll}
                   selfLabel={selfLabel}
+                  {...listActions}
                 />
               </TabsContent>
               <TabsContent value="expenses">
@@ -337,8 +445,8 @@ export default function HomeScreen() {
                       : undefined
                   }
                   onRetry={() => void transactionsQuery.refetch()}
-                  onChanged={refetchAll}
                   selfLabel={selfLabel}
+                  {...listActions}
                 />
               </TabsContent>
               <TabsContent value="income">
@@ -352,8 +460,8 @@ export default function HomeScreen() {
                       : undefined
                   }
                   onRetry={() => void transactionsQuery.refetch()}
-                  onChanged={refetchAll}
                   selfLabel={selfLabel}
+                  {...listActions}
                 />
               </TabsContent>
 
@@ -382,6 +490,100 @@ export default function HomeScreen() {
           </CardContent>
         </Card>
       </ScrollView>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={modoOn ? 'Lançamento rápido' : 'Adicionar receita'}
+        onPress={() => (modoOn ? setQuickAddOpen(true) : setAddTransactionOpen(true))}
+        className="absolute bottom-6 right-5 h-14 w-14 items-center justify-center rounded-full bg-emerald-600 shadow-lg active:bg-emerald-700"
+      >
+        <Plus size={24} color="#ffffff" />
+      </Pressable>
+
+      <AddTransactionDialog
+        visible={addTransactionOpen}
+        onClose={() => setAddTransactionOpen(false)}
+        onCreated={handleDataChanged}
+      />
+
+      {modoOn ? (
+        <QuickAddDialog
+          visible={quickAddOpen}
+          onClose={() => setQuickAddOpen(false)}
+          onCreated={handleDataChanged}
+        />
+      ) : null}
+
+      {editTarget ? (
+        <EditTransactionDialog
+          key={editTarget.id}
+          visible
+          transaction={editTarget}
+          onClose={() => setEditTarget(null)}
+          onUpdated={handleDataChanged}
+        />
+      ) : null}
+
+      {addSubTarget !== null ? (
+        <AddSubTransactionDialog
+          key={addSubTarget}
+          visible
+          transactionId={addSubTarget}
+          onClose={() => setAddSubTarget(null)}
+          onCreated={handleDataChanged}
+        />
+      ) : null}
+
+      {editSubTarget ? (
+        <EditSubTransactionDialog
+          key={editSubTarget.id}
+          visible
+          subTransaction={editSubTarget}
+          onClose={() => setEditSubTarget(null)}
+          onUpdated={handleDataChanged}
+        />
+      ) : null}
+
+      <Dialog
+        visible={recalculateTarget !== null}
+        onClose={closeActionDialog}
+        title="Recalcular valor"
+        description={`Tem certeza que deseja recalcular o valor da transação "${recalculateTarget?.transaction_identifier ?? ''}" com base nas subtransações? Esta ação não pode ser desfeita.`}
+        footer={
+          <>
+            <Button variant="outline" onPress={closeActionDialog} disabled={actionWorking}>
+              Cancelar
+            </Button>
+            <Button
+              onPress={() => void handleConfirmRecalculate()}
+              disabled={actionWorking}
+            >
+              {actionWorking ? 'Aguarde...' : 'Recalcular'}
+            </Button>
+          </>
+        }
+      >
+        {actionError ? <InlineMessage>{actionError}</InlineMessage> : null}
+      </Dialog>
+
+      <Dialog
+        visible={guessTarget !== null}
+        onClose={closeActionDialog}
+        title="Adivinhar Categorias"
+        description={`Tem certeza que deseja usar IA para adivinhar as categorias das subtransações da transação "${guessTarget?.transaction_identifier ?? ''}"?`}
+        footer={
+          <>
+            <Button variant="outline" onPress={closeActionDialog} disabled={actionWorking}>
+              Cancelar
+            </Button>
+            <Button onPress={() => void handleConfirmGuess()} disabled={actionWorking}>
+              {actionWorking ? 'Aguarde...' : 'Adivinhar'}
+            </Button>
+          </>
+        }
+      >
+        {actionError ? <InlineMessage>{actionError}</InlineMessage> : null}
+      </Dialog>
     </SafeAreaView>
   );
 }
