@@ -51,6 +51,7 @@ export { createActor } from './actors/createActor';
 export { updateActor } from './actors/updateActor';
 export { deleteActor } from './actors/deleteActor';
 export { getActorStats } from './actors/getActorStats';
+export { getActorShareToken } from './actors/getActorShareToken';
 
 // Bill services
 export { getBills } from './bills/getBills';
