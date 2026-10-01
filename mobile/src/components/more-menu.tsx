@@ -4,7 +4,6 @@ import LogOut from 'lucide-react-native/icons/log-out';
 import MessageCircle from 'lucide-react-native/icons/message-circle';
 import Plug from 'lucide-react-native/icons/plug';
 import Settings from 'lucide-react-native/icons/settings';
-import Sparkles from 'lucide-react-native/icons/sparkles';
 
 export interface MoreMenuProps {
   onNavigate: (href: string) => void;
@@ -17,10 +16,10 @@ interface MoreDestination {
   icon: LucideIcon;
 }
 
+/** Insights IA continua no web (Task 19 cancelada) — não entra no app. */
 const DESTINATIONS: MoreDestination[] = [
   { href: '/integrations', label: 'Conectores', icon: Plug },
   { href: '/chat', label: 'Chat IA', icon: MessageCircle },
-  { href: '/ai-insights', label: 'Insights IA', icon: Sparkles },
   { href: '/settings', label: 'Configurações', icon: Settings },
 ];
 

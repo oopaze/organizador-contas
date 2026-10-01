@@ -49,6 +49,7 @@ function RootNavigator() {
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
+      <Stack.Screen name="integrations" options={{ title: 'Conectores' }} />
     </Stack>
   );
 }

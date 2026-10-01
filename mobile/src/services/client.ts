@@ -4,7 +4,7 @@ import { refreshToken } from './auth/refresh';
 // Toggle this to switch between mock and real API
 export const USE_MOCK_API = false;
 
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://api.poupix.connectakit.com.br';
 
 let sessionExpiredHandler: (() => void) | null = null;

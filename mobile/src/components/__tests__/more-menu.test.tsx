@@ -11,11 +11,12 @@ test('navega para os destinos ocultos', async () => {
   await fireEvent.press(screen.getByText('Chat IA'));
   expect(onNavigate).toHaveBeenCalledWith('/chat');
 
-  await fireEvent.press(screen.getByText('Insights IA'));
-  expect(onNavigate).toHaveBeenCalledWith('/ai-insights');
-
   await fireEvent.press(screen.getByText('Configurações'));
   expect(onNavigate).toHaveBeenCalledWith('/settings');
+
+  // Insights IA continua no web (Task 19 cancelada): não pode aparecer no menu.
+  expect(screen.queryByText('Insights IA')).toBeNull();
+  expect(onNavigate).not.toHaveBeenCalledWith('/ai-insights');
 });
 
 test('aciona a ação Sair', async () => {
