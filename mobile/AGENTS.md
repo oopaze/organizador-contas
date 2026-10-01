@@ -1,41 +1,32 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# mobile — app Android (Expo)
 
-## Expo has changed — do not trust your training data
+App Android nativo do Poupix. Plano: `docs/plans/2026-10-01-app-android.md`. Spec: `docs/specs/2026-10-01-app-android-design.md`.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## Regras deste projeto
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+- Rotas em `app/` (Expo Router); código fora de rotas em `src/`.
+- Gerenciador de pacotes: **npm**. Dependência com código nativo: `npx expo install <pacote>`.
+- `android/` é gerado (Continuous Native Generation) e ignorado no git — nunca editar à mão.
+- Build do APK é **local** (`mobile/scripts/build-apk.sh`, Task 11); EAS é fallback, não o caminho padrão.
+- Antes de declarar concluído: `npx tsc --noEmit` e `npm test` verdes.
+- Testes usam a API assíncrona da RNTL v14: `await render(...)`, `await fireEvent(...)`.
+- Leitura offline é cache local; escrita exige rede (ADR 0002). Não introduzir fila de escrita.
 
-## Commands
+## Expo muda entre SDKs — não confie na memória
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+Antes de escrever código que toque API do Expo/React Native:
+
+1. Leia a major do pacote `expo` no `package.json` (hoje: SDK 57).
+2. Consulte a documentação versionada: `https://docs.expo.dev/versions/v57.0.0/`
+3. Índice com correções de equívocos comuns de LLM: `https://docs.expo.dev/llms.txt`
+
+## Comandos
 
 ```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
+npx expo install <package>  # resolve versões compatíveis com a SDK
+npx expo start              # servidor de desenvolvimento
 npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+npm test                    # jest-expo
+npx expo-doctor             # diagnóstico de dependências/config
+npx expo install --fix      # corrige versões incompatíveis
 ```
-
-Run lint and typecheck before declaring any task done.
-
-## Navigation & Routing
-
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
-
-## Rules
-
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
