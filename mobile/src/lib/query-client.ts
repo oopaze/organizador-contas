@@ -15,3 +15,10 @@ export const persister = createAsyncStoragePersister({
   key: PERSIST_KEY,
   throttleTime: 1000,
 });
+
+/**
+ * maxAge explícito: o default do persist-client é 24 h, o que apagaria o
+ * cache de leitura offline em viagens/fim de semana (ADR 0002 usa o banner
+ * com timestamp como aviso, não expiração).
+ */
+export const persistOptions = { persister, maxAge: Infinity };
