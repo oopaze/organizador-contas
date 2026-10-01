@@ -77,7 +77,8 @@ export async function apiRequest<T>(
 
 export async function apiUploadRequest<T>(
   endpoint: string,
-  formData: FormData
+  formData: FormData,
+  retried = false
 ): Promise<T> {
   const token = await tokenManager.getAccessToken();
   const headers: HeadersInit = {};
@@ -90,6 +91,13 @@ export async function apiUploadRequest<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 403 && !retried) {
+      const refreshed = await refreshToken();
+      if (refreshed) return apiUploadRequest<T>(endpoint, formData, true);
+      await tokenManager.clearTokens();
+      sessionExpiredHandler?.();
+      throw new SessionExpiredError();
+    }
     const data = await response.json().catch(() => ({}));
     const err = new Error(
       data.detail || data.error || 'Upload failed'

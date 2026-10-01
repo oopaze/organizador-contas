@@ -9,6 +9,7 @@ import * as SecureStore from 'expo-secure-store';
 import { refreshToken } from '../auth/refresh';
 import {
   apiRequest,
+  apiUploadRequest,
   setSessionExpiredHandler,
   SessionExpiredError,
   tokenManager,
@@ -96,5 +97,45 @@ describe('apiRequest', () => {
     }) as jest.Mock;
 
     await expect(apiRequest('/x')).resolves.toEqual({});
+  });
+});
+
+describe('apiUploadRequest', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockedSecureStore.getItemAsync.mockResolvedValue('token-abc');
+  });
+
+  test('em 403 renova o token e repete o upload', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 403, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ id: 1 }) }) as jest.Mock;
+    mockedRefresh.mockResolvedValue(true);
+
+    const result = await apiUploadRequest('/file_reader/upload/', new FormData());
+
+    expect(result).toEqual({ id: 1 });
+    expect(mockedRefresh).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  test('refresh falhando no upload limpa tokens e lança SessionExpiredError', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      json: async () => ({}),
+    }) as jest.Mock;
+    mockedRefresh.mockResolvedValue(false);
+    const handler = jest.fn();
+    setSessionExpiredHandler(handler);
+
+    await expect(
+      apiUploadRequest('/file_reader/upload/', new FormData())
+    ).rejects.toBeInstanceOf(SessionExpiredError);
+
+    expect(mockedSecureStore.deleteItemAsync).toHaveBeenCalledWith('access_token');
+    expect(handler).toHaveBeenCalledTimes(1);
+    setSessionExpiredHandler(null);
   });
 });
