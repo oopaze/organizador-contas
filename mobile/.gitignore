@@ -3,7 +3,8 @@ node_modules/
 dist/
 android/
 ios/
-builds/
+builds/*
+!builds/.gitkeep
 .env
 .secrets/
 coverage/

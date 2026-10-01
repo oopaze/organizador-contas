@@ -1,4 +1,4 @@
-import Home from 'lucide-react-native/icons/home';
+import House from 'lucide-react-native/icons/house';
 import Target from 'lucide-react-native/icons/target';
 import HandCoins from 'lucide-react-native/icons/hand-coins';
 import Users from 'lucide-react-native/icons/users';
@@ -18,7 +18,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <House color={color} size={size} />,
         }}
       />
       <Tabs.Screen
