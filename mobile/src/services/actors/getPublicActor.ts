@@ -1,0 +1,47 @@
+import { Actor, Loan } from '../types';
+
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL || 'https://api.poupix.connectakit.com.br';
+
+export interface PublicActorResponse extends Omit<Actor, 'sub_transactions'> {
+  sub_transactions: Array<{
+    id: number;
+    description: string;
+    amount: number;
+    paid_at: string | null;
+    category: string | null;
+    installment_info: string | null;
+    transaction: {
+      id: number;
+      description: string;
+      due_date: string;
+    };
+  }>;
+  loans: Loan[];
+}
+
+export async function getPublicActor(token: string, dueDate?: string): Promise<PublicActorResponse> {
+  const params = new URLSearchParams();
+  if (dueDate) {
+    params.append('due_date', dueDate);
+  }
+
+  const queryString = params.toString();
+  const url = `${API_BASE_URL}/transactions/public/actors/${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Actor not found' }));
+    throw new Error(error.error || 'Actor not found');
+  }
+
+  return response.json();
+}
+

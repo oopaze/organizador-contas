@@ -1,0 +1,464 @@
+// Shared types for API
+export interface User {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  profile?: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    bio: string;
+    salary: number;
+    salary_day?: number;
+    modo_on?: boolean;
+    spending_goal_percent?: string | number | null;
+    savings_goal_percent?: string | number | null;
+    essentials_goal_percent?: string | number | null;
+  };
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: User;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface Actor {
+  id: number;
+  name: string;
+  sub_transactions?: SubTransaction[];
+  total_spent?: number;
+  total_spent_paid?: number;
+  total_remaining?: number;
+  loan_total_lent?: number;
+  loan_total_received?: number;
+  loan_total_outstanding?: number;
+  active_loan_count?: number;
+}
+
+export type TransactionType = 'incoming' | 'outgoing';
+
+export interface Transaction {
+  id: number;
+  due_date: string;
+  total_amount: string;
+  transaction_identifier: string;
+  transaction_type: TransactionType;
+  is_salary: boolean;
+  is_recurrent: boolean;
+  recurrence_count?: number;
+  file?: number;
+  created_at?: string;
+  amount_from_actor?: number;
+  paid_at?: string;
+  subtransactions_paid?: boolean;
+  is_paid?: boolean;
+  category?: string;
+  card_id?: number | null;
+}
+
+export interface SubTransaction {
+  id: number;
+  date: string;
+  description: string;
+  amount: string;
+  installment_info?: string;
+  transaction_identifier?: string;
+  transaction_id: number;
+  actor_id?: number;
+  actor?: Actor | number;
+  user_provided_description?: string;
+  paid_at?: string;
+  category?: string;
+}
+
+export interface TransactionDetail extends Transaction {
+  sub_transactions: SubTransaction[];
+  installment_number?: number;
+  main_transaction?: number | null;
+  paid_at?: string;
+  subtransactions_paid?: boolean;
+  is_paid?: boolean;
+}
+
+export interface Bill {
+  id: number;
+  file_name: string;
+  upload_date: string;
+  total_amount: string;
+  due_date: string;
+}
+
+export interface TransactionFilters {
+  transaction_type?: 'incoming' | 'outgoing';
+  due_date?: string;
+  payment_status?: 'paid' | 'unpaid' | 'all';
+}
+
+export interface TransactionStats {
+  incoming_total: number;
+  outgoing_total: number;
+  outgoing_total_paid: number;
+  incoming_total_paid: number;
+  balance: number;
+  outgoing_from_actors: number;
+  outgoing_from_actors_paid: number;
+}
+
+export interface ActorStats {
+  total_spent: number;
+  total_spent_paid: number;
+  biggest_spender: string;
+  biggest_spender_amount: number;
+  smallest_spender: string;
+  smallest_spender_amount: number;
+  average_spent: number;
+  active_actors: number;
+}
+
+// Chat types
+export interface AICall {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  total_tokens: number;
+  input_used_tokens: number;
+  output_used_tokens: number;
+  input_cost: number;
+  output_cost: number;
+  model: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  role: 'human' | 'assistant';
+  content: string;
+  ai_call: AICall | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  messages: ChatMessage[];
+}
+
+export interface StartChatResponse {
+  conversation: ChatConversation;
+  user_message: ChatMessage;
+  ai_message: ChatMessage;
+}
+
+export interface SendMessageResponse {
+  user_message: ChatMessage;
+  ai_message: ChatMessage;
+}
+
+// AI Insights types
+export interface ModelStats {
+  count: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_spent: number;
+}
+
+export interface EmbeddingModelStats {
+  count: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+}
+
+export interface AmountSpent {
+  input: number;
+  output: number;
+  total: number;
+}
+
+export interface AICallsStats {
+  total_calls: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_errors: number;
+  models_stats: Record<string, ModelStats>;
+  amount_spent: AmountSpent;
+}
+
+export interface AICallItem {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  prompt: string;
+  response: unknown;
+  total_tokens: number;
+  input_used_tokens: number;
+  output_used_tokens: number;
+  model: string;
+  is_error: boolean;
+  related_to: 'file' | 'message' | 'conversation' | 'guessing_categories' | 'unknown';
+  model_prices: {
+    input: number;
+    output: number;
+    total: number;
+  };
+  file_url: string | null;
+  conversation_title: string | null;
+  user_message_content: string | null;
+  ai_message_content: string | null;
+}
+
+export interface EmbeddingsStats {
+  total_embeddings: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+  total_errors: number;
+  models_stats: Record<string, EmbeddingModelStats>;
+  amount_spent: number;
+}
+
+export interface EmbeddingItem {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  model: string;
+  total_tokens: number;
+  prompt_used_tokens: number;
+  price: number;
+}
+
+// Loan types
+export interface LoanPayment {
+  id: number;
+  loan_id: number;
+  amount: string;
+  paid_at: string;
+  note: string;
+  file_id: number | null;
+  file_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Loan {
+  id: number;
+  actor_id: number;
+  actor: { id: number; name: string } | null;
+  principal_amount: string;
+  lent_at: string;
+  description: string;
+  status: 'active' | 'settled' | 'cancelled';
+  file_id: number | null;
+  file_url: string | null;
+  total_paid: string;
+  remaining: string;
+  progress_pct: number;
+  is_settled: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  payments?: LoanPayment[];
+}
+
+export interface LoanStats {
+  total_lent: string;
+  total_received: string;
+  total_outstanding: string;
+  active_principal: string;
+  settled_principal: string;
+  active_count: number;
+  settled_count: number;
+  cancelled_count: number;
+  payments_count: number;
+}
+
+export interface CreateLoanInput {
+  actor_id: number;
+  principal_amount: string;
+  lent_at: string;
+  description?: string;
+  file_id?: number;
+}
+
+export interface CreateLoanPaymentInput {
+  loan_id: number;
+  amount: string;
+  paid_at: string;
+  note?: string;
+  file_id?: number;
+}
+
+export interface UploadPixReceiptResult {
+  payment: LoanPayment;
+  extracted: {
+    amount: string;
+    paid_at: string;
+    payer_name: string | null;
+    payee_name: string | null;
+    transaction_id: string | null;
+    bank: string | null;
+    ai_call_id: string;
+  };
+}
+
+// Quick add types
+export type PaymentMethod = 'cash' | 'credit';
+
+export interface QuickAddInput {
+  direction: TransactionType;
+  payment_method: PaymentMethod;
+  amount: string;
+  description: string;
+  date: string;
+  category?: string;
+  actor_id?: number;
+  is_paid?: boolean;
+  card_label?: string;
+  installments?: number;
+}
+
+export interface QuickAddResult {
+  transaction: TransactionDetail;
+  sub_transaction_id: number;
+  open_bill_total: string | null;
+}
+
+// Ledger types
+export interface LedgerEntry {
+  date: string;
+  description: string;
+  amount: string;
+  direction: TransactionType;
+  paid_at: string | null;
+  category: string;
+  transaction_id: number;
+  sub_transaction_id: number | null;
+  transaction_identifier: string;
+  is_card: boolean;
+  running_balance: string;
+}
+
+export interface LedgerSummary {
+  realized_balance: string;
+  projected_balance: string;
+  payable: string;
+  receivable: string;
+  incoming_total: string;
+  outgoing_total: string;
+}
+
+export interface LedgerResult {
+  entries: LedgerEntry[];
+  summary: LedgerSummary;
+}
+
+// Reconciliation types
+export interface ReconcileSubPayload {
+  id: number;
+  date: string;
+  description: string;
+  amount: string;
+  installment_info: string | null;
+  category: string;
+}
+
+export interface ReconcilePair {
+  bill_sub_transaction_id: number;
+  real_sub_transaction_id: number;
+  real_transaction_id: number;
+  confidence: number;
+  reason: string;
+  bill: ReconcileSubPayload;
+  real: ReconcileSubPayload;
+}
+
+export interface ReconcilePreview {
+  bill: { id: number; identifier: string; due_date: string };
+  pairs: ReconcilePair[];
+  unmatched_bill: ReconcileSubPayload[];
+  unmatched_real: ReconcileSubPayload[];
+  suggested_categories: { sub_transaction_id: number; category: string }[];
+  transaction_ids?: number[];
+}
+
+export interface ApplyReconciliationInput {
+  pairs: { bill_sub_transaction_id: number; real_sub_transaction_id: number }[];
+  categories: { sub_transaction_id: number; category: string }[];
+}
+
+// Planning types
+export type IntentionStatus = 'planned' | 'bought' | 'dismissed';
+
+export interface PurchaseIntention {
+  id: number;
+  name: string;
+  amount: string;
+  month: string;
+  installments: number;
+  status: IntentionStatus;
+  transaction_id: number | null;
+  carry_over?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface PurchaseIntentionInput {
+  name: string;
+  amount: string;
+  month: string;
+  installments?: number;
+  status?: IntentionStatus;
+}
+
+export interface ProjectionMonth {
+  month: string;
+  salary: string;
+  expenses: string;
+  intentions_total: string;
+  leftover: string;
+}
+
+export interface ProjectionGoals {
+  spending_goal_percent: string | null;
+  savings_goal_percent: string | null;
+  essentials_goal_percent: string | null;
+}
+
+export interface ProjectionResult {
+  months: ProjectionMonth[];
+  total_months: number;
+  goals?: ProjectionGoals;
+}
+
+// Card types
+export interface Card {
+  id: number;
+  name: string;
+  due_day: number;
+  is_active: boolean;
+}
+
+export interface CardInput {
+  name: string;
+  due_day: number;
+}
+
+export interface EnsureCardBillsResult {
+  bills: TransactionDetail[];
+}

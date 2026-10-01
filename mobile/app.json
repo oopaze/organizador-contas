@@ -16,7 +16,8 @@
           "image": "./assets/icon-192.png",
           "imageWidth": 128
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "android": {
       "package": "com.poupix.app",
