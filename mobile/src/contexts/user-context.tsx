@@ -1,59 +1,36 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { User, getCurrentUser } from '../services';
+import React, { createContext, useContext, useState } from 'react';
+import { User } from '../services';
 import { useAuth } from './auth-context';
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
-  refetchUser: () => void;
+  refetchUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+/**
+ * Espelho do usuário do AuthProvider (fonte única — evita o GET /user/me
+ * duplicado do PWA no boot). O perfil offline vem do cache do auth-context.
+ */
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, refreshUser } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const fetchUser = async () => {
+  const refetchUser = async () => {
+    setLoading(true);
     try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    } catch (error) {
-      setUser(null);
+      await refreshUser();
+    } catch {
+      // sem rede: mantém o usuário atual (cache)
     } finally {
       setLoading(false);
     }
   };
 
-  const refetchUser = () => {
-    setLoading(true);
-    void fetchUser();
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      void fetchUser();
-    }
-  }, [isAuthenticated]);
-
-  if (loading && isAuthenticated) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#059669" accessibilityLabel="Carregando" />
-      </View>
-    );
-  }
-
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        loading,
-        refetchUser,
-      }}
-    >
+    <UserContext.Provider value={{ user, loading, refetchUser }}>
       {children}
     </UserContext.Provider>
   );
