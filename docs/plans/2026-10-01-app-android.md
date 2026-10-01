@@ -1725,7 +1725,9 @@ git commit -m "feat: adiciona tela de chat"
 
 ---
 
-### Task 19: Insights IA
+### Task 19: Insights IA — CANCELADA
+
+> Cancelada por decisão do usuário em 2026-10-01: a tela de Insights IA **não é portada** — continua no web. Os steps abaixo ficam como registro histórico e não devem ser executados.
 
 **Files:**
 - Create: `mobile/app/ai-insights.tsx`, `mobile/src/components/{ai-calls-list,usage-chart}.tsx`, `mobile/src/lib/export-file.ts`, `mobile/src/lib/__tests__/export-file.test.ts`, `mobile/src/components/__tests__/usage-chart.test.tsx`
@@ -1792,7 +1794,7 @@ git commit -m "feat: adiciona insights de IA com gráficos"
 
 **Interfaces:**
 - Consumes: `mcpConnections`, `oauthAuthorize` (Task 2); `expo-clipboard`; `expo-web-browser`.
-- Produces: tela de conectores (URL do MCP, estado das conexões, copiar) e tela Mais com Conectores, Chat IA, Insights IA, Configurações, Sair.
+- Produces: tela de conectores (URL do MCP, estado das conexões, copiar) e tela Mais com Conectores, Chat IA, Configurações e Sair.
 
 Fonte: `frontend/src/app/pages/integrations-page.tsx` (fluxos de OAuth abrem no navegador — `WebBrowser.openBrowserAsync`; a página de consentimento continua no web).
 
@@ -1818,7 +1820,6 @@ test('lista os destinos do menu Mais', () => {
       items={[
         { label: 'Conectores', route: '/integrations' },
         { label: 'Chat IA', route: '/chat' },
-        { label: 'Insights IA', route: '/ai-insights' },
         { label: 'Configurações', route: '/settings' },
       ]}
     />

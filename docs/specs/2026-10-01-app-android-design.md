@@ -26,11 +26,11 @@ Levantado do repositório em 2026-10-01:
 1. **Expo managed + Expo Router + NativeWind** — menor atrito de tooling, ecossistema cobre SecureStore/DocumentPicker/Share, NativeWind preserva o modelo Tailwind do código atual, e o build local de APK é viável (prebuild + Gradle).
 2. **Projeto novo em `mobile/`** dentro do monorepo; `android/` gerado por `expo prebuild` e não versionado (sem código nativo custom nesta fase).
 3. **Paridade com o PWA:** todas as telas autenticadas entram. As duas públicas ficam no web (`/share/actor` é link compartilhado; `/oauth/authorize` é redirect do Claude Desktop/ChatGPT).
-4. **Navegação:** abas embaixo com **Início, Planejamento, Empréstimos, Atores, Mais**. "Mais" lista Conectores, Configurações, Chat IA, Insights IA e Sair — espelha a barra do PWA instalado (que mostra as quatro primeiras) dando porta explícita ao que fica oculto.
+4. **Navegação:** abas embaixo com **Início, Planejamento, Empréstimos, Atores, Mais**. "Mais" lista Conectores, Configurações, Chat IA e Sair — espelha a barra do PWA instalado (que mostra as quatro primeiras) dando porta explícita ao que fica oculto.
 5. **Offline somente leitura** (ADR 0002): react-query com persistência em AsyncStorage; leitura responde do cache, refetch em background, banner "Sem conexão — dados de HH:mm". Escrita exige rede e falha com erro honesto.
 6. **Auth:** tokens em `expo-secure-store`; refresh em 403 portado de `client.ts`; sessão expirada limpa tokens e volta ao login pelo router.
 7. **Uploads:** `expo-document-picker` (PDF/XLSX) mantendo o mesmo `FormData`; **sem câmera** — o backend rejeita comprovante que é imagem (`upload_pix_receipt` exige texto em PDF).
-8. **Traduções de UI:** Table → lista de cards; Dialog → Modal do RN; Select/DropdownMenu → bottom sheet; ícones `lucide-react-native` (mesmo conjunto); gráficos `react-native-gifted-charts`.
+8. **Traduções de UI:** Table → lista de cards; Dialog → Modal do RN; Select/DropdownMenu → bottom sheet; ícones `lucide-react-native` (mesmo conjunto).
 9. **Configuração:** `EXPO_PUBLIC_API_URL` no `.env` (default: produção); `USE_MOCK_API` continua constante de código. Nenhuma feature flag nova.
 10. **APK:** build local nesta máquina (instalação de JDK + Android SDK), keystore gerado aqui e guardado **fora do git**; saída em `mobile/builds/`. Fallback: EAS Build na conta do usuário.
 11. **Modo On, Planejamento e Cartões entram:** já estão no main; o app porta lançamento rápido, extrato, conciliação, intenções/projeção e cartões junto com o resto — tudo no mesmo projeto.
@@ -52,7 +52,7 @@ mobile/
       loans.tsx
       actors.tsx
       more.tsx
-    settings.tsx  chat.tsx  ai-insights.tsx  integrations.tsx   # stack, fora das abas
+    settings.tsx  chat.tsx  integrations.tsx   # stack, fora das abas
   src/
     components/            # primitivos portados + diálogos
     contexts/  lib/
@@ -100,12 +100,12 @@ Os 21 primitivos em uso no PWA têm equivalente direto:
 3. Login contra produção; dashboard lista transações; modo avião mostra os últimos dados com banner.
 4. Uploads (fatura, planilha, PIX, arquivo de empréstimo) funcionam pelo seletor de arquivo.
 5. CRUD de atores, empréstimos, pagamentos, cartões e configurações; planejamento (intenções/projeção) e compartilhar link funcionam.
-6. Chat, Insights (com gráficos) e Integrações abrem e executam.
+6. Chat e Conectores abrem e executam.
 7. Sem rede, escrita mostra erro honesto (não trava, não duplica).
 
 ## Fora de escopo
 
-Publicação em loja, push notifications, câmera, escrita offline/fila de sincronização, expo-updates/OTA, alvo web universal, alterações no `frontend/` ou no backend.
+Publicação em loja, push notifications, câmera, escrita offline/fila de sincronização, expo-updates/OTA, alvo web universal, **Insights IA** (decisão do usuário em 2026-10-01 — a tela continua no web), alterações no `frontend/` ou no backend.
 
 ## Riscos
 
