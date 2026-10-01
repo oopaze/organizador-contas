@@ -43,6 +43,10 @@ export function BottomSheetView({ children, ...props }: ViewProps) {
   return <View {...props}>{children}</View>;
 }
 
+export function BottomSheetModalProvider({ children }: { children?: ReactNode }) {
+  return <>{children}</>;
+}
+
 export function BottomSheetScrollView({ children, ...props }: ScrollViewProps) {
   return <ScrollView {...props}>{children}</ScrollView>;
 }

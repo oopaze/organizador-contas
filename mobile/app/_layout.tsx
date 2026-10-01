@@ -1,6 +1,7 @@
 import '../global.css';
 
 import { useCallback, useEffect, useState } from 'react';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack, router, useSegments } from 'expo-router';
@@ -71,20 +72,22 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{ persister }}
-          onSuccess={refreshPersistedAt}
-        >
-          <AuthProvider>
-            <UserProvider>
-              {!isOnline ? <OfflineBanner persistedAt={persistedAt} /> : null}
-              <RootNavigator />
-            </UserProvider>
-          </AuthProvider>
-        </PersistQueryClientProvider>
-      </SafeAreaProvider>
+      <BottomSheetModalProvider>
+        <SafeAreaProvider>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister }}
+            onSuccess={refreshPersistedAt}
+          >
+            <AuthProvider>
+              <UserProvider>
+                {!isOnline ? <OfflineBanner persistedAt={persistedAt} /> : null}
+                <RootNavigator />
+              </UserProvider>
+            </AuthProvider>
+          </PersistQueryClientProvider>
+        </SafeAreaProvider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }
