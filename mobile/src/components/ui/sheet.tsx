@@ -1,14 +1,6 @@
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useRef } from 'react';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-  BottomSheetView,
-  type BottomSheetBackdropProps,
-} from '@gorhom/bottom-sheet';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import X from 'lucide-react-native/icons/x';
-import { BackHandler, Pressable, Text, View } from 'react-native';
 
 export interface SheetProps {
   visible: boolean;
@@ -19,41 +11,13 @@ export interface SheetProps {
   children?: ReactNode;
 }
 
+/**
+ * Bottom sheet em Modal do RN (não no @gorhom/bottom-sheet): a janela nativa
+ * do Modal empilha acima do Modal do Dialog no Android, então Select/Dropdown
+ * abertos de dentro de um diálogo ficam tocáveis.
+ */
 export function Sheet({ visible, onClose, title, scrollable, children }: SheetProps) {
-  const ref = useRef<BottomSheetModal>(null);
-
-  useEffect(() => {
-    if (visible) {
-      ref.current?.present();
-    } else {
-      ref.current?.dismiss();
-    }
-  }, [visible]);
-
-  // Botão voltar do Android: com o sheet aberto, fecha o overlay em vez de
-  // navegar/sair. Nas telas sem sheet o handler não existe e vale o padrão.
-  useEffect(() => {
-    if (!visible) return;
-
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      onClose();
-      return true;
-    });
-
-    return () => subscription.remove();
-  }, [visible, onClose]);
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        pressBehavior="close"
-      />
-    ),
-    []
-  );
+  if (!visible) return null;
 
   const body = (
     <>
@@ -64,7 +28,7 @@ export function Sheet({ visible, onClose, title, scrollable, children }: SheetPr
             accessibilityRole="button"
             accessibilityLabel="Fechar"
             onPress={onClose}
-            className="h-11 w-11 items-center justify-center rounded-md active:bg-zinc-100"
+            className="rounded-md p-2 active:bg-zinc-100"
           >
             <X size={18} color="#71717a" />
           </Pressable>
@@ -75,19 +39,26 @@ export function Sheet({ visible, onClose, title, scrollable, children }: SheetPr
   );
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      enableDynamicSizing
-      onDismiss={onClose}
-      backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: '#ffffff' }}
-      handleIndicatorStyle={{ backgroundColor: '#d4d4d8' }}
+    <Modal
+      visible
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+      testID="sheet-modal"
     >
-      {scrollable ? (
-        <BottomSheetScrollView className="pb-6">{body}</BottomSheetScrollView>
-      ) : (
-        <BottomSheetView className="pb-6">{body}</BottomSheetView>
-      )}
-    </BottomSheetModal>
+      <View className="flex-1 justify-end bg-black/40">
+        <Pressable accessibilityLabel="Fechar" className="flex-1" onPress={onClose} />
+        <View className="max-h-[85%] rounded-t-2xl bg-white">
+          {scrollable ? (
+            <ScrollView className="pb-6" keyboardShouldPersistTaps="handled">
+              {body}
+            </ScrollView>
+          ) : (
+            <View className="pb-6">{body}</View>
+          )}
+        </View>
+      </View>
+    </Modal>
   );
 }

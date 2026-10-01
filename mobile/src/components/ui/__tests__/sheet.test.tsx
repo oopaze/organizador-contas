@@ -1,27 +1,26 @@
-import { BackHandler } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Sheet } from '../sheet';
 
-test('fecha no botão voltar do Android quando visível', async () => {
+test('renderiza conteúdo quando visível e fecha no requestClose do Android', async () => {
   const onClose = jest.fn();
-  const spy = jest.spyOn(BackHandler, 'addEventListener');
+  await render(
+    <Sheet visible onClose={onClose} title="Conversas">
+      <></>
+    </Sheet>
+  );
 
-  await render(<Sheet visible onClose={onClose} title="Conversas" />);
+  expect(screen.getByText('Conversas')).toBeTruthy();
 
-  expect(spy).toHaveBeenCalled();
-  const handler = spy.mock.calls[spy.mock.calls.length - 1][1] as unknown as () => boolean;
-  expect(handler()).toBe(true);
+  fireEvent(screen.getByTestId('sheet-modal'), 'requestClose');
   expect(onClose).toHaveBeenCalled();
-
-  spy.mockRestore();
 });
 
-test('não registra handler de voltar quando fechado', async () => {
-  const spy = jest.spyOn(BackHandler, 'addEventListener');
+test('não renderiza conteúdo quando fechado', async () => {
+  await render(
+    <Sheet visible={false} onClose={() => {}} title="Conversas">
+      <></>
+    </Sheet>
+  );
 
-  await render(<Sheet visible={false} onClose={() => {}} title="Conversas" />);
-
-  expect(spy).not.toHaveBeenCalled();
-
-  spy.mockRestore();
+  expect(screen.queryByText('Conversas')).toBeNull();
 });

@@ -1,7 +1,6 @@
 import '../global.css';
 
 import { useCallback, useEffect, useState } from 'react';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack, router, useSegments } from 'expo-router';
@@ -11,7 +10,7 @@ import { OfflineBanner } from '../src/components/offline-banner';
 import { AuthProvider, useAuth } from '../src/contexts/auth-context';
 import { UserProvider } from '../src/contexts/user-context';
 import { shouldRedirectToLogin } from '../src/lib/auth-guard';
-import { PERSIST_KEY, persister, queryClient } from '../src/lib/query-client';
+import { PERSIST_KEY, persistOptions, queryClient } from '../src/lib/query-client';
 import { useOnlineStatus } from '../src/lib/use-online-status';
 import { setSessionExpiredHandler } from '../src/services';
 
@@ -74,22 +73,20 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <SafeAreaProvider>
-          <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={{ persister }}
-            onSuccess={refreshPersistedAt}
-          >
-            <AuthProvider>
-              <UserProvider>
-                {!isOnline ? <OfflineBanner persistedAt={persistedAt} /> : null}
-                <RootNavigator />
-              </UserProvider>
-            </AuthProvider>
-          </PersistQueryClientProvider>
-        </SafeAreaProvider>
-      </BottomSheetModalProvider>
+      <SafeAreaProvider>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={persistOptions}
+          onSuccess={refreshPersistedAt}
+        >
+          <AuthProvider>
+            <UserProvider>
+              {!isOnline ? <OfflineBanner persistedAt={persistedAt} /> : null}
+              <RootNavigator />
+            </UserProvider>
+          </AuthProvider>
+        </PersistQueryClientProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
