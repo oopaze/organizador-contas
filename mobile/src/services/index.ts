@@ -1,6 +1,6 @@
 // Central export file for all API services
 export * from './types';
-export { tokenManager, USE_MOCK_API } from './client';
+export { tokenManager, USE_MOCK_API, setSessionExpiredHandler } from './client';
 
 // Auth services
 export { login } from './auth/login';
