@@ -1,33 +1,24 @@
 import { apiUploadRequest, USE_MOCK_API } from '../client';
 import { Bill } from '../types';
-import { mockBills, incrementIds, delay } from '../mockData';
+import { delay, incrementIds, mockBills } from '../mockData';
 
-async function uploadSheetMock(file: File): Promise<Bill> {
+async function uploadSheetMock(): Promise<Bill> {
   await delay(1000);
+  const today = new Date().toISOString().split('T')[0];
   const newBill: Bill = {
     id: incrementIds.nextBillId++,
-    file_name: file.name,
-    upload_date: new Date().toISOString().split('T')[0],
+    file_name: 'planilha.xlsx',
+    upload_date: today,
     total_amount: '0.00',
-    due_date: new Date().toISOString().split('T')[0],
+    due_date: today,
   };
   mockBills.push(newBill);
   return newBill;
 }
 
-async function uploadSheetReal(file: File, model?: string, description?: string): Promise<Bill> {
-  const formData = new FormData();
-  formData.append('file', file);
-  if (model) {
-    formData.append('model', model);
-  }
-  if (description) {
-    formData.append('user_provided_description', description);
-  }
-  return apiUploadRequest<Bill>('/file_reader/upload-sheet/', formData);
+/** Recebe o multipart montado pelo diálogo (parte `file` no formato do RN). */
+export async function uploadSheet(formData: FormData): Promise<Bill> {
+  return USE_MOCK_API
+    ? await uploadSheetMock()
+    : await apiUploadRequest<Bill>('/file_reader/upload-sheet/', formData);
 }
-
-export async function uploadSheet(file: File, model?: string, description?: string): Promise<Bill> {
-  return USE_MOCK_API ? await uploadSheetMock(file) : await uploadSheetReal(file, model, description);
-}
-

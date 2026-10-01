@@ -3,9 +3,11 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CircleCheck from 'lucide-react-native/icons/circle-check';
 import Clock from 'lucide-react-native/icons/clock';
+import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
 import Plus from 'lucide-react-native/icons/plus';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
+import Upload from 'lucide-react-native/icons/upload';
 import Users from 'lucide-react-native/icons/users';
 import Wallet from 'lucide-react-native/icons/wallet';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,8 +20,11 @@ import { InlineMessage } from '../../src/components/inline-message';
 import { LedgerList } from '../../src/components/ledger-list';
 import { MonthPicker } from '../../src/components/month-picker';
 import { QuickAddDialog } from '../../src/components/quick-add-dialog';
+import { ReconcileBillDialog } from '../../src/components/reconcile-bill-dialog';
 import { StatCard } from '../../src/components/stat-card';
 import { TransactionsList } from '../../src/components/transactions-list';
+import { UploadBillDialog } from '../../src/components/upload-bill-dialog';
+import { UploadSheetDialog } from '../../src/components/upload-sheet-dialog';
 import { Button } from '../../src/components/ui/button';
 import {
   Card,
@@ -44,6 +49,7 @@ import {
   getTransactions,
   guessSubTransactionsCategory,
   recalculateTransactionAmount,
+  type ApplyReconciliationResult,
   type SubTransaction,
   type Transaction,
 } from '../../src/services';
@@ -104,6 +110,9 @@ export default function HomeScreen() {
 
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [uploadBillOpen, setUploadBillOpen] = useState(false);
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
+  const [reconcileIds, setReconcileIds] = useState<number[]>([]);
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [addSubTarget, setAddSubTarget] = useState<number | null>(null);
   const [editSubTarget, setEditSubTarget] = useState<SubTransaction | null>(null);
@@ -212,6 +221,42 @@ export default function HomeScreen() {
       setActionWorking(false);
     }
   };
+
+  const handleBillUploaded = useCallback(
+    (transactionIds: number[]) => {
+      setUploadBillOpen(false);
+      handleDataChanged();
+      if (modoOn && transactionIds.length > 0) {
+        setReconcileIds(transactionIds);
+      } else {
+        setActionFeedback('Fatura enviada com sucesso!');
+      }
+    },
+    [handleDataChanged, modoOn]
+  );
+
+  const handleSheetUploaded = useCallback(() => {
+    setUploadSheetOpen(false);
+    handleDataChanged();
+    setActionFeedback('Planilha enviada com sucesso!');
+  }, [handleDataChanged]);
+
+  const handleReconciled = useCallback(
+    (result: ApplyReconciliationResult) => {
+      setReconcileIds([]);
+      handleDataChanged();
+      const closed = result.closed_open_bills.length;
+      setActionFeedback(
+        `Conciliado: ${result.merged} ${result.merged === 1 ? 'par' : 'pares'}` +
+          (closed
+            ? `, ${closed} fatura${closed > 1 ? 's' : ''} em aberto fechada${
+                closed > 1 ? 's' : ''
+              }`
+            : '')
+      );
+    },
+    [handleDataChanged]
+  );
 
   const listActions = {
     onAddSubTransaction: (transaction: Transaction) => setAddSubTarget(transaction.id),
@@ -371,6 +416,25 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
+
+        <View className="flex-row gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onPress={() => setUploadBillOpen(true)}
+          >
+            <Upload size={16} color="#18181b" />
+            <Text className="text-base font-medium text-zinc-900">Upload Fatura</Text>
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onPress={() => setUploadSheetOpen(true)}
+          >
+            <FileSpreadsheet size={16} color="#18181b" />
+            <Text className="text-base font-medium text-zinc-900">Upload Planilha</Text>
+          </Button>
+        </View>
 
         {showStaleNotice ? (
           <View className="rounded-md bg-amber-100 px-3 py-2">
@@ -584,6 +648,27 @@ export default function HomeScreen() {
       >
         {actionError ? <InlineMessage>{actionError}</InlineMessage> : null}
       </Dialog>
+
+      <UploadBillDialog
+        visible={uploadBillOpen}
+        onClose={() => setUploadBillOpen(false)}
+        onUploaded={handleBillUploaded}
+      />
+
+      <UploadSheetDialog
+        visible={uploadSheetOpen}
+        onClose={() => setUploadSheetOpen(false)}
+        onUploaded={handleSheetUploaded}
+      />
+
+      {modoOn && reconcileIds.length > 0 ? (
+        <ReconcileBillDialog
+          visible
+          transactionIds={reconcileIds}
+          onClose={() => setReconcileIds([])}
+          onReconciled={handleReconciled}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

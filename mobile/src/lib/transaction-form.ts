@@ -18,3 +18,15 @@ export function formatSubmitError(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message) return error.message;
   return fallback;
 }
+
+/**
+ * Erro de upload: mantém a mensagem real do backend (senha incorreta, arquivo
+ * inválido) e traduz falha de rede para o aviso honesto do app.
+ */
+export function formatUploadError(error: unknown, fallback: string): string {
+  const message = error instanceof Error ? error.message : '';
+  if (/network request failed|failed to fetch|upload failed/i.test(message)) {
+    return 'Sem conexão — tente de novo quando voltar.';
+  }
+  return message || fallback;
+}
