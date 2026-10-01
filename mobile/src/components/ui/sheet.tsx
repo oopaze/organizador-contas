@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import X from 'lucide-react-native/icons/x';
 
 export interface SheetProps {
@@ -17,6 +18,10 @@ export interface SheetProps {
  * abertos de dentro de um diálogo ficam tocáveis.
  */
 export function Sheet({ visible, onClose, title, scrollable, children }: SheetProps) {
+  // Com edge-to-edge, a barra de navegação do Android sobrepõe o painel:
+  // o inset inferior afasta o conteúdo (menus de card, select, mês) dos botões.
+  const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+
   if (!visible) return null;
 
   const body = (
@@ -49,7 +54,11 @@ export function Sheet({ visible, onClose, title, scrollable, children }: SheetPr
     >
       <View className="flex-1 justify-end bg-black/40">
         <Pressable accessibilityLabel="Fechar" className="flex-1" onPress={onClose} />
-        <View className="max-h-[85%] rounded-t-2xl bg-white">
+        <View
+          testID="sheet-panel"
+          style={{ paddingBottom: bottomInset }}
+          className="max-h-[85%] rounded-t-2xl bg-white"
+        >
           {scrollable ? (
             <ScrollView className="pb-6" keyboardShouldPersistTaps="handled">
               {body}
