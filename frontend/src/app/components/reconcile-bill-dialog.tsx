@@ -36,6 +36,15 @@ export const ReconcileBillDialog: React.FC<ReconcileBillDialogProps> = ({
     setFailed(false);
     previewReconciliation(billTransactionIds[currentIndex])
       .then((data) => {
+        if (data.pairs.length === 0) {
+          setPreview(null);
+          if (currentIndex + 1 < billTransactionIds.length) {
+            setCurrentIndex((index) => index + 1);
+          } else {
+            onOpenChange(false);
+          }
+          return;
+        }
         setPreview(data);
         setSelectedPairs(
           Object.fromEntries(data.pairs.map((pair) => [pair.bill_sub_transaction_id, true]))
