@@ -61,6 +61,7 @@ Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separad
 2. RECEITAS E ESTORNOS (Exceção):
    - Devem ser SEMPRE números NEGATIVOS (ex: -50.00).
    - Aplique negativo APENAS se a descrição contiver: "Estorno", "Crédito", "Cancelamento", "Devolução" ou "Pagamento Antecipado".
+   - Pagamento da fatura anterior NÃO é receita nem estorno: não inclua a linha na lista de transações.
 
 3. TIPO DE TRANSAÇÃO:
    - 'transaction_type' da fatura (bill) deve ser "incoming" (boleto a pagar).
@@ -74,7 +75,11 @@ Faturas bancárias (especialmente Banco Inter e Nubank) usam hifens como separad
 1. INFORMAÇÕES BÁSICAS: bill_identifier, total_amount (positivo), due_date (YYYY-MM-DD).
 
 2. TRANSAÇÕES: Extraia date, description, amount e installment_info.
-   - IGNORE: Pagamentos da fatura anterior, Juros de atraso listados no rodapé, limites e saldo total parcelado.
+   - NUNCA inclua pagamentos da fatura anterior, mesmo que apareçam com valor negativo.
+     Exemplos que devem ser IGNORADOS: "Baixa Pagamento Fatura Via Pix",
+     "PAGAMENTO RECEBIDO - OBRIGADO", "(-) Créditos/Pagamentos", "Pagamento Fatura",
+     "TOTAL FATURA ANTERIOR". Esses valores já estão descontados no total_amount impresso.
+   - IGNORE também: Juros de atraso listados no rodapé, limites e saldo total parcelado.
    
    ⚠️ REGRA DE PARCELAMENTO (installment_info):
    - Formato Obrigatório: "X/Y" (Atual/Total).
