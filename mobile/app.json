@@ -3,7 +3,7 @@
     "name": "Poupix",
     "slug": "poupix",
     "scheme": "poupix",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon-512.png",
@@ -21,7 +21,7 @@
     ],
     "android": {
       "package": "com.poupix.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-maskable-512.png",
         "backgroundColor": "#059669"
