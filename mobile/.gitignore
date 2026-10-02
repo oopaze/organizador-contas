@@ -1,0 +1,13 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+builds/*
+!builds/.gitkeep
+.env
+.secrets/
+coverage/
+expo-env.d.ts
+*.tsbuildinfo
+.DS_Store
