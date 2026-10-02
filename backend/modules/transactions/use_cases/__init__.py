@@ -25,6 +25,7 @@ from modules.transactions.use_cases.transaction import (
     ApplyReconciliationUseCase,
     EnsureMonthlySalaryUseCase,
     EnsureMonthlyCardBillsUseCase,
+    GetOrCreateCardBillUseCase,
     InferTransactionCategoryUseCase,
 )
 from modules.transactions.use_cases.sub_transaction import (
@@ -81,5 +82,6 @@ __all__ = [
     "ApplyReconciliationUseCase",
     "EnsureMonthlySalaryUseCase",
     "EnsureMonthlyCardBillsUseCase",
+    "GetOrCreateCardBillUseCase",
     "InferTransactionCategoryUseCase",
 ]

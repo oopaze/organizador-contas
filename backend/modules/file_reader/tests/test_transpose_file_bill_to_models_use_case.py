@@ -4,6 +4,7 @@ Unit tests for TransposeFileBillToModelsUseCase.
 These tests verify that the use case correctly transposes file bill data to models.
 All external dependencies are mocked.
 """
+from datetime import date
 from unittest.mock import Mock
 from django.test import SimpleTestCase
 
@@ -11,6 +12,7 @@ from modules.file_reader.use_cases.transpose_file_bill_to_models import Transpos
 from modules.file_reader.domains.file import FileDomain
 from modules.file_reader.domains.bill import BillDomain
 from modules.file_reader.domains.bill_sub_transaction import BillSubTransactionDomain
+from modules.transactions.domains import TransactionDomain
 
 
 class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
@@ -25,6 +27,9 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
         self.mock_sub_transaction_factory = Mock()
         self.mock_file_repository = Mock()
         self.mock_recalculate_use_case = Mock()
+        self.mock_get_or_create_card_bill = Mock()
+        self.mock_transaction_repository = Mock()
+        self.mock_sub_transactions_repository = Mock()
 
         self.use_case = TransposeFileBillToModelsUseCase(
             bill_repository=self.mock_bill_repository,
@@ -34,6 +39,9 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
             bill_sub_transaction_factory=self.mock_sub_transaction_factory,
             file_repository=self.mock_file_repository,
             recalculate_amount_use_case=self.mock_recalculate_use_case,
+            get_or_create_card_bill_use_case=self.mock_get_or_create_card_bill,
+            transaction_repository=self.mock_transaction_repository,
+            sub_transaction_repository=self.mock_sub_transactions_repository,
         )
 
     def test_execute_for_single_bill(self):
@@ -76,14 +84,80 @@ class TestTransposeFileBillToModelsUseCase(SimpleTestCase):
         }
         mock_bill = Mock(spec=BillDomain)
         mock_bill.id = "bill_123"
+        mock_bill.due_date = "2026-03-15"
         self.mock_file_repository.get.return_value = mock_file
         self.mock_bill_factory.build_from_file.return_value = mock_bill
         self.mock_bill_repository.create.return_value = mock_bill
         self.mock_sub_transaction_factory.build_many_from_file.return_value = []
+        monthly_bill = TransactionDomain(id=50, due_date=date(2026, 3, 15), user_id=1, card_id=3)
+        self.mock_get_or_create_card_bill.execute.return_value = monthly_bill
+        self.mock_sub_transactions_repository.get_all_by_transaction_id.return_value = [Mock()]
 
         self.use_case.execute("123", 1, card_id=3)
 
         self.assertEqual(mock_bill.card_id, 3)
+        self.mock_bill_repository.create.assert_called_once_with(mock_bill, 1)
+
+    def test_reuses_empty_monthly_bill_with_card(self):
+        mock_file = Mock(spec=FileDomain)
+        mock_file.id = 247
+        mock_file.get_response.return_value = {
+            "bill_identifier": "C&A Pay", "total_amount": 86.65,
+            "due_date": "2026-10-05", "transactions": [],
+        }
+        mock_bill = Mock(spec=BillDomain)
+        mock_bill.id = "bill_123"
+        mock_bill.due_date = "2026-10-05"
+        self.mock_file_repository.get.return_value = mock_file
+        self.mock_bill_factory.build_from_file.return_value = mock_bill
+        monthly_bill = TransactionDomain(
+            id=1213,
+            transaction_identifier="Fatura C&A Pay 10/2026",
+            due_date=date(2026, 10, 5),
+            user_id=1,
+            card_id=3,
+        )
+        self.mock_get_or_create_card_bill.execute.return_value = monthly_bill
+        self.mock_sub_transactions_repository.get_all_by_transaction_id.return_value = []
+        self.mock_sub_transaction_factory.build_many_from_file.return_value = []
+
+        result = self.use_case.execute("123", 1, card_id=3)
+
+        self.assertEqual(result, [1213])
+        self.mock_get_or_create_card_bill.execute.assert_called_once_with(1, 3, 2026, 10)
+        self.mock_transaction_repository.attach_file.assert_called_once_with(1213, 1, 247)
+        self.mock_bill_repository.create.assert_not_called()
+        self.mock_recalculate_use_case.execute.assert_called_once_with(1213, 1)
+        built_bill = self.mock_sub_transaction_factory.build_many_from_file.call_args[0][1]
+        self.assertEqual(built_bill.id, 1213)
+
+    def test_creates_imported_bill_when_monthly_bill_already_has_launches(self):
+        mock_file = Mock(spec=FileDomain)
+        mock_file.get_response.return_value = {
+            "bill_identifier": "C&A Pay", "total_amount": 86.65,
+            "due_date": "2026-10-05", "transactions": [],
+        }
+        mock_bill = Mock(spec=BillDomain)
+        mock_bill.id = "bill_123"
+        mock_bill.due_date = "2026-10-05"
+        self.mock_file_repository.get.return_value = mock_file
+        self.mock_bill_factory.build_from_file.return_value = mock_bill
+        self.mock_bill_repository.create.return_value = mock_bill
+        monthly_bill = TransactionDomain(
+            id=1213,
+            transaction_identifier="Fatura C&A Pay 10/2026",
+            due_date=date(2026, 10, 5),
+            user_id=1,
+            card_id=3,
+        )
+        self.mock_get_or_create_card_bill.execute.return_value = monthly_bill
+        self.mock_sub_transactions_repository.get_all_by_transaction_id.return_value = [Mock()]
+        self.mock_sub_transaction_factory.build_many_from_file.return_value = []
+
+        result = self.use_case.execute("123", 1, card_id=3)
+
+        self.assertEqual(result, ["bill_123"])
+        self.mock_transaction_repository.attach_file.assert_not_called()
         self.mock_bill_repository.create.assert_called_once_with(mock_bill, 1)
 
     def test_execute_for_bill_with_sub_transactions(self):

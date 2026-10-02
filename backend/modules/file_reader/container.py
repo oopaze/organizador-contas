@@ -54,6 +54,9 @@ class FileReaderContainer(containers.DeclarativeContainer):
 
     # USE CASES
     recalculate_amount_use_case = providers.Dependency(default=None)
+    get_or_create_card_bill_use_case = providers.Dependency(default=None)
+    transaction_repository = providers.Dependency(default=None)
+    sub_transaction_repository = providers.Dependency(default=None)
     transpose_file_bill_to_models_use_case = providers.Factory(
         TransposeFileBillToModelsUseCase,
         bill_repository=bill_repository,
@@ -63,6 +66,9 @@ class FileReaderContainer(containers.DeclarativeContainer):
         bill_sub_transaction_factory=bill_sub_transaction_factory,
         file_repository=file_repository,
         recalculate_amount_use_case=recalculate_amount_use_case,
+        get_or_create_card_bill_use_case=get_or_create_card_bill_use_case,
+        transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     ask_use_case = providers.Dependency(default=None)

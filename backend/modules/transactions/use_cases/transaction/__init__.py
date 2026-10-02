@@ -13,6 +13,7 @@ from modules.transactions.use_cases.transaction.reconcile_bill_preview import Re
 from modules.transactions.use_cases.transaction.apply_reconciliation import ApplyReconciliationUseCase
 from modules.transactions.use_cases.transaction.ensure_salary import EnsureMonthlySalaryUseCase
 from modules.transactions.use_cases.transaction.ensure_card_bills import EnsureMonthlyCardBillsUseCase
+from modules.transactions.use_cases.transaction.get_or_create_card_bill import GetOrCreateCardBillUseCase
 from modules.transactions.use_cases.transaction.infer_category import InferTransactionCategoryUseCase
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "ApplyReconciliationUseCase",
     "EnsureMonthlySalaryUseCase",
     "EnsureMonthlyCardBillsUseCase",
+    "GetOrCreateCardBillUseCase",
     "InferTransactionCategoryUseCase",
 ]

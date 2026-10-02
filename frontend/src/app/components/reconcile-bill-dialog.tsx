@@ -73,6 +73,7 @@ export const ReconcileBillDialog: React.FC<ReconcileBillDialogProps> = ({
     setApplying(true);
     try {
       const result = await applyReconciliation({
+        bill_transaction_id: preview.bill.id,
         pairs: preview.pairs
           .filter((pair) => selectedPairs[pair.bill_sub_transaction_id])
           .map((pair) => ({
@@ -86,8 +87,11 @@ export const ReconcileBillDialog: React.FC<ReconcileBillDialogProps> = ({
 
       const closed = result.closed_open_bills.length;
       toast.success(
-        `Conciliado: ${result.merged} ${result.merged === 1 ? 'par' : 'pares'}` +
-          (closed ? `, ${closed} fatura${closed > 1 ? 's' : ''} em aberto fechada${closed > 1 ? 's' : ''}` : '')
+        result.merged_into_bill_id
+          ? `Fatura do cartão atualizada com os lançamentos do PDF` +
+              (result.merged ? ` (${result.merged} ${result.merged === 1 ? 'par' : 'pares'})` : '')
+          : `Conciliado: ${result.merged} ${result.merged === 1 ? 'par' : 'pares'}` +
+              (closed ? `, ${closed} fatura${closed > 1 ? 's' : ''} em aberto fechada${closed > 1 ? 's' : ''}` : '')
       );
 
       if (currentIndex + 1 < billTransactionIds.length) {

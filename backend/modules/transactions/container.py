@@ -54,6 +54,7 @@ from modules.transactions.use_cases import (
     ApplyReconciliationUseCase,
     EnsureMonthlySalaryUseCase,
     EnsureMonthlyCardBillsUseCase,
+    GetOrCreateCardBillUseCase,
     InferTransactionCategoryUseCase,
 )
 
@@ -355,11 +356,19 @@ class TransactionsContainer(containers.DeclarativeContainer):
         ask_use_case=ask_use_case,
     )
 
+    get_or_create_card_bill_use_case = providers.Factory(
+        GetOrCreateCardBillUseCase,
+        card_repository=card_repository,
+        transaction_repository=transaction_repository,
+        transaction_factory=transaction_factory,
+    )
+
     apply_reconciliation_use_case = providers.Factory(
         ApplyReconciliationUseCase,
         transaction_repository=transaction_repository,
         sub_transaction_repository=sub_transaction_repository,
         recalculate_amount_use_case=recalculate_amount_use_case,
+        get_or_create_card_bill_use_case=get_or_create_card_bill_use_case,
     )
 
     ensure_monthly_salary_use_case = providers.Factory(

@@ -6,6 +6,7 @@ export interface ApplyReconciliationResult {
   categorized: number;
   unmatched_remaining: number;
   closed_open_bills: number[];
+  merged_into_bill_id: number | null;
 }
 
 export async function applyReconciliation(input: ApplyReconciliationInput): Promise<ApplyReconciliationResult> {

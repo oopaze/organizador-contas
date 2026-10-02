@@ -25,6 +25,9 @@ class TransposeFileBillToModelsUseCase:
         bill_sub_transaction_factory: BillSubTransactionFactory,
         file_repository: FileRepository,
         recalculate_amount_use_case: RecalculateAmountUseCase,
+        get_or_create_card_bill_use_case=None,
+        transaction_repository=None,
+        sub_transaction_repository=None,
     ):
         self.bill_repository = bill_repository
         self.bill_factory = bill_factory
@@ -33,6 +36,9 @@ class TransposeFileBillToModelsUseCase:
         self.bill_sub_transaction_factory = bill_sub_transaction_factory
         self.file_repository = file_repository
         self.recalculate_amount_use_case = recalculate_amount_use_case
+        self.get_or_create_card_bill_use_case = get_or_create_card_bill_use_case
+        self.transaction_repository = transaction_repository
+        self.sub_transaction_repository = sub_transaction_repository
 
     def execute(self, file_id: str, user_id: int, create_in_future_months: bool = False, card_id: int = None) -> list[int]:
         file = self.file_repository.get(file_id)
@@ -42,24 +48,60 @@ class TransposeFileBillToModelsUseCase:
             return self._execute_for_many(file, response, user_id, create_in_future_months, card_id)
         return self._execute_for_one(file, response, user_id, create_in_future_months, card_id)
 
+    def _persist_bill(self, file: FileDomain, ai_response: dict, user_id: int, card_id: int = None) -> BillDomain:
+        """Persists one imported bill, reusing the card's monthly bill when it has no launches."""
+        bill = self.bill_factory.build_from_file(file, ai_response)
+        bill.card_id = card_id
+
+        if (
+            card_id
+            and self.get_or_create_card_bill_use_case is not None
+            and self.transaction_repository is not None
+            and self.sub_transaction_repository is not None
+        ):
+            due_date = datetime.strptime(str(bill.due_date), "%Y-%m-%d")
+            monthly_bill = self.get_or_create_card_bill_use_case.execute(
+                user_id, card_id, due_date.year, due_date.month
+            )
+            has_launches = self.sub_transaction_repository.get_all_by_transaction_id(
+                monthly_bill.id, user_id
+            )
+            if not has_launches:
+                self.transaction_repository.attach_file(monthly_bill.id, user_id, file.id)
+                target_bill = BillDomain(
+                    due_date=bill.due_date,
+                    total_amount=monthly_bill.total_amount,
+                    bill_identifier=monthly_bill.transaction_identifier,
+                    file=file,
+                    id=monthly_bill.id,
+                    transaction_type=monthly_bill.transaction_type,
+                    category=monthly_bill.category,
+                    card_id=card_id,
+                )
+                self._create_sub_transactions(file, target_bill, ai_response)
+                self.recalculate_amount_use_case.execute(monthly_bill.id, user_id)
+                return target_bill
+
+        saved_bill = self.bill_repository.create(bill, user_id)
+        self._create_sub_transactions(file, saved_bill, ai_response)
+        return saved_bill
+
+    def _create_sub_transactions(self, file: FileDomain, bill: BillDomain, ai_response: dict):
+        bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(
+            file, bill, ai_response
+        )
+        self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
+
     def _execute_for_one(self, file: FileDomain, response: dict, user_id: int, create_in_future_months: bool = False, card_id: int = None) -> list[int]:
         created_ids = []
-        bill = self.bill_factory.build_from_file(file, response)
-        bill.card_id = card_id
-        saved_bill = self.bill_repository.create(bill, user_id)
+        saved_bill = self._persist_bill(file, response, user_id, card_id)
         created_ids.append(saved_bill.id)
-        bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, response)
-        self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
 
         future_transactions = self._get_future_transactions(response, saved_bill) if create_in_future_months else []
         for future_transaction in future_transactions:
-            bill = self.bill_factory.build_from_file(file, future_transaction)
-            bill.card_id = card_id
-            saved_bill = self.bill_repository.create(bill, user_id)
-            created_ids.append(saved_bill.id)
-            bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, ai_response=future_transaction)
-            self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
-            self.recalculate_amount_use_case.execute(saved_bill.id, user_id)
+            saved_future_bill = self._persist_bill(file, future_transaction, user_id, card_id)
+            created_ids.append(saved_future_bill.id)
+            self.recalculate_amount_use_case.execute(saved_future_bill.id, user_id)
         return created_ids
 
     def _get_future_transactions(self, response: dict, bill: BillDomain) -> list:
@@ -116,12 +158,8 @@ class TransposeFileBillToModelsUseCase:
 
         for r in response:
             try:
-                bill = self.bill_factory.build_from_file(file, r)
-                bill.card_id = card_id
-                saved_bill = self.bill_repository.create(bill, user_id)
+                saved_bill = self._persist_bill(file, r, user_id, card_id)
                 created_ids.append(saved_bill.id)
-                bill_sub_transactions = self.bill_sub_transaction_factory.build_many_from_file(file, saved_bill, r)
-                self.bill_sub_transaction_repository.create_many(bill_sub_transactions)
             except Exception as e:
                 logger.warning(f"[Transpose] Skipping item due to error: {e}")
                 continue

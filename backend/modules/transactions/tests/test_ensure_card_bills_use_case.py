@@ -29,7 +29,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
 
     def test_creates_zeroed_bill_with_card_due_day(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = None
         built = TransactionDomain(id=50, total_amount="0", user_id=7)
         self.transaction_factory.build.return_value = built
@@ -52,7 +52,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
     def test_reuses_existing_bill_and_syncs_due_date(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
         existing = TransactionDomain(id=50, total_amount="100", user_id=7, due_date=date(2026, 9, 1))
-        self.transaction_repository.get_open_bill_by_card.return_value = existing
+        self.transaction_repository.get_bill_by_card.return_value = existing
         self.transaction_repository.update.return_value = existing
         self.transaction_repository.get.return_value = existing
         self.transaction_serializer.serialize.return_value = {"id": 50}
@@ -67,7 +67,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
     def test_does_not_update_when_due_date_already_matches(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
         existing = TransactionDomain(id=50, total_amount="100", user_id=7, due_date=date(2026, 9, 10))
-        self.transaction_repository.get_open_bill_by_card.return_value = existing
+        self.transaction_repository.get_bill_by_card.return_value = existing
         self.transaction_repository.get.return_value = existing
         self.transaction_serializer.serialize.return_value = {"id": 50}
 
@@ -79,7 +79,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
 
     def test_clamps_due_day_to_month_end(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=31)]
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = None
         built = TransactionDomain(id=50, user_id=7)
         self.transaction_factory.build.return_value = built
@@ -100,7 +100,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
             due_date=date(2026, 9, 10),
             transaction_identifier="Fatura Nubank 09/2026",
         )
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = legacy
         self.transaction_repository.update.return_value = legacy
         self.transaction_repository.get.return_value = legacy
@@ -119,7 +119,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
 
     def test_does_not_recreate_bill_deleted_by_user(self):
         self.card_repository.get_all.return_value = [CardDomain(id=3, name="Nubank", due_day=10)]
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = None
         self.transaction_repository.exists_including_deleted.return_value = True
 
@@ -146,7 +146,7 @@ class TestEnsureMonthlyCardBillsUseCase(TestCase):
             card_id=99,
         )
         built = TransactionDomain(id=50, total_amount="0", user_id=7, due_date="2026-09-10")
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = foreign
         self.transaction_factory.build.return_value = built
         self.transaction_repository.create.return_value = built

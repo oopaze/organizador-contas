@@ -165,7 +165,7 @@ class QuickAddTransactionUseCase:
 
         with transaction.atomic():
             locked_card = self.card_repository.get_for_update(card.id, user_id)
-            bill = self.transaction_repository.get_open_bill_by_card(
+            bill = self.transaction_repository.get_bill_by_card(
                 user_id, locked_card.id, year, month
             )
             if bill is None:

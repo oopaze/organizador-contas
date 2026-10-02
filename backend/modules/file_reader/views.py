@@ -25,8 +25,14 @@ class UploadFileView(APIView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         ask_use_case = AIContainer().ask_use_case()
-        recalculate_amount_use_case = TransactionsContainer().recalculate_amount_use_case()
-        self.container = FileReaderContainer(ask_use_case=ask_use_case, recalculate_amount_use_case=recalculate_amount_use_case)
+        transactions_container = TransactionsContainer()
+        self.container = FileReaderContainer(
+            ask_use_case=ask_use_case,
+            recalculate_amount_use_case=transactions_container.recalculate_amount_use_case(),
+            get_or_create_card_bill_use_case=transactions_container.get_or_create_card_bill_use_case(),
+            transaction_repository=transactions_container.transaction_repository(),
+            sub_transaction_repository=transactions_container.sub_transaction_repository(),
+        )
 
     def post(self, request: Request) -> Response:
         file = request.FILES.get("file")

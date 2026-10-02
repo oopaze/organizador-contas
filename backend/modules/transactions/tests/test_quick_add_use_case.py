@@ -362,7 +362,7 @@ class TestQuickAddTransactionUseCase(TestCase):
         )
         bill = TransactionDomain(id=20, total_amount="0", user_id=7)
         filled = TransactionDomain(id=20, total_amount="54.90", user_id=7)
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = None
         self.transaction_factory.build.return_value = bill
         self.transaction_repository.create.return_value = bill
@@ -385,7 +385,7 @@ class TestQuickAddTransactionUseCase(TestCase):
         self.assertEqual(built_data["card_id"], 3)
         self.assertEqual(built_data["due_date"], "2026-09-10")
         self.assertEqual(built_data["transaction_identifier"], "Fatura Nubank 09/2026")
-        self.transaction_repository.get_open_bill_by_card.assert_called_once_with(7, 3, 2026, 9)
+        self.transaction_repository.get_bill_by_card.assert_called_once_with(7, 3, 2026, 9)
 
     def test_credit_with_unknown_card_label_falls_back_to_legacy(self):
         card_repository = Mock()
@@ -479,7 +479,7 @@ class TestQuickAddTransactionUseCase(TestCase):
             recalculate_amount_use_case=self.recalculate_amount_use_case,
             card_repository=card_repository,
         )
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = legacy
         self.transaction_repository.update.return_value = legacy
         self.transaction_repository.get.return_value = legacy
@@ -499,7 +499,7 @@ class TestQuickAddTransactionUseCase(TestCase):
 
         self.transaction_repository.create.assert_not_called()
         card_repository.get_for_update.assert_called_once_with(3, 7)
-        self.transaction_repository.get_open_bill_by_card.assert_called_once_with(7, 3, 2026, 9)
+        self.transaction_repository.get_bill_by_card.assert_called_once_with(7, 3, 2026, 9)
         self.transaction_repository.get_open_bill.assert_called_once_with(
             7, "Fatura Nubank 09/2026", 2026, 9
         )
@@ -529,7 +529,7 @@ class TestQuickAddTransactionUseCase(TestCase):
         )
         new_bill = TransactionDomain(id=21, total_amount="0", user_id=7, due_date="2026-09-10")
         filled = TransactionDomain(id=21, total_amount="54.90", user_id=7)
-        self.transaction_repository.get_open_bill_by_card.return_value = None
+        self.transaction_repository.get_bill_by_card.return_value = None
         self.transaction_repository.get_open_bill.return_value = foreign
         self.transaction_factory.build.return_value = new_bill
         self.transaction_repository.create.return_value = new_bill

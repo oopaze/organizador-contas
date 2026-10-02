@@ -400,6 +400,7 @@ export interface ReconcilePreview {
 export interface ApplyReconciliationInput {
   pairs: { bill_sub_transaction_id: number; real_sub_transaction_id: number }[];
   categories: { sub_transaction_id: number; category: string }[];
+  bill_transaction_id?: number;
 }
 
 // Planning types

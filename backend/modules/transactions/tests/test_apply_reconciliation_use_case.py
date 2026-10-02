@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import Mock
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,10 +15,12 @@ class TestApplyReconciliationUseCase(TestCase):
         self.transaction_repository = Mock()
         self.sub_transaction_repository = Mock()
         self.recalculate_amount_use_case = Mock()
+        self.get_or_create_card_bill_use_case = Mock()
         self.use_case = ApplyReconciliationUseCase(
             transaction_repository=self.transaction_repository,
             sub_transaction_repository=self.sub_transaction_repository,
             recalculate_amount_use_case=self.recalculate_amount_use_case,
+            get_or_create_card_bill_use_case=self.get_or_create_card_bill_use_case,
         )
         self.open_bill = TransactionDomain(
             id=20, due_date="2026-09-01", total_amount="100",
@@ -106,3 +109,48 @@ class TestApplyReconciliationUseCase(TestCase):
         )
 
         self.assertEqual(result["categorized"], 1)
+
+    def test_absorbs_imported_bill_into_monthly_bill(self):
+        self.bill.card_id = 3
+        self.bill.due_date = date(2026, 9, 20)
+        self.open_bill.card_id = 3
+        self.transaction_repository.get.side_effect = lambda transaction_id, user_id: {
+            50: self.bill, 20: self.open_bill,
+        }[transaction_id]
+        self.get_or_create_card_bill_use_case.execute.return_value = self.open_bill
+        self.sub_transaction_repository.get_all_by_transaction_id.side_effect = (
+            lambda transaction_id, user_id: [self.bill_sub] if transaction_id == 50 else []
+        )
+
+        result = self.use_case.execute(
+            {"bill_transaction_id": 50, "pairs": [], "categories": []},
+            user_id=7,
+        )
+
+        self.assertIs(self.bill_sub.transaction, self.open_bill)
+        self.sub_transaction_repository.update.assert_any_call(self.bill_sub)
+        self.transaction_repository.attach_file.assert_called_once_with(20, 7, 99)
+        self.recalculate_amount_use_case.execute.assert_called_once_with(20, 7)
+        self.transaction_repository.delete.assert_called_once_with(50, 7)
+        self.assertEqual(result["merged_into_bill_id"], 20)
+        self.assertEqual(result["closed_open_bills"], [])
+
+    def test_does_not_absorb_when_bill_is_already_the_monthly_bill(self):
+        attached = TransactionDomain(
+            id=20, due_date=date(2026, 9, 20), total_amount="100",
+            transaction_identifier="Fatura Nubank 09/2026", transaction_type="outgoing",
+            user_id=7, category="credit_card", file_id=99, card_id=3,
+        )
+        self.transaction_repository.get.side_effect = (
+            lambda transaction_id, user_id: attached
+        )
+        self.get_or_create_card_bill_use_case.execute.return_value = attached
+
+        result = self.use_case.execute(
+            {"bill_transaction_id": 20, "pairs": [], "categories": []},
+            user_id=7,
+        )
+
+        self.transaction_repository.attach_file.assert_not_called()
+        self.transaction_repository.delete.assert_not_called()
+        self.assertIsNone(result["merged_into_bill_id"])
