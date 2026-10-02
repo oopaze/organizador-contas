@@ -50,6 +50,7 @@ test('mostra os pares e aplica a conciliação selecionada', async () => {
     categorized: 1,
     unmatched_remaining: 0,
     closed_open_bills: [3],
+    merged_into_bill_id: null,
   });
   const onReconciled = jest.fn();
 
@@ -70,6 +71,7 @@ test('mostra os pares e aplica a conciliação selecionada', async () => {
 
   await waitFor(() =>
     expect(applyReconciliation).toHaveBeenCalledWith({
+      bill_transaction_id: 9,
       pairs: [{ bill_sub_transaction_id: 1, real_sub_transaction_id: 11 }],
       categories: [{ sub_transaction_id: 1, category: 'Mercado' }],
     })

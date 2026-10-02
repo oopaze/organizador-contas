@@ -94,6 +94,7 @@ export function ReconcileBillDialog({
     setApplyError(null);
     try {
       const result = await applyReconciliation({
+        bill_transaction_id: preview.bill.id,
         pairs: preview.pairs
           .filter((pair) => selectedPairs[pair.bill_sub_transaction_id])
           .map((pair) => ({

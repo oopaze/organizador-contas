@@ -247,12 +247,15 @@ export default function HomeScreen() {
       handleDataChanged();
       const closed = result.closed_open_bills.length;
       setActionFeedback(
-        `Conciliado: ${result.merged} ${result.merged === 1 ? 'par' : 'pares'}` +
-          (closed
-            ? `, ${closed} fatura${closed > 1 ? 's' : ''} em aberto fechada${
-                closed > 1 ? 's' : ''
-              }`
-            : '')
+        result.merged_into_bill_id
+          ? `Fatura do cartão atualizada com os lançamentos do PDF` +
+              (result.merged ? ` (${result.merged} ${result.merged === 1 ? 'par' : 'pares'})` : '')
+          : `Conciliado: ${result.merged} ${result.merged === 1 ? 'par' : 'pares'}` +
+              (closed
+                ? `, ${closed} fatura${closed > 1 ? 's' : ''} em aberto fechada${
+                    closed > 1 ? 's' : ''
+                  }`
+                : '')
       );
     },
     [handleDataChanged]
