@@ -10,10 +10,15 @@ import { Upload, FileText, X } from 'lucide-react';
 import { Loan, getLoans, uploadPixReceipt } from '@/services';
 
 const AI_MODELS = {
+  'deepseek-flash': 'DeepSeek Flash',
+  'deepseek-v4-pro': 'DeepSeek V4 Pro',
   'deepseek-chat': 'DeepSeek Chat',
   'deepseek-reasoner': 'DeepSeek Reasoner',
+  'gemini-3.5-flash-lite': 'Gemini 3.5 Flash Lite',
   'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
   'gemini-2.5-pro': 'Gemini 2.5 Pro',
+  'gpt-6-luna': 'GPT-6 Luna',
+  'gpt-5.6-luna': 'GPT-5.6 Luna',
   'gpt-5': 'GPT-5',
   'gpt-5-nano': 'GPT-5 Nano',
   'gpt-5-mini': 'GPT-5 Mini',

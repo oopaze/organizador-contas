@@ -179,7 +179,7 @@ class TestUploadFileUseCase(TestCase):
         first_model = self.mock_ask_use_case.execute.call_args_list[0][1]["model"]
         second_model = self.mock_ask_use_case.execute.call_args_list[1][1]["model"]
         self.assertEqual(first_model, "gemini-2.5-flash-lite")
-        self.assertEqual(second_model, "gemini-2.5-pro")
+        self.assertEqual(second_model, "gemini-3.5-flash-lite")
         mock_saved_file.update_ai_info.assert_called_once_with(good_call)
 
     def test_execute_with_create_in_future_months(self):

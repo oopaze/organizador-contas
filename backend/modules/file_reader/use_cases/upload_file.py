@@ -16,7 +16,7 @@ from modules.ai.types import LlmModels
 
 logger = logging.getLogger(__name__)
 
-FALLBACK_BILL_MODEL = LlmModels.GOOGLE_GEMINI_2_5_PRO.name
+FALLBACK_BILL_MODEL = LlmModels.GOOGLE_GEMINI_3_5_FLASH_LITE.name
 
 PROMPT = """
 Aja como um extrator de dados financeiros de alta precisão. 

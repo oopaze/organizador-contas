@@ -11,10 +11,15 @@ import { toast } from 'sonner';
 import { Upload, FileText, X } from 'lucide-react';
 
 const AI_MODELS = {
+  'deepseek-flash': { name: 'DeepSeek Flash', provider: 'DeepSeek' },
+  'deepseek-v4-pro': { name: 'DeepSeek V4 Pro', provider: 'DeepSeek' },
   'deepseek-chat': { name: 'DeepSeek Chat', provider: 'DeepSeek' },
   'deepseek-reasoner': { name: 'DeepSeek Reasoner', provider: 'DeepSeek' },
+  'gemini-3.5-flash-lite': { name: 'Gemini 3.5 Flash Lite', provider: 'Google' },
   'gemini-2.5-flash-lite': { name: 'Gemini 2.5 Flash Lite', provider: 'Google' },
   'gemini-2.5-pro': { name: 'Gemini 2.5 Pro', provider: 'Google' },
+  'gpt-6-luna': { name: 'GPT-6 Luna', provider: 'OpenAI' },
+  'gpt-5.6-luna': { name: 'GPT-5.6 Luna', provider: 'OpenAI' },
   'gpt-5': { name: 'GPT-5', provider: 'OpenAI' },
   'gpt-5-nano': { name: 'GPT-5 Nano', provider: 'OpenAI' },
   'gpt-5-mini': { name: 'GPT-5 Mini', provider: 'OpenAI' },
@@ -38,7 +43,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
   const [pdfPassword, setPdfPassword] = useState('');
-  const [selectedModel, setSelectedModel] = useState<AIModelKey>('gemini-2.5-flash-lite');
+  const [selectedModel, setSelectedModel] = useState<AIModelKey>('deepseek-flash');
   const [createInFutureMonths, setCreateInFutureMonths] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
   const [cardId, setCardId] = useState('none');
@@ -131,7 +136,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
-      setSelectedModel('gemini-2.5-flash-lite');
+      setSelectedModel('deepseek-flash');
       setCreateInFutureMonths(false);
       setCardId('none');
       setCardTouched(false);
@@ -151,7 +156,7 @@ export const UploadBillDialog: React.FC<UploadBillDialogProps> = ({
       setSelectedFile(null);
       setHasPassword(false);
       setPdfPassword('');
-      setSelectedModel('gemini-2.5-flash-lite');
+      setSelectedModel('deepseek-flash');
       setCreateInFutureMonths(false);
       setCardId('none');
       setCardTouched(false);

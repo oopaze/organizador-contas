@@ -48,6 +48,29 @@ class LlmModels(BaseType):
         output_cost_per_million_tokens=12,
         default=default_kwargs
     )
+    GOOGLE_GEMINI_3_5_FLASH_LITE = TypeItem(
+        "gemini-3.5-flash-lite",
+        provider=LlmProviders.GOOGLE.name,
+        input_cost_per_million_tokens=0.3,
+        output_cost_per_million_tokens=2.5,
+        default=default_kwargs
+    )
+
+    # DeepSeek Models (preço "peak"; off-peak custa metade)
+    DEEPSEEK_FLASH = TypeItem(
+        "deepseek-flash",
+        provider=LlmProviders.DEEPSEEK.name,
+        input_cost_per_million_tokens=0.3,
+        output_cost_per_million_tokens=1.2,
+        default=default_kwargs
+    )
+    DEEPSEEK_V4_PRO = TypeItem(
+        "deepseek-v4-pro",
+        provider=LlmProviders.DEEPSEEK.name,
+        input_cost_per_million_tokens=1.32,
+        output_cost_per_million_tokens=3.96,
+        default=default_kwargs
+    )
 
     # DeepSeek Models
     DEEPSEEK_CHAT = TypeItem(
@@ -66,6 +89,22 @@ class LlmModels(BaseType):
     )
 
     # OpenAI Models
+    CHAT_GPT_6_LUNA = TypeItem(
+        "gpt-6-luna",
+        provider=LlmProviders.OPENAI.name,
+        input_cost_per_million_tokens=0.1,
+        output_cost_per_million_tokens=0.5,
+        default=default_kwargs,
+        temperature_enabled=False
+    )
+    CHAT_GPT_5_6_LUNA = TypeItem(
+        "gpt-5.6-luna",
+        provider=LlmProviders.OPENAI.name,
+        input_cost_per_million_tokens=0.2,
+        output_cost_per_million_tokens=1.2,
+        default=default_kwargs,
+        temperature_enabled=False
+    )
     CHAT_GPT_5_NANO = TypeItem(
         "gpt-5-nano", 
         provider=LlmProviders.OPENAI.name,
