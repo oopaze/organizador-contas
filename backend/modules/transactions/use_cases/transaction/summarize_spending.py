@@ -21,6 +21,7 @@ class SummarizeSpendingUseCase:
         group_by = filters.get("group_by") or "none"
         due_filters = {key: value for key, value in filters.items() if key.startswith("due_date__")}
         purchase_filters = {key: value for key, value in filters.items() if key.startswith("purchase_")}
+        group_by_purchase_date = bool(purchase_filters)
         category = filters.get("category")
         search = (filters.get("search") or "").strip().lower()
 
@@ -51,6 +52,7 @@ class SummarizeSpendingUseCase:
                         "category": sub_transaction.category,
                         "card_id": transaction.card_id,
                         "date": sub_transaction.date,
+                        "due_date": transaction.due_date,
                         "amount": Decimal(str(sub_transaction.amount)),
                     })
             else:
@@ -64,6 +66,7 @@ class SummarizeSpendingUseCase:
                     "category": transaction.category,
                     "card_id": transaction.card_id,
                     "date": transaction.due_date,
+                    "due_date": transaction.due_date,
                     "amount": Decimal(str(transaction.total_amount)),
                 })
 
@@ -72,7 +75,7 @@ class SummarizeSpendingUseCase:
             "total": self._money(total),
             "count": len(items),
             "currency": "BRL",
-            "groups": self._build_groups(items, group_by, cards),
+            "groups": self._build_groups(items, group_by, cards, group_by_purchase_date),
         }
 
     def _in_purchase_window(self, value, filters: dict) -> bool:
@@ -87,7 +90,9 @@ class SummarizeSpendingUseCase:
             return False
         return True
 
-    def _build_groups(self, items: list[dict], group_by: str, cards: dict) -> list[dict]:
+    def _build_groups(
+        self, items: list[dict], group_by: str, cards: dict, group_by_purchase_date: bool = False
+    ) -> list[dict]:
         if group_by == "none":
             return []
         buckets: dict = {}
@@ -98,8 +103,9 @@ class SummarizeSpendingUseCase:
             elif group_by == "card":
                 key = str(item["card_id"]) if item["card_id"] else "sem_cartao"
                 label = cards.get(item["card_id"], "Sem cartão") if item["card_id"] else "Sem cartão"
-            else:  # month
-                key = str(item["date"])[:7]
+            else:  # month: compra se o filtro é purchase_*, senão vencimento da fatura
+                value = item["date"] if group_by_purchase_date else item["due_date"]
+                key = str(value)[:7]
                 label = key
             bucket = buckets.setdefault(
                 key, {"key": key, "label": label, "total": Decimal("0"), "count": 0}

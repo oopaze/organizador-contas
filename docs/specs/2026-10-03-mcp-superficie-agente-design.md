@@ -62,7 +62,7 @@ Resposta: `{ "sub_transactions": [...], "count": N }`. Item: `id`, `date`, `desc
 Args: `due_month`/`due_start`/`due_end`, `purchase_month`/`purchase_start`/`purchase_end`, `category`, `search`, `transaction_type` (`incoming|outgoing`, default `outgoing`), `group_by` (`none|category|card|month`, default `none`).
 Resposta: `{ "total": "321.46", "count": N, "currency": "BRL", "groups": [{ "key": "...", "label": "...", "total": "...", "count": N }] }`.
 
-**Regra anti-duplicação (obrigatória):** para transações **com** subtransações, conta-se apenas as subs (nunca o `total_amount` da fatura); para transações **sem** subs, conta-se o `total_amount`. Os filtros `purchase_*`, `category` e `search` são aplicados **por item** (sub ou transação sem subs); `due_*` e `transaction_type` filtram a transação pai. No `group_by=month`, a data usada é a `date` da sub (ou `due_date` da transação sem subs).
+**Regra anti-duplicação (obrigatória):** para transações **com** subtransações, conta-se apenas as subs (nunca o `total_amount` da fatura); para transações **sem** subs, conta-se o `total_amount`. Os filtros `purchase_*`, `category` e `search` são aplicados **por item** (sub ou transação sem subs); `due_*` e `transaction_type` filtram a transação pai. No `group_by=month`, a data usada segue a base do filtro: com `purchase_*`, é a `date` do item; com `due_*` ou sem filtro, é o `due_date` da transação pai (na transação sem subs, o próprio item já usa o `due_date`).
 
 **`list_cards`** — `{ "cards": [{ "id", "name", "due_day", "is_active" }] }` (via `CardsContainer.list_cards_use_case`).
 
