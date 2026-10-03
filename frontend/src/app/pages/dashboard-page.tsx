@@ -125,6 +125,7 @@ export const DashboardPage: React.FC = () => {
   const totalExpenses = stats?.outgoing_total || 0;
   const totalIncome = stats?.incoming_total || 0;
   const balance = stats?.balance || 0;
+  const remainingToPay = totalExpenses - (stats?.outgoing_total_paid || 0);
 
   const handleTransactionAdded = () => {
     setShowAddTransaction(false);
@@ -229,8 +230,8 @@ export const DashboardPage: React.FC = () => {
             <div className="text-2xl font-bold text-red-600">
               R$ {totalExpenses.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              No período selecionado
+            <p className="text-sm text-muted-foreground mt-1">
+              R$ {remainingToPay.toFixed(2)} <span className="text-xs">resta pagar</span>
             </p>
           </CardContent>
         </Card>
