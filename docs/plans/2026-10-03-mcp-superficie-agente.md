@@ -1220,7 +1220,7 @@ Crie `backend/modules/transactions/tests/test_sub_transaction_repository_filter.
 ```python
 from django.test import TestCase
 
-from modules.transactions.factories import SubTransactionFactory
+from modules.transactions.factories import ActorFactory, SubTransactionFactory, TransactionFactory
 from modules.transactions.models import SubTransaction, Transaction
 from modules.transactions.repositories import SubTransactionRepository
 from modules.userdata.models import User
@@ -1230,7 +1230,10 @@ class TestSubTransactionRepositoryFilter(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(email="subs@test.com", password="x")
         self.repository = SubTransactionRepository(
-            model=SubTransaction, sub_transaction_factory=SubTransactionFactory()
+            model=SubTransaction,
+            sub_transaction_factory=SubTransactionFactory(
+                transaction_factory=TransactionFactory(), actor_factory=ActorFactory()
+            ),
         )
         self.bill = Transaction.objects.create(
             user=self.user,
