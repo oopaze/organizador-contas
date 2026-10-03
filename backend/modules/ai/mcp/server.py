@@ -6,6 +6,7 @@ from mcp.server.stdio import stdio_server
 
 from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
+from modules.ai.mcp.instructions import SERVER_INSTRUCTIONS, SERVER_VERSION
 from modules.ai.mcp.tools import register_tools
 
 
@@ -32,7 +33,7 @@ async def _amain() -> None:
         ask_use_case=ai_container.ask_use_case(),
         ai_call_repository=ai_container.ai_call_repository(),
     )
-    server = Server("poupix-mcp")
+    server = Server("poupix-mcp", version=SERVER_VERSION, instructions=SERVER_INSTRUCTIONS)
     register_tools(server, container, user_id=user_id)
 
     async with stdio_server() as (read_stream, write_stream):

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.http.auth import user_id_from_bearer_token
+from modules.ai.mcp.instructions import SERVER_INSTRUCTIONS, SERVER_VERSION
 from modules.ai.mcp.tools import TOOLS, dispatch_tool, dumps_payload
 
 
@@ -21,7 +22,7 @@ _mcp_container = MCPContainer(
 
 
 PROTOCOL_VERSION = "2025-06-18"
-SERVER_INFO = {"name": "poupix-mcp", "version": "0.3.0"}
+SERVER_INFO = {"name": "poupix-mcp", "version": SERVER_VERSION}
 
 
 def _dispatch(payload: dict, user_id: int) -> dict | None:
@@ -34,6 +35,7 @@ def _dispatch(payload: dict, user_id: int) -> dict | None:
                 "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": SERVER_INFO,
+                "instructions": SERVER_INSTRUCTIONS,
             },
         }
     if method == "notifications/initialized":
