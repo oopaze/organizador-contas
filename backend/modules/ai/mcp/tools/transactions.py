@@ -1,11 +1,15 @@
 from typing import Any
 
+from modules.ai.mcp.categories import enrich_transaction, resolve_category, with_category_slug
+from modules.ai.mcp.dates import parse_month, validate_date
+
 
 LIST_TRANSACTIONS_DESCRIPTION = (
-    "Lista as transações do usuário com as subtransações, usando os mesmos "
-    "filtros do app. Aceita start/end (YYYY-MM-DD), month (YYYY-MM), "
-    "transaction_type (incoming/outgoing), category, paid (true/false), "
-    "search (trecho do identificador) e limit (padrão 50, máx 200)."
+    "Lista transações (faturas/documentos) do usuário. due_month (YYYY-MM) e "
+    "due_start/due_end (YYYY-MM-DD) filtram o vencimento. search casa o "
+    "identificador ou a descrição de subtransações. category aceita slug ou "
+    "label (use list_enums). include_subtransactions=true devolve as compras de "
+    "cada transação. limit padrão 50, máx 200. Valores em BRL."
 )
 
 GET_TRANSACTION_DESCRIPTION = (
@@ -19,21 +23,24 @@ CREATE_TRANSACTION_DESCRIPTION = (
     "installments. Sem payment_method cria direto (aceita is_salary e "
     "is_recurrent com recurrence_count). paid_at/is_paid opcionais. "
     "cartão pode ser referenciado por card_id (cadastrado em /cards/) ou "
-    "card_label."
+    "card_label. category aceita slug ou label (use list_enums). Valores em BRL."
 )
 
 UPDATE_TRANSACTION_DESCRIPTION = (
     "Atualiza campos da transação do usuário: transaction_identifier, "
-    "total_amount, due_date, transaction_type, category, is_salary."
+    "total_amount, due_date, transaction_type, category, is_salary. "
+    "category aceita slug ou label (use list_enums). Valores em BRL."
 )
 
 CREATE_SUB_TRANSACTION_DESCRIPTION = (
-    "Adiciona uma subtransação a uma transação do usuário."
+    "Adiciona uma subtransação a uma transação do usuário. category aceita "
+    "slug ou label (use list_enums). Valores em BRL."
 )
 
 UPDATE_SUB_TRANSACTION_DESCRIPTION = (
     "Atualiza uma subtransação do usuário: description, amount, date, "
-    "category, installment_info, actor, user_provided_description."
+    "category, installment_info, actor, user_provided_description. "
+    "category aceita slug ou label (use list_enums). Valores em BRL."
 )
 
 GET_PROJECTION_DESCRIPTION = (
@@ -58,30 +65,35 @@ GOAL_FIELDS = (
 
 def call_list_transactions(*, arguments: dict, use_case, user_id: int) -> dict:
     filters: dict[str, Any] = {"user_id": user_id}
-    if arguments.get("start"):
-        filters["due_date__gte"] = arguments["start"]
-    if arguments.get("end"):
-        filters["due_date__lte"] = arguments["end"]
-    if arguments.get("month"):
-        year, month = str(arguments["month"]).split("-")
-        filters["due_date__year"] = int(year)
-        filters["due_date__month"] = int(month)
+    if arguments.get("due_month"):
+        year, month = parse_month(arguments["due_month"])
+        filters["due_date__year"] = year
+        filters["due_date__month"] = month
+    if arguments.get("due_start"):
+        filters["due_date__gte"] = validate_date(arguments["due_start"], "due_start")
+    if arguments.get("due_end"):
+        filters["due_date__lte"] = validate_date(arguments["due_end"], "due_end")
     if arguments.get("transaction_type"):
         filters["transaction_type"] = arguments["transaction_type"]
-    if arguments.get("category"):
-        filters["category"] = arguments["category"]
+    category = resolve_category(arguments.get("category"))
+    if category:
+        filters["category"] = category
     if arguments.get("paid") is not None:
         filters["paid_at__isnull"] = not bool(arguments["paid"])
     if arguments.get("search"):
-        filters["transaction_identifier__icontains"] = arguments["search"]
+        filters["search"] = arguments["search"]
 
     limit = min(int(arguments.get("limit") or 50), 200)
-    transactions = use_case.execute(filters)
-    return {"transactions": transactions[:limit], "count": min(len(transactions), limit)}
+    transactions = use_case.execute(
+        filters,
+        include_subtransactions=bool(arguments.get("include_subtransactions")),
+    )
+    transactions = [enrich_transaction(transaction) for transaction in transactions[:limit]]
+    return {"transactions": transactions, "count": len(transactions)}
 
 
 def call_get_transaction(*, arguments: dict, use_case, user_id: int) -> dict:
-    return use_case.execute(arguments["transaction_id"], user_id)
+    return enrich_transaction(use_case.execute(arguments["transaction_id"], user_id))
 
 
 def call_create_transaction(
@@ -94,7 +106,7 @@ def call_create_transaction(
             "amount": arguments["total_amount"],
             "description": arguments["transaction_identifier"],
             "date": arguments["due_date"],
-            "category": arguments.get("category"),
+            "category": resolve_category(arguments.get("category")),
             "actor_id": arguments.get("actor_id"),
             "card_label": arguments.get("card_label"),
             "card_id": arguments.get("card_id"),
@@ -103,7 +115,7 @@ def call_create_transaction(
             data["installments"] = arguments["installments"]
         if arguments.get("is_paid") is not None:
             data["is_paid"] = arguments["is_paid"]
-        return quick_add_use_case.execute(data, user_id)
+        return enrich_transaction(quick_add_use_case.execute(data, user_id))
 
     data = {
         "user_id": user_id,
@@ -111,19 +123,21 @@ def call_create_transaction(
         "total_amount": arguments["total_amount"],
         "due_date": arguments["due_date"],
         "transaction_type": arguments.get("transaction_type", "outgoing"),
-        "category": arguments.get("category"),
+        "category": resolve_category(arguments.get("category")),
         "is_salary": arguments.get("is_salary", False),
         "is_recurrent": arguments.get("is_recurrent", False),
         "recurrence_count": arguments.get("recurrence_count"),
         "paid_at": arguments.get("paid_at"),
     }
-    return use_case.execute(data)
+    return enrich_transaction(use_case.execute(data))
 
 
 def call_update_transaction(*, arguments: dict, use_case, user_id: int) -> dict:
     fields = {key: value for key, value in arguments.items() if key != "transaction_id"}
     fields["user_id"] = user_id
-    return use_case.execute(arguments["transaction_id"], fields)
+    if "category" in fields:
+        fields["category"] = resolve_category(fields["category"])
+    return enrich_transaction(use_case.execute(arguments["transaction_id"], fields))
 
 
 def call_create_sub_transaction(*, arguments: dict, use_case, user_id: int) -> dict:
@@ -136,9 +150,11 @@ def call_create_sub_transaction(*, arguments: dict, use_case, user_id: int) -> d
         "installment_info": arguments.get("installment_info"),
         "paid_at": arguments.get("paid_at"),
     }
+    if "category" in data:
+        data["category"] = resolve_category(data["category"])
     if arguments.get("actor_id"):
         data["actor"] = arguments["actor_id"]
-    return use_case.execute(data, user_id)
+    return with_category_slug(use_case.execute(data, user_id))
 
 
 def call_update_sub_transaction(*, arguments: dict, use_case, user_id: int) -> dict:
@@ -147,7 +163,9 @@ def call_update_sub_transaction(*, arguments: dict, use_case, user_id: int) -> d
         for key, value in arguments.items()
         if key != "sub_transaction_id"
     }
-    return use_case.execute(arguments["sub_transaction_id"], fields, user_id)
+    if "category" in fields:
+        fields["category"] = resolve_category(fields["category"])
+    return with_category_slug(use_case.execute(arguments["sub_transaction_id"], fields, user_id))
 
 
 def call_get_projection(*, arguments: dict, use_case, user_id: int) -> dict:

@@ -43,9 +43,10 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "start": {"type": "string", "description": "YYYY-MM-DD"},
-                "end": {"type": "string", "description": "YYYY-MM-DD"},
-                "month": {"type": "string", "description": "YYYY-MM"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "due_month": {"type": "string", "description": "Mês do vencimento/fatura (YYYY-MM)"},
+                "include_subtransactions": {"type": "boolean", "description": "Inclui as compras (subtransações) de cada transação"},
                 "transaction_type": {"type": "string", "enum": ["incoming", "outgoing"]},
                 "category": {"type": "string"},
                 "paid": {"type": "boolean"},

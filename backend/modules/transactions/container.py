@@ -174,6 +174,7 @@ class TransactionsContainer(containers.DeclarativeContainer):
         ListTransactionsUseCase,
         transaction_repository=transaction_repository,
         transaction_serializer=transaction_serializer,
+        sub_transaction_repository=sub_transaction_repository,
     )
 
     get_transaction_use_case = providers.Factory(

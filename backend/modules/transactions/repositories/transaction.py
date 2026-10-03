@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.db.models import Case, When, Value, BooleanField, Exists, OuterRef
+from django.db.models import Case, When, Value, BooleanField, Exists, OuterRef, Q
 
 from modules.transactions.domains import TransactionDomain
 from modules.transactions.factories.transaction import TransactionFactory
@@ -40,7 +40,15 @@ class TransactionRepository:
         )
 
     def filter(self, filters: dict) -> list["TransactionDomain"]:
-        queryset = self._annotate_subtransactions_paid(self.queryset.filter(**filters))
+        filters = dict(filters)
+        search = filters.pop("search", None)
+        queryset = self.queryset
+        if search:
+            queryset = queryset.filter(
+                Q(transaction_identifier__icontains=search)
+                | Q(sub_transactions__description__icontains=search)
+            ).distinct()
+        queryset = self._annotate_subtransactions_paid(queryset.filter(**filters))
         return [self.transaction_factory.build_from_model(transaction) for transaction in queryset]
 
     def get(self, transaction_id: str, user_id: int) -> "TransactionDomain":
