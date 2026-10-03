@@ -22,6 +22,7 @@ from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.exceptions import MCPError
 from modules.ai.mcp.prompts import get_prompt as build_prompt
 from modules.ai.mcp.prompts import list_prompts
+from modules.ai.mcp.tools import directory
 from modules.ai.mcp.tools import spending
 from modules.ai.mcp.tools import sub_transactions
 from modules.ai.mcp.tools import transactions
@@ -212,6 +213,16 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "list_cards",
+        "description": directory.LIST_CARDS_DESCRIPTION,
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "list_actors",
+        "description": directory.LIST_ACTORS_DESCRIPTION,
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -269,6 +280,16 @@ HANDLERS = {
     "summarize_spending": lambda arguments, container, user_id: spending.call_summarize_spending(
         arguments=arguments,
         use_case=container.transactions_container().summarize_spending_use_case(),
+        user_id=user_id,
+    ),
+    "list_cards": lambda arguments, container, user_id: directory.call_list_cards(
+        arguments=arguments,
+        use_case=container.cards_container().list_cards_use_case(),
+        user_id=user_id,
+    ),
+    "list_actors": lambda arguments, container, user_id: directory.call_list_actors(
+        arguments=arguments,
+        use_case=container.transactions_container().list_actors_use_case(),
         user_id=user_id,
     ),
 }
