@@ -19,6 +19,7 @@ from mcp.types import (
 )
 
 from modules.ai.mcp.container import MCPContainer
+from modules.ai.mcp.exceptions import MCPError
 from modules.ai.mcp.prompts import get_prompt as build_prompt
 from modules.ai.mcp.prompts import list_prompts
 from modules.ai.mcp.tools import transactions
@@ -172,69 +173,69 @@ TOOLS = [
 ]
 
 
+HANDLERS = {
+    "list_transactions": lambda arguments, container, user_id: transactions.call_list_transactions(
+        arguments=arguments,
+        use_case=container.transactions_container().list_transactions_use_case(),
+        user_id=user_id,
+    ),
+    "get_transaction": lambda arguments, container, user_id: transactions.call_get_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().get_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "create_transaction": lambda arguments, container, user_id: transactions.call_create_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().create_transaction_use_case(),
+        quick_add_use_case=container.transactions_container().quick_add_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "update_transaction": lambda arguments, container, user_id: transactions.call_update_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().update_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "create_sub_transaction": lambda arguments, container, user_id: transactions.call_create_sub_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().create_sub_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "update_sub_transaction": lambda arguments, container, user_id: transactions.call_update_sub_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().update_sub_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "list_enums": lambda arguments, container, user_id: call_list_enums(
+        use_case=container.list_enums_use_case(),
+    ),
+    "get_projection": lambda arguments, container, user_id: transactions.call_get_projection(
+        arguments=arguments,
+        use_case=container.planning_container().projection_use_case(),
+        user_id=user_id,
+    ),
+    "set_goals": lambda arguments, container, user_id: transactions.call_set_goals(
+        arguments=arguments,
+        update_profile_use_case=container.userdata_container().update_profile_use_case(),
+        profile_repository=container.planning_container().profile_repository(),
+        user_id=user_id,
+    ),
+}
+
+
 def dispatch_tool(name: str, arguments: dict, container: MCPContainer, user_id: int) -> dict:
-    try:
-        transactions_container = container.transactions_container()
-        if name == "list_transactions":
-            return transactions.call_list_transactions(
-                arguments=arguments,
-                use_case=transactions_container.list_transactions_use_case(),
-                user_id=user_id,
-            )
-        if name == "get_transaction":
-            return transactions.call_get_transaction(
-                arguments=arguments,
-                use_case=transactions_container.get_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "create_transaction":
-            return transactions.call_create_transaction(
-                arguments=arguments,
-                use_case=transactions_container.create_transaction_use_case(),
-                quick_add_use_case=transactions_container.quick_add_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "update_transaction":
-            return transactions.call_update_transaction(
-                arguments=arguments,
-                use_case=transactions_container.update_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "create_sub_transaction":
-            return transactions.call_create_sub_transaction(
-                arguments=arguments,
-                use_case=transactions_container.create_sub_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "update_sub_transaction":
-            return transactions.call_update_sub_transaction(
-                arguments=arguments,
-                use_case=transactions_container.update_sub_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "list_enums":
-            return call_list_enums(use_case=container.list_enums_use_case())
-        if name == "get_projection":
-            return transactions.call_get_projection(
-                arguments=arguments,
-                use_case=container.planning_container().projection_use_case(),
-                user_id=user_id,
-            )
-        if name == "set_goals":
-            userdata = container.userdata_container()
-            planning = container.planning_container()
-            return transactions.call_set_goals(
-                arguments=arguments,
-                update_profile_use_case=userdata.update_profile_use_case(),
-                profile_repository=planning.profile_repository(),
-                user_id=user_id,
-            )
+    handler = HANDLERS.get(name)
+    if handler is None:
         return {
             "error": {
                 "code": "UNKNOWN_TOOL",
                 "message": f"unknown tool: {name}",
+                "available_tools": sorted(HANDLERS),
             }
         }
+    try:
+        return handler(arguments=arguments, container=container, user_id=user_id)
+    except MCPError as exc:
+        return {"error": {"code": exc.code, "message": str(exc)}}
     except Exception as exc:  # noqa: BLE001 - surfaced to the agent as tool error
         logger.info("mcp.tool_error tool=%s error=%s", name, exc)
         return {"error": {"code": "TOOL_ERROR", "message": str(exc)}}
