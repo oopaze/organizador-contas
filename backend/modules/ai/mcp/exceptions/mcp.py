@@ -8,3 +8,15 @@ class MCPError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
         self.message = message
+
+
+class InvalidCategoryError(MCPError):
+    code = "INVALID_CATEGORY"
+
+
+class InvalidDateError(MCPError):
+    code = "INVALID_DATE"
+
+
+class InvalidParamError(MCPError):
+    code = "INVALID_PARAM"

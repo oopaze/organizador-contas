@@ -31,6 +31,7 @@ class SubTransactionSerializer:
             "actor": self.actor_serializer.serialize(sub_transaction.actor) if include_actor and sub_transaction.actor else None,
             "transaction_id": sub_transaction.transaction.id,
             "transaction_identifier": sub_transaction.transaction.transaction_identifier,
+            "card_id": sub_transaction.transaction.card_id,
             "installment_info": sub_transaction.installment_info,
             "created_at": sub_transaction.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": sub_transaction.updated_at.strftime("%Y-%m-%d %H:%M:%S"),

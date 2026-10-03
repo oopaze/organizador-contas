@@ -56,6 +56,7 @@ from modules.transactions.use_cases import (
     EnsureMonthlyCardBillsUseCase,
     GetOrCreateCardBillUseCase,
     InferTransactionCategoryUseCase,
+    SummarizeSpendingUseCase,
 )
 
 
@@ -174,6 +175,14 @@ class TransactionsContainer(containers.DeclarativeContainer):
         ListTransactionsUseCase,
         transaction_repository=transaction_repository,
         transaction_serializer=transaction_serializer,
+        sub_transaction_repository=sub_transaction_repository,
+    )
+
+    summarize_spending_use_case = providers.Factory(
+        SummarizeSpendingUseCase,
+        transaction_repository=transaction_repository,
+        sub_transaction_repository=sub_transaction_repository,
+        card_repository=card_repository,
     )
 
     get_transaction_use_case = providers.Factory(

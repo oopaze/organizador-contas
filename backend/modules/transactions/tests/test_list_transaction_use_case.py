@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import Mock
 from django.test import TestCase
 
@@ -12,10 +13,12 @@ class TestListTransactionsUseCase(TestCase):
         """Set up test fixtures."""
         self.mock_transaction_repository = Mock()
         self.mock_transaction_serializer = Mock()
+        self.mock_sub_transaction_repository = Mock()
 
         self.use_case = ListTransactionsUseCase(
             transaction_repository=self.mock_transaction_repository,
             transaction_serializer=self.mock_transaction_serializer,
+            sub_transaction_repository=self.mock_sub_transaction_repository,
         )
 
     def test_list_all_transactions_no_filters(self):
@@ -156,4 +159,44 @@ class TestListTransactionsUseCase(TestCase):
         self.mock_transaction_repository.filter.assert_called_once_with(filters=filters)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["transaction_identifier"], "Filtered Bill")
+
+    def test_include_subtransactions_hydrates_in_batch(self):
+        transaction = TransactionDomain(
+            id=1,
+            due_date="2026-10-08",
+            total_amount=100.00,
+            transaction_identifier="Fatura Nubank 10/2026",
+            transaction_type="outgoing",
+            user_id=1,
+        )
+        sub_transaction = Mock(transaction=Mock(id=1), id=10)
+        self.mock_transaction_repository.filter.return_value = [transaction]
+        self.mock_sub_transaction_repository.get_all_by_transaction_ids.return_value = [sub_transaction]
+        self.mock_transaction_serializer.serialize.return_value = {"id": 1}
+
+        self.use_case.execute({"user_id": 1}, include_subtransactions=True)
+
+        self.mock_sub_transaction_repository.get_all_by_transaction_ids.assert_called_once_with([1])
+        self.assertEqual(transaction.sub_transactions, [sub_transaction])
+
+    def test_transaction_without_subs_serializes_empty_list(self):
+        from modules.transactions.serializers import SubTransactionSerializer, TransactionSerializer
+
+        serializer = TransactionSerializer(
+            sub_transaction_serializer=SubTransactionSerializer(actor_serializer=Mock())
+        )
+        payload = serializer.serialize(
+            TransactionDomain(
+                id=9,
+                due_date="2026-10-08",
+                total_amount=100.00,
+                transaction_identifier="Fatura C&A Pay 10/2026",
+                transaction_type="outgoing",
+                user_id=1,
+                created_at=datetime(2026, 10, 1, 12, 0),
+                updated_at=datetime(2026, 10, 1, 12, 0),
+            )
+        )
+
+        self.assertEqual(payload["sub_transactions"], [])
 

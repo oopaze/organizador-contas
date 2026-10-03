@@ -22,7 +22,7 @@ class TestListTransactionsTool(SimpleTestCase):
 
         result = transactions.call_list_transactions(
             arguments={
-                "month": "2026-09",
+                "due_month": "2026-09",
                 "transaction_type": "outgoing",
                 "paid": False,
                 "search": "padaria",
@@ -38,16 +38,18 @@ class TestListTransactionsTool(SimpleTestCase):
         self.assertEqual(filters["due_date__month"], 9)
         self.assertEqual(filters["transaction_type"], "outgoing")
         self.assertEqual(filters["paid_at__isnull"], True)
-        self.assertEqual(filters["transaction_identifier__icontains"], "padaria")
-        self.assertEqual(result["transactions"], [{"id": 1}, {"id": 2}])
+        self.assertEqual(filters["search"], "padaria")
         self.assertEqual(result["count"], 2)
+        self.assertEqual(
+            use_case.execute.call_args[1]["include_subtransactions"], False
+        )
 
     def test_range_filters(self):
         use_case = Mock()
         use_case.execute.return_value = []
 
         transactions.call_list_transactions(
-            arguments={"start": "2026-09-01", "end": "2026-09-30"},
+            arguments={"due_start": "2026-09-01", "due_end": "2026-09-30"},
             use_case=use_case,
             user_id=7,
         )
@@ -55,6 +57,22 @@ class TestListTransactionsTool(SimpleTestCase):
         filters = use_case.execute.call_args[0][0]
         self.assertEqual(filters["due_date__gte"], "2026-09-01")
         self.assertEqual(filters["due_date__lte"], "2026-09-30")
+
+    def test_enriches_category_slug_and_forwards_flag(self):
+        use_case = Mock()
+        use_case.execute.return_value = [
+            {"id": 1, "category": "Transporte - Combustível", "sub_transactions": [{"category": "Outros"}]}
+        ]
+
+        result = transactions.call_list_transactions(
+            arguments={"include_subtransactions": True},
+            use_case=use_case,
+            user_id=7,
+        )
+
+        self.assertEqual(result["transactions"][0]["category_slug"], "transport_fuel")
+        self.assertEqual(result["transactions"][0]["sub_transactions"][0]["category_slug"], "other")
+        self.assertTrue(use_case.execute.call_args[1]["include_subtransactions"])
 
 
 class TestGetTransactionTool(SimpleTestCase):
@@ -67,7 +85,45 @@ class TestGetTransactionTool(SimpleTestCase):
         )
 
         use_case.execute.assert_called_once_with(10, 7)
-        self.assertEqual(result, {"id": 10})
+        self.assertEqual(result["id"], 10)
+
+
+class TestGetTransactionToolEnrichment(SimpleTestCase):
+    def test_adds_category_slug(self):
+        use_case = Mock()
+        use_case.execute.return_value = {
+            "id": 10,
+            "category": "Cartão de Crédito",
+            "sub_transactions": [{"category": "Transporte - Combustível"}],
+        }
+
+        result = transactions.call_get_transaction(
+            arguments={"transaction_id": 10}, use_case=use_case, user_id=7
+        )
+
+        self.assertEqual(result["category_slug"], "credit_card")
+        self.assertEqual(result["sub_transactions"][0]["category_slug"], "transport_fuel")
+
+
+class TestCreateTransactionCategoryLabel(SimpleTestCase):
+    def test_resolves_label_to_slug(self):
+        quick_add = Mock()
+        quick_add.execute.return_value = {"id": 1, "category": "Transporte - Combustível"}
+
+        transactions.call_create_transaction(
+            arguments={
+                "transaction_identifier": "Posto",
+                "total_amount": "100",
+                "due_date": "2026-10-01",
+                "payment_method": "cash",
+                "category": "Transporte - Combustível",
+            },
+            use_case=Mock(),
+            quick_add_use_case=quick_add,
+            user_id=7,
+        )
+
+        self.assertEqual(quick_add.execute.call_args[0][0]["category"], "transport_fuel")
 
 
 class TestCreateTransactionTool(SimpleTestCase):
@@ -99,7 +155,7 @@ class TestCreateTransactionTool(SimpleTestCase):
         self.assertEqual(data["installments"], 3)
         self.assertEqual(data["is_paid"], False)
         use_case.execute.assert_not_called()
-        self.assertEqual(result, {"ok": True})
+        self.assertTrue(result["ok"])
 
     def test_create_routes_card_id_to_quick_add(self):
         quick_add = Mock()
@@ -301,7 +357,7 @@ class TestDispatchTool(SimpleTestCase):
 
         result = dispatch_tool("list_transactions", {"limit": 1}, container, user_id=7)
 
-        self.assertEqual(result["transactions"], [{"id": 1}])
+        self.assertEqual(result["transactions"][0]["id"], 1)
 
     def test_routes_get_projection(self):
         use_case = Mock()

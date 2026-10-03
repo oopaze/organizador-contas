@@ -9,9 +9,22 @@ import logging
 
 from django.core.serializers.json import DjangoJSONEncoder
 from mcp.server import Server
-from mcp.types import TextContent, Tool
+from mcp.types import (
+    GetPromptResult,
+    Prompt,
+    PromptArgument,
+    PromptMessage,
+    TextContent,
+    Tool,
+)
 
 from modules.ai.mcp.container import MCPContainer
+from modules.ai.mcp.exceptions import MCPError
+from modules.ai.mcp.prompts import get_prompt as build_prompt
+from modules.ai.mcp.prompts import list_prompts
+from modules.ai.mcp.tools import directory
+from modules.ai.mcp.tools import spending
+from modules.ai.mcp.tools import sub_transactions
 from modules.ai.mcp.tools import transactions
 from modules.ai.mcp.tools.list_enums import (
     LIST_ENUMS_DESCRIPTION,
@@ -33,9 +46,10 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "start": {"type": "string", "description": "YYYY-MM-DD"},
-                "end": {"type": "string", "description": "YYYY-MM-DD"},
-                "month": {"type": "string", "description": "YYYY-MM"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "due_month": {"type": "string", "description": "Mês do vencimento/fatura (YYYY-MM)"},
+                "include_subtransactions": {"type": "boolean", "description": "Inclui as compras (subtransações) de cada transação"},
                 "transaction_type": {"type": "string", "enum": ["incoming", "outgoing"]},
                 "category": {"type": "string"},
                 "paid": {"type": "boolean"},
@@ -160,72 +174,141 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "list_sub_transactions",
+        "description": sub_transactions.LIST_SUB_TRANSACTIONS_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "purchase_month": {"type": "string", "description": "Mês da compra (YYYY-MM)"},
+                "purchase_start": {"type": "string", "description": "Compra a partir de (YYYY-MM-DD)"},
+                "purchase_end": {"type": "string", "description": "Compra até (YYYY-MM-DD)"},
+                "due_month": {"type": "string", "description": "Mês do vencimento da fatura pai (YYYY-MM)"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "category": {"type": "string"},
+                "search": {"type": "string", "description": "Trecho da descrição da compra"},
+                "transaction_id": {"type": "integer"},
+                "actor_id": {"type": "integer"},
+                "limit": {"type": "integer", "maximum": 200},
+            },
+        },
+    },
+    {
+        "name": "summarize_spending",
+        "description": spending.SUMMARIZE_SPENDING_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "due_month": {"type": "string", "description": "Mês do vencimento/fatura (YYYY-MM)"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "purchase_month": {"type": "string", "description": "Mês da compra (YYYY-MM)"},
+                "purchase_start": {"type": "string", "description": "Compra a partir de (YYYY-MM-DD)"},
+                "purchase_end": {"type": "string", "description": "Compra até (YYYY-MM-DD)"},
+                "category": {"type": "string"},
+                "search": {"type": "string"},
+                "transaction_type": {"type": "string", "enum": ["incoming", "outgoing"]},
+                "group_by": {"type": "string", "enum": ["none", "category", "card", "month"]},
+            },
+        },
+    },
+    {
+        "name": "list_cards",
+        "description": directory.LIST_CARDS_DESCRIPTION,
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "list_actors",
+        "description": directory.LIST_ACTORS_DESCRIPTION,
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
+HANDLERS = {
+    "list_transactions": lambda arguments, container, user_id: transactions.call_list_transactions(
+        arguments=arguments,
+        use_case=container.transactions_container().list_transactions_use_case(),
+        user_id=user_id,
+    ),
+    "get_transaction": lambda arguments, container, user_id: transactions.call_get_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().get_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "create_transaction": lambda arguments, container, user_id: transactions.call_create_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().create_transaction_use_case(),
+        quick_add_use_case=container.transactions_container().quick_add_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "update_transaction": lambda arguments, container, user_id: transactions.call_update_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().update_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "create_sub_transaction": lambda arguments, container, user_id: transactions.call_create_sub_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().create_sub_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "update_sub_transaction": lambda arguments, container, user_id: transactions.call_update_sub_transaction(
+        arguments=arguments,
+        use_case=container.transactions_container().update_sub_transaction_use_case(),
+        user_id=user_id,
+    ),
+    "list_enums": lambda arguments, container, user_id: call_list_enums(
+        use_case=container.list_enums_use_case(),
+    ),
+    "get_projection": lambda arguments, container, user_id: transactions.call_get_projection(
+        arguments=arguments,
+        use_case=container.planning_container().projection_use_case(),
+        user_id=user_id,
+    ),
+    "set_goals": lambda arguments, container, user_id: transactions.call_set_goals(
+        arguments=arguments,
+        update_profile_use_case=container.userdata_container().update_profile_use_case(),
+        profile_repository=container.planning_container().profile_repository(),
+        user_id=user_id,
+    ),
+    "list_sub_transactions": lambda arguments, container, user_id: sub_transactions.call_list_sub_transactions(
+        arguments=arguments,
+        use_case=container.transactions_container().list_sub_transactions_use_case(),
+        user_id=user_id,
+    ),
+    "summarize_spending": lambda arguments, container, user_id: spending.call_summarize_spending(
+        arguments=arguments,
+        use_case=container.transactions_container().summarize_spending_use_case(),
+        user_id=user_id,
+    ),
+    "list_cards": lambda arguments, container, user_id: directory.call_list_cards(
+        arguments=arguments,
+        use_case=container.cards_container().list_cards_use_case(),
+        user_id=user_id,
+    ),
+    "list_actors": lambda arguments, container, user_id: directory.call_list_actors(
+        arguments=arguments,
+        use_case=container.transactions_container().list_actors_use_case(),
+        user_id=user_id,
+    ),
+}
+
+
 def dispatch_tool(name: str, arguments: dict, container: MCPContainer, user_id: int) -> dict:
-    try:
-        transactions_container = container.transactions_container()
-        if name == "list_transactions":
-            return transactions.call_list_transactions(
-                arguments=arguments,
-                use_case=transactions_container.list_transactions_use_case(),
-                user_id=user_id,
-            )
-        if name == "get_transaction":
-            return transactions.call_get_transaction(
-                arguments=arguments,
-                use_case=transactions_container.get_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "create_transaction":
-            return transactions.call_create_transaction(
-                arguments=arguments,
-                use_case=transactions_container.create_transaction_use_case(),
-                quick_add_use_case=transactions_container.quick_add_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "update_transaction":
-            return transactions.call_update_transaction(
-                arguments=arguments,
-                use_case=transactions_container.update_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "create_sub_transaction":
-            return transactions.call_create_sub_transaction(
-                arguments=arguments,
-                use_case=transactions_container.create_sub_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "update_sub_transaction":
-            return transactions.call_update_sub_transaction(
-                arguments=arguments,
-                use_case=transactions_container.update_sub_transaction_use_case(),
-                user_id=user_id,
-            )
-        if name == "list_enums":
-            return call_list_enums(use_case=container.list_enums_use_case())
-        if name == "get_projection":
-            return transactions.call_get_projection(
-                arguments=arguments,
-                use_case=container.planning_container().projection_use_case(),
-                user_id=user_id,
-            )
-        if name == "set_goals":
-            userdata = container.userdata_container()
-            planning = container.planning_container()
-            return transactions.call_set_goals(
-                arguments=arguments,
-                update_profile_use_case=userdata.update_profile_use_case(),
-                profile_repository=planning.profile_repository(),
-                user_id=user_id,
-            )
+    handler = HANDLERS.get(name)
+    if handler is None:
         return {
             "error": {
                 "code": "UNKNOWN_TOOL",
                 "message": f"unknown tool: {name}",
+                "available_tools": sorted(HANDLERS),
             }
         }
+    try:
+        return handler(arguments=arguments, container=container, user_id=user_id)
+    except MCPError as exc:
+        return {"error": {"code": exc.code, "message": str(exc)}}
     except Exception as exc:  # noqa: BLE001 - surfaced to the agent as tool error
         logger.info("mcp.tool_error tool=%s error=%s", name, exc)
         return {"error": {"code": "TOOL_ERROR", "message": str(exc)}}
@@ -247,3 +330,30 @@ def register_tools(server: Server, container: MCPContainer, user_id: int) -> Non
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         payload = dispatch_tool(name, arguments, container, user_id)
         return [TextContent(type="text", text=dumps_payload(payload))]
+
+    @server.list_prompts()
+    async def handle_list_prompts() -> list[Prompt]:
+        return [
+            Prompt(
+                name=prompt["name"],
+                description=prompt["description"],
+                arguments=[PromptArgument(**argument) for argument in prompt["arguments"]],
+            )
+            for prompt in list_prompts()
+        ]
+
+    @server.get_prompt()
+    async def handle_get_prompt(name: str, arguments: dict | None) -> GetPromptResult:
+        payload = build_prompt(name, arguments)
+        if payload is None:
+            raise ValueError(f"prompt não encontrado: {name!r}")
+        return GetPromptResult(
+            description=payload["description"],
+            messages=[
+                PromptMessage(
+                    role=message["role"],
+                    content=TextContent(type="text", text=message["content"]["text"]),
+                )
+                for message in payload["messages"]
+            ],
+        )
