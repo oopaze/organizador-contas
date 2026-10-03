@@ -1639,7 +1639,8 @@ Crie `backend/modules/transactions/use_cases/transaction/summarize_spending.py`:
 ```python
 from decimal import Decimal
 
-from modules.transactions.repositories import CardRepository, SubTransactionRepository, TransactionRepository
+from modules.cards.repositories import CardRepository
+from modules.transactions.repositories import SubTransactionRepository, TransactionRepository
 from modules.transactions.types import TransactionCategory
 
 
