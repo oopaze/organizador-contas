@@ -46,7 +46,10 @@ class TransactionRepository:
         if search:
             queryset = queryset.filter(
                 Q(transaction_identifier__icontains=search)
-                | Q(sub_transactions__description__icontains=search)
+                | Q(
+                    sub_transactions__description__icontains=search,
+                    sub_transactions__deleted_at__isnull=True,
+                )
             ).distinct()
         queryset = self._annotate_subtransactions_paid(queryset.filter(**filters))
         return [self.transaction_factory.build_from_model(transaction) for transaction in queryset]
