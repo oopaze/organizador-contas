@@ -18,6 +18,19 @@ PROMPTS = [
 ]
 
 
+from django.utils import timezone
+
+
+def _previous_month(mes: str) -> str | None:
+    try:
+        year, month = int(mes[:4]), int(mes[5:7])
+    except ValueError:
+        return None
+    if month == 1:
+        return f"{year - 1}-12"
+    return f"{year}-{month - 1:02d}"
+
+
 def list_prompts() -> list[dict]:
     return PROMPTS
 
@@ -25,21 +38,19 @@ def list_prompts() -> list[dict]:
 def get_prompt(name: str, arguments: dict | None = None) -> dict | None:
     arguments = arguments or {}
     if name == "resumo_mensal":
-        mes = (arguments.get("mes") or "").strip()
-        if mes:
-            texto = (
-                f"Faça um resumo dos meus gastos de {mes}. "
-                f"Use summarize_spending com due_month={mes} e group_by=category para {mes} "
-                "e também para o mês anterior, e compare. Apresente o total do mês, "
-                "as categorias que mais pesaram e a variação em relação ao mês anterior."
-            )
-        else:
-            texto = (
-                "Faça um resumo dos meus gastos do mês corrente. "
-                "Use summarize_spending (sem due_month) com group_by=category para este mês "
-                "e também para o mês anterior, e compare. Apresente o total do mês, "
-                "as categorias que mais pesaram e a variação em relação ao mês anterior."
-            )
+        mes = (arguments.get("mes") or "").strip() or timezone.localdate().strftime("%Y-%m")
+        anterior = _previous_month(mes)
+        comparacao = (
+            f"e due_month={anterior} para o mês anterior, e compare"
+            if anterior
+            else "e compare com o mês anterior"
+        )
+        texto = (
+            f"Faça um resumo dos meus gastos de {mes}. "
+            f"Use summarize_spending com due_month={mes} e group_by=category para {mes} "
+            f"{comparacao}. Apresente o total do mês, as categorias que mais pesaram "
+            "e a variação em relação ao mês anterior."
+        )
         return {
             "description": PROMPTS[0]["description"],
             "messages": [{"role": "user", "content": {"type": "text", "text": texto}}],
