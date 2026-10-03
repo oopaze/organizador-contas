@@ -22,6 +22,7 @@ from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.exceptions import MCPError
 from modules.ai.mcp.prompts import get_prompt as build_prompt
 from modules.ai.mcp.prompts import list_prompts
+from modules.ai.mcp.tools import spending
 from modules.ai.mcp.tools import sub_transactions
 from modules.ai.mcp.tools import transactions
 from modules.ai.mcp.tools.list_enums import (
@@ -192,6 +193,25 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "summarize_spending",
+        "description": spending.SUMMARIZE_SPENDING_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "due_month": {"type": "string", "description": "Mês do vencimento/fatura (YYYY-MM)"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "purchase_month": {"type": "string", "description": "Mês da compra (YYYY-MM)"},
+                "purchase_start": {"type": "string", "description": "Compra a partir de (YYYY-MM-DD)"},
+                "purchase_end": {"type": "string", "description": "Compra até (YYYY-MM-DD)"},
+                "category": {"type": "string"},
+                "search": {"type": "string"},
+                "transaction_type": {"type": "string", "enum": ["incoming", "outgoing"]},
+                "group_by": {"type": "string", "enum": ["none", "category", "card", "month"]},
+            },
+        },
+    },
 ]
 
 
@@ -244,6 +264,11 @@ HANDLERS = {
     "list_sub_transactions": lambda arguments, container, user_id: sub_transactions.call_list_sub_transactions(
         arguments=arguments,
         use_case=container.transactions_container().list_sub_transactions_use_case(),
+        user_id=user_id,
+    ),
+    "summarize_spending": lambda arguments, container, user_id: spending.call_summarize_spending(
+        arguments=arguments,
+        use_case=container.transactions_container().summarize_spending_use_case(),
         user_id=user_id,
     ),
 }

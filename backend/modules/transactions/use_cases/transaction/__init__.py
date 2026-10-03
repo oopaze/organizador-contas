@@ -15,6 +15,7 @@ from modules.transactions.use_cases.transaction.ensure_salary import EnsureMonth
 from modules.transactions.use_cases.transaction.ensure_card_bills import EnsureMonthlyCardBillsUseCase
 from modules.transactions.use_cases.transaction.get_or_create_card_bill import GetOrCreateCardBillUseCase
 from modules.transactions.use_cases.transaction.infer_category import InferTransactionCategoryUseCase
+from modules.transactions.use_cases.transaction.summarize_spending import SummarizeSpendingUseCase
 
 __all__ = [
     "CreateTransactionUseCase",
@@ -34,4 +35,5 @@ __all__ = [
     "EnsureMonthlyCardBillsUseCase",
     "GetOrCreateCardBillUseCase",
     "InferTransactionCategoryUseCase",
+    "SummarizeSpendingUseCase",
 ]
