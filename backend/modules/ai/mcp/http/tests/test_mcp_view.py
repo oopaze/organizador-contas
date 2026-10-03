@@ -25,13 +25,13 @@ class TestMCPView(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(email="u@u.com", password="x")
-        MCPOAuthClient.objects.create(
+        oauth_client = MCPOAuthClient.objects.create(
             client_id="mcp_x", name="X", redirect_uris=[], user_id=self.user.id,
         )
         gen = TokenGeneratorService()
         plaintext, h = gen.generate_access_token()
         MCPAccessToken.objects.create(
-            token_hash=h, client_id="mcp_x", user_id=self.user.id,
+            token_hash=h, client=oauth_client, user_id=self.user.id,
             scope="mcp:read",
             expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
@@ -60,6 +60,9 @@ class TestMCPView(TestCase):
         body = resp.json()
         self.assertEqual(body["id"], 1)
         self.assertEqual(body["result"]["serverInfo"]["name"], "poupix-mcp")
+        self.assertEqual(body["result"]["serverInfo"]["version"], "0.4.0")
+        self.assertIn("fatura", body["result"]["instructions"].lower())
+        self.assertIn("prompts", body["result"]["capabilities"])
 
     def test_tools_list(self):
         resp = self._post({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
@@ -68,19 +71,19 @@ class TestMCPView(TestCase):
         names = sorted(t["name"] for t in body["result"]["tools"])
         self.assertEqual(
             names,
-            sorted(
-                [
-                    "list_transactions",
-                    "get_transaction",
-                    "create_transaction",
-                    "update_transaction",
-                    "create_sub_transaction",
-                    "update_sub_transaction",
-                    "list_enums",
-                    "get_projection",
-                ]
-            ),
+            sorted([
+                "list_transactions", "get_transaction", "create_transaction",
+                "update_transaction", "create_sub_transaction", "update_sub_transaction",
+                "list_enums", "get_projection", "set_goals",
+                "list_sub_transactions", "summarize_spending", "list_cards", "list_actors",
+            ]),
         )
+
+    def test_prompts_list(self):
+        resp = self._post({"jsonrpc": "2.0", "id": 3, "method": "prompts/list"})
+        self.assertEqual(resp.status_code, 200)
+        names = sorted(p["name"] for p in resp.json()["result"]["prompts"])
+        self.assertEqual(names, ["onde_cortar_gastos", "resumo_mensal"])
 
     def test_invalid_token(self):
         resp = self._post({"jsonrpc": "2.0", "id": 1, "method": "ping"}, token="bad-token")
