@@ -28,8 +28,8 @@ def call_summarize_spending(*, arguments: dict, use_case, user_id: int) -> dict:
     if arguments.get("due_end"):
         filters["due_date__lte"] = validate_date(arguments["due_end"], "due_end")
     if arguments.get("purchase_month"):
-        parse_month(arguments["purchase_month"])
-        filters["purchase_month"] = arguments["purchase_month"]
+        year, month = parse_month(arguments["purchase_month"])
+        filters["purchase_month"] = f"{year:04d}-{month:02d}"
     if arguments.get("purchase_start"):
         filters["purchase_start"] = validate_date(arguments["purchase_start"], "purchase_start")
     if arguments.get("purchase_end"):

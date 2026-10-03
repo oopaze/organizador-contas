@@ -31,6 +31,17 @@ class TestSummarizeSpendingTool(SimpleTestCase):
         self.assertEqual(filters["group_by"], "category")
         self.assertEqual(result["total"], "100.00")
 
+    def test_normalizes_non_padded_purchase_month(self):
+        use_case = Mock()
+        use_case.execute.return_value = {"total": "0.00", "count": 0, "groups": []}
+
+        call_summarize_spending(
+            arguments={"purchase_month": "2026-9"}, use_case=use_case, user_id=7
+        )
+
+        filters = use_case.execute.call_args[0][1]
+        self.assertEqual(filters["purchase_month"], "2026-09")
+
     def test_invalid_group_by_raises(self):
         with self.assertRaises(InvalidParamError):
             call_summarize_spending(
