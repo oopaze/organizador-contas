@@ -9,9 +9,18 @@ import logging
 
 from django.core.serializers.json import DjangoJSONEncoder
 from mcp.server import Server
-from mcp.types import TextContent, Tool
+from mcp.types import (
+    GetPromptResult,
+    Prompt,
+    PromptArgument,
+    PromptMessage,
+    TextContent,
+    Tool,
+)
 
 from modules.ai.mcp.container import MCPContainer
+from modules.ai.mcp.prompts import get_prompt as build_prompt
+from modules.ai.mcp.prompts import list_prompts
 from modules.ai.mcp.tools import transactions
 from modules.ai.mcp.tools.list_enums import (
     LIST_ENUMS_DESCRIPTION,
@@ -247,3 +256,30 @@ def register_tools(server: Server, container: MCPContainer, user_id: int) -> Non
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         payload = dispatch_tool(name, arguments, container, user_id)
         return [TextContent(type="text", text=dumps_payload(payload))]
+
+    @server.list_prompts()
+    async def handle_list_prompts() -> list[Prompt]:
+        return [
+            Prompt(
+                name=prompt["name"],
+                description=prompt["description"],
+                arguments=[PromptArgument(**argument) for argument in prompt["arguments"]],
+            )
+            for prompt in list_prompts()
+        ]
+
+    @server.get_prompt()
+    async def handle_get_prompt(name: str, arguments: dict | None) -> GetPromptResult:
+        payload = build_prompt(name, arguments)
+        if payload is None:
+            raise ValueError(f"prompt não encontrado: {name!r}")
+        return GetPromptResult(
+            description=payload["description"],
+            messages=[
+                PromptMessage(
+                    role=message["role"],
+                    content=TextContent(type="text", text=message["content"]["text"]),
+                )
+                for message in payload["messages"]
+            ],
+        )

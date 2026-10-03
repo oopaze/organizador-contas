@@ -9,6 +9,7 @@ from modules.ai.container import AIContainer
 from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.http.auth import user_id_from_bearer_token
 from modules.ai.mcp.instructions import SERVER_INSTRUCTIONS, SERVER_VERSION
+from modules.ai.mcp.prompts import get_prompt, list_prompts
 from modules.ai.mcp.tools import TOOLS, dispatch_tool, dumps_payload
 
 
@@ -33,7 +34,10 @@ def _dispatch(payload: dict, user_id: int) -> dict | None:
             "jsonrpc": "2.0", "id": rid,
             "result": {
                 "protocolVersion": PROTOCOL_VERSION,
-                "capabilities": {"tools": {"listChanged": False}},
+                "capabilities": {
+                    "tools": {"listChanged": False},
+                    "prompts": {"listChanged": False},
+                },
                 "serverInfo": SERVER_INFO,
                 "instructions": SERVER_INSTRUCTIONS,
             },
@@ -56,6 +60,17 @@ def _dispatch(payload: dict, user_id: int) -> dict | None:
         }
     if method == "ping":
         return {"jsonrpc": "2.0", "id": rid, "result": {}}
+    if method == "prompts/list":
+        return {"jsonrpc": "2.0", "id": rid, "result": {"prompts": list_prompts()}}
+    if method == "prompts/get":
+        params = payload.get("params") or {}
+        prompt = get_prompt(params.get("name"), params.get("arguments"))
+        if prompt is None:
+            return {
+                "jsonrpc": "2.0", "id": rid,
+                "error": {"code": -32602, "message": f"prompt não encontrado: {params.get('name')!r}"},
+            }
+        return {"jsonrpc": "2.0", "id": rid, "result": prompt}
     return {
         "jsonrpc": "2.0", "id": rid,
         "error": {"code": -32601, "message": f"method not found: {method}"},
