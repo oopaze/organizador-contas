@@ -12,7 +12,7 @@ import { Checkbox } from './ui/checkbox';
 import { Dialog } from './ui/dialog';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
-import { isPositiveAmount, toDecimalString } from '../lib/amount';
+import { amountToText, isPositiveAmount, toDecimalString } from '../lib/amount';
 import { TRANSACTION_CATEGORIES } from '../lib/category-colors';
 import { updateTransaction, type Transaction, type TransactionType } from '../services';
 
@@ -39,7 +39,7 @@ type FormErrors = Partial<Record<'transaction_identifier' | 'total_amount' | 'du
 function formFromTransaction(transaction: Transaction): FormState {
   return {
     transaction_identifier: transaction.transaction_identifier ?? '',
-    total_amount: transaction.total_amount ?? '',
+    total_amount: amountToText(transaction.total_amount),
     due_date: transaction.due_date ?? '',
     transaction_type: transaction.transaction_type ?? 'outgoing',
     is_salary: transaction.is_salary ?? false,

@@ -7,7 +7,7 @@ import { Checkbox } from './ui/checkbox';
 import { Dialog } from './ui/dialog';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
-import { toDecimalString } from '../lib/amount';
+import { toDecimalString, amountToText } from '../lib/amount';
 import { TRANSACTION_CATEGORIES } from '../lib/category-colors';
 import { getActors, updateSubTransaction, type Actor, type SubTransaction } from '../services';
 
@@ -52,7 +52,7 @@ export function EditSubTransactionDialog({
     subTransaction.user_provided_description ?? ''
   );
   const [date, setDate] = useState(subTransaction.date ?? '');
-  const [amount, setAmount] = useState(subTransaction.amount ?? '');
+  const [amount, setAmount] = useState(amountToText(subTransaction.amount));
   const [installmentInfo, setInstallmentInfo] = useState(subTransaction.installment_info ?? '');
   const [category, setCategory] = useState(findCategoryKey(subTransaction.category));
   const [selectedActorId, setSelectedActorId] = useState(() => initialActorId(subTransaction));
@@ -70,7 +70,7 @@ export function EditSubTransactionDialog({
     setDescription(subTransaction.description ?? '');
     setUserProvidedDescription(subTransaction.user_provided_description ?? '');
     setDate(subTransaction.date ?? '');
-    setAmount(subTransaction.amount ?? '');
+    setAmount(amountToText(subTransaction.amount));
     setInstallmentInfo(subTransaction.installment_info ?? '');
     setCategory(findCategoryKey(subTransaction.category));
     setSelectedActorId(initialActorId(subTransaction));
