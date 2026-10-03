@@ -20,7 +20,7 @@ class SubTransactionRepository:
             self.model.objects
                 .order_by("id")
                 .select_related("actor")
-                .select_related("transaction")
+                .select_related("transaction", "transaction__user")
                 .exclude(deleted_at__isnull=False)
         )
 
@@ -62,7 +62,11 @@ class SubTransactionRepository:
         ]
 
     def filter(self, user_id: int, filters: dict = {}) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.queryset.filter(transaction__user_id=user_id, **filters)
+        sub_transaction_instances = (
+            self.queryset
+            .prefetch_related("transaction__sub_transactions")
+            .filter(transaction__user_id=user_id, **filters)
+        )
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances
@@ -76,7 +80,11 @@ class SubTransactionRepository:
         ]
     
     def get_all_by_transaction_ids(self, transaction_ids: list[str]) -> list["SubTransactionDomain"]:
-        sub_transaction_instances = self.queryset.filter(transaction_id__in=transaction_ids)
+        sub_transaction_instances = (
+            self.queryset
+            .prefetch_related("transaction__sub_transactions")
+            .filter(transaction_id__in=transaction_ids)
+        )
         return [
             self.sub_transaction_factory.build_from_model(sub_transaction_instance)
             for sub_transaction_instance in sub_transaction_instances

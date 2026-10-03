@@ -17,6 +17,7 @@ class TransactionRepository:
         return (
             self.model.objects
                 .order_by("id")
+                .select_related("user")
                 .exclude(deleted_at__isnull=False)
                 .prefetch_related("sub_transactions")
         )
