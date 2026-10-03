@@ -61,6 +61,13 @@ class SubTransactionRepository:
             for sub_transaction_instance in sub_transaction_instances
         ]
 
+    def filter(self, user_id: int, filters: dict = {}) -> list["SubTransactionDomain"]:
+        sub_transaction_instances = self.queryset.filter(transaction__user_id=user_id, **filters)
+        return [
+            self.sub_transaction_factory.build_from_model(sub_transaction_instance)
+            for sub_transaction_instance in sub_transaction_instances
+        ]
+
     def get_all_by_transaction_id(self, transaction_id: str, user_id: int, filters: dict = {}) -> list["SubTransactionDomain"]:
         sub_transaction_instances = self.queryset.filter(transaction_id=transaction_id, transaction__user_id=user_id, **filters)
         return [

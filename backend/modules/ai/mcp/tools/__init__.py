@@ -22,6 +22,7 @@ from modules.ai.mcp.container import MCPContainer
 from modules.ai.mcp.exceptions import MCPError
 from modules.ai.mcp.prompts import get_prompt as build_prompt
 from modules.ai.mcp.prompts import list_prompts
+from modules.ai.mcp.tools import sub_transactions
 from modules.ai.mcp.tools import transactions
 from modules.ai.mcp.tools.list_enums import (
     LIST_ENUMS_DESCRIPTION,
@@ -171,6 +172,26 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "list_sub_transactions",
+        "description": sub_transactions.LIST_SUB_TRANSACTIONS_DESCRIPTION,
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "purchase_month": {"type": "string", "description": "Mês da compra (YYYY-MM)"},
+                "purchase_start": {"type": "string", "description": "Compra a partir de (YYYY-MM-DD)"},
+                "purchase_end": {"type": "string", "description": "Compra até (YYYY-MM-DD)"},
+                "due_month": {"type": "string", "description": "Mês do vencimento da fatura pai (YYYY-MM)"},
+                "due_start": {"type": "string", "description": "Vencimento a partir de (YYYY-MM-DD)"},
+                "due_end": {"type": "string", "description": "Vencimento até (YYYY-MM-DD)"},
+                "category": {"type": "string"},
+                "search": {"type": "string", "description": "Trecho da descrição da compra"},
+                "transaction_id": {"type": "integer"},
+                "actor_id": {"type": "integer"},
+                "limit": {"type": "integer", "maximum": 200},
+            },
+        },
+    },
 ]
 
 
@@ -218,6 +239,11 @@ HANDLERS = {
         arguments=arguments,
         update_profile_use_case=container.userdata_container().update_profile_use_case(),
         profile_repository=container.planning_container().profile_repository(),
+        user_id=user_id,
+    ),
+    "list_sub_transactions": lambda arguments, container, user_id: sub_transactions.call_list_sub_transactions(
+        arguments=arguments,
+        use_case=container.transactions_container().list_sub_transactions_use_case(),
         user_id=user_id,
     ),
 }
