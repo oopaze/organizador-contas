@@ -91,10 +91,71 @@ class TestSummarizeSpendingUseCase(SimpleTestCase):
 
         self.assertEqual(result["groups"][0]["label"], "Nubank")
 
-    def test_group_by_month(self):
+    def test_group_by_month_without_filters_uses_due_date(self):
         bill, fuel, market = build_bill_with_subs()
         use_case = build_use_case([bill], [fuel, market])
 
         result = use_case.execute(7, {"group_by": "month"})
 
+        self.assertEqual(len(result["groups"]), 1)
+        self.assertEqual(result["groups"][0]["key"], "2026-10")
+
+    def test_group_by_month_with_due_month_returns_single_due_group(self):
+        bill, fuel, market = build_bill_with_subs()
+        use_case = build_use_case([bill], [fuel, market])
+
+        result = use_case.execute(
+            7,
+            {
+                "due_date__year": 2026,
+                "due_date__month": 10,
+                "group_by": "month",
+            },
+        )
+
+        self.assertEqual(len(result["groups"]), 1)
+        self.assertEqual(result["groups"][0]["key"], "2026-10")
+        self.assertEqual(result["groups"][0]["total"], "500.00")
+
+    def test_group_by_month_with_due_window_uses_due_month(self):
+        bill, fuel, market = build_bill_with_subs()
+        june_bill = TransactionDomain(
+            id=2, due_date=date(2026, 6, 10), total_amount=Decimal("200.00"),
+            transaction_identifier="Fatura Nubank 06/2026", transaction_type="outgoing",
+            category="credit_card", card_id=1, user_id=7,
+        )
+        old_installment = SubTransactionDomain(
+            id=3, date=date(2025, 11, 20), description="PARCELA ANTIGA", amount=Decimal("150.00"),
+            transaction=june_bill, category="food_grocery",
+        )
+        scheduled_purchase = SubTransactionDomain(
+            id=4, date=date(2026, 12, 3), description="COMPRA AGENDADA", amount=Decimal("50.00"),
+            transaction=june_bill, category="food_grocery",
+        )
+        use_case = build_use_case(
+            [bill, june_bill], [fuel, market, old_installment, scheduled_purchase]
+        )
+
+        result = use_case.execute(
+            7,
+            {
+                "due_date__gte": "2026-06-01",
+                "due_date__lte": "2026-10-31",
+                "group_by": "month",
+            },
+        )
+
+        keys = sorted(group["key"] for group in result["groups"])
+        self.assertEqual(keys, ["2026-06", "2026-10"])
+        self.assertEqual(result["total"], "700.00")
+        self.assertEqual(result["count"], 4)
+
+    def test_group_by_month_with_purchase_month_uses_purchase_date(self):
+        bill, fuel, market = build_bill_with_subs()
+        use_case = build_use_case([bill], [fuel, market])
+
+        result = use_case.execute(7, {"purchase_month": "2026-09", "group_by": "month"})
+
+        self.assertEqual(len(result["groups"]), 1)
         self.assertEqual(result["groups"][0]["key"], "2026-09")
+        self.assertEqual(result["groups"][0]["total"], "500.00")

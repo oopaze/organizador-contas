@@ -10,8 +10,9 @@ SUMMARIZE_SPENDING_DESCRIPTION = (
     "'quanto gastei com X'. due_* filtra o vencimento (fatura); purchase_* filtra "
     "a data da compra (subtransações; em transação sem subs vale o vencimento). "
     "Regra: fatura de cartão conta pelas subtransações (nunca pelo total), "
-    "transação sem subs conta o total. group_by: none, category, card ou month. "
-    "transaction_type padrão outgoing. Valores em BRL."
+    "transação sem subs conta o total. group_by: none, category, card ou month "
+    "(month agrupa pelo vencimento quando o filtro é due_*; pela data da compra "
+    "quando é purchase_*). transaction_type padrão outgoing. Valores em BRL."
 )
 
 GROUP_BY_OPTIONS = ("none", "category", "card", "month")
