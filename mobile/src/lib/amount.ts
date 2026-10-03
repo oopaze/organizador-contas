@@ -8,6 +8,15 @@ export function toDecimalString(value: string): string | null {
   return normalized;
 }
 
+/**
+ * Texto para exibição/edição de um valor que a API devolve como number
+ * (o DRF serializa Decimal como number no JSON, ex.: `89.9`) ou como string.
+ */
+export function amountToText(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
 /** `true` quando o texto vira um decimal maior que zero. */
 export function isPositiveAmount(value: string): boolean {
   const decimal = toDecimalString(value);
